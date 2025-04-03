@@ -1,23 +1,23 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../components/HomePage.vue'
-import Drowningsearch from '../components/DrowningSearch.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '../components/HomePage.vue';
+import DrowningSearch from '../components/DrowningSearch.vue';
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    name: 'HomePage',
+    component: HomePage
   },
   {
-    path: '/Drowningsearch',
-    name: 'Drowningsearch',
-    component: Drowningsearch
+    path: '/DrowningSearch',
+    name: 'DrowningSearch',
+    component: DrowningSearch
   }
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes
-})
+});
 
-export default router
+export default router;
