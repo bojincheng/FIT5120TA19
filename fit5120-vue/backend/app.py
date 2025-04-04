@@ -4,11 +4,19 @@ from flask_cors import CORS
 import psycopg2
 from dotenv import load_dotenv
 import os
+import openmeteo_requests
+import requests_cache
+from retry_requests import retry
+import pandas as pd
+
 # Load environment variables from .env file
 load_dotenv()
 app = Flask(__name__)
 # Enable the cross original resource sharing
 CORS(app)
+
+
+# Epic 1 backend function
 # Call the database connection function in database.py
 try:
     conn = psycopg2.connect(
@@ -166,6 +174,123 @@ def search_injury():
         print("❌ General Error:", e)
         return jsonify({"error": "An unexpected error occurred", "message": str(e)}), 500
 
-    
+
+# Epic 2 Search Beach Infomation
+# Open-Meteo set-up
+cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+openmeteo = openmeteo_requests.Client(session=retry_session)
+
+# Marine api
+@app.route("/marine", methods=["GET"])
+def get_marine_data():
+    latitude = request.args.get("latitude", type=float)
+    longitude = request.args.get("longitude", type=float)
+
+    if latitude is None or longitude is None:
+        return jsonify({"error": "Missing latitude or longitude"}), 400
+
+    try:
+        url = "https://marine-api.open-meteo.com/v1/marine"
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "current": [
+                "wave_height",
+                "swell_wave_height",
+                "ocean_current_velocity",
+                "sea_surface_temperature",
+                "sea_level_height_msl"
+            ]
+        }
+
+        responses = openmeteo.weather_api(url, params=params)
+        response = responses[0]
+
+        current = response.Current()
+        result = {
+            "latitude": response.Latitude(),
+            "longitude": response.Longitude(),
+            "elevation": response.Elevation(),
+            "timezone": response.Timezone(),
+            "utc_offset_seconds": response.UtcOffsetSeconds(),
+            "current_time": current.Time(),
+            "wave_height": current.Variables(0).Value(),
+            "swell_wave_height": current.Variables(1).Value(),
+            "ocean_current_velocity": current.Variables(2).Value(),
+            "sea_surface_temperature": current.Variables(3).Value(),
+            "sea_level_height_msl": current.Variables(4).Value()
+        }
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Weather api    
+@app.route("/weather", methods=["GET"])
+def get_weather_data():
+    latitude = request.args.get("latitude", type=float)
+    longitude = request.args.get("longitude", type=float)
+
+    if latitude is None or longitude is None:
+        return jsonify({"error": "Missing latitude or longitude"}), 400
+
+    try:
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "daily": "uv_index_max",
+            "current": [
+                "pressure_msl",
+                "weather_code",
+                "temperature_2m",
+                "wind_speed_10m"
+            ]
+        }
+
+        responses = openmeteo.weather_api(url, params=params)
+        response = responses[0]
+
+        current = response.Current()
+
+        current_data = {
+            "time": current.Time(),
+            "pressure_msl": float(current.Variables(0).Value()),
+            "weather_code": int(current.Variables(1).Value()),
+            "temperature_2m": float(current.Variables(2).Value()),
+            "wind_speed_10m": float(current.Variables(3).Value())
+        }
+
+        daily = response.Daily()
+        uv_index_max = daily.Variables(0).ValuesAsNumpy()
+        time_range = pd.date_range(
+            start=pd.to_datetime(daily.Time(), unit="s", utc=True),
+            end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
+            freq=pd.Timedelta(seconds=daily.Interval()),
+            inclusive="left"
+        )
+
+        uv_list = []
+        for t, val in zip(time_range, uv_index_max):
+            uv_list.append({
+                "date": t.strftime("%Y-%m-%d"),
+                "uv_index_max": float(val)
+            })
+
+        return jsonify({
+            "latitude": response.Latitude(),
+            "longitude": response.Longitude(),
+            "elevation": response.Elevation(),
+            "timezone": response.Timezone(),
+            "utc_offset_seconds": response.UtcOffsetSeconds(),
+            "current": current_data,
+            "daily_uv_index_max": uv_list
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

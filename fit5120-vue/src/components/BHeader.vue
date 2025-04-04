@@ -3,7 +3,10 @@
     <h1>Drowning Statistics</h1>
     <nav>
       <ul>
-        <li><router-link to="/">Drowning Search</router-link></li>
+        <li>
+          <router-link to="/">Drowning Search</router-link>
+          <router-link to="/Beachdata">Beachdata</router-link>
+        </li>
       </ul>
     </nav>
   </header>
