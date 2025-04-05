@@ -116,11 +116,12 @@ export default {
   methods: {
     async searchDeaths() {
       this.isDeathSearch = true; // Set flag for deaths
-      await this.fetchData("http://localhost:5000/DrowningDeathSearch", this.deathSearchCriteria);
+      await this.fetchData("https://fit5120ta19.onrender.com/DrowningDeathSearch", this.deathSearchCriteria);
+
     },
     async searchInjuries() {
       this.isDeathSearch = false; // Set flag for injuries
-      await this.fetchData("http://localhost:5000/DrowningInjurySearch", this.injurySearchCriteria);
+      await this.fetchData("https://fit5120ta19.onrender.com/DrowningInjurySearch", this.injurySearchCriteria);
     },
     async fetchData(endpoint, criteria) {
       try {
@@ -187,8 +188,3 @@ h2, h3 {
   margin-top: 20px;
 }
 </style>
-
-
-
-
-
