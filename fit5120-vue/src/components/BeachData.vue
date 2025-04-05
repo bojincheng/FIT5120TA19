@@ -127,8 +127,8 @@
           loading.value = true;
           error.value = null;
           const [weatherRes, marineRes] = await Promise.all([
-            fetch(`http://localhost:5000/weather?latitude=${lat}&longitude=${lon}`),
-            fetch(`http://localhost:5000/marine?latitude=${lat}&longitude=${lon}`)
+            fetch(`https://fit5120ta19.onrender.com/weather?latitude=${lat}&longitude=${lon}`),
+            fetch(`https://fit5120ta19.onrender.com/marine?latitude=${lat}&longitude=${lon}`)
           ]);
           const weatherData = await weatherRes.json();
           const marineData = await marineRes.json();
