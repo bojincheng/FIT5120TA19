@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Safety Protocol Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .title {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            text-align: center;
+            border-bottom: 3px solid #22d3ee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            max-width: 400px;
+            z-index: 10;
+        }
+        
+        .title h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        
+        .message {
+            position: absolute;
+            bottom: 96px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 8px;
+            text-align: center;
+            max-width: 500px;
+            border: none;
+            border-left: 3px solid #22d3ee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .message p {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+        
+        .message .indicator {
+            height: 4px;
+            width: 96px;
+            background-color: #22d3ee;
+            margin: 8px auto 0;
+            border-radius: 9999px;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 9999px;
+            z-index: 10;
+        }
+        
+        .button {
+            background-color: transparent;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .info-panel {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 30;
+        }
+        
+        .info-content {
+            background-color: #111827;
+            border-radius: 8px;
+            max-width: 512px;
+            padding: 24px;
+            position: relative;
+        }
+        
+        .info-content .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .info-content .close:hover {
+            color: white;
+            background-color: #374151;
+        }
+        
+        .info-content h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #22d3ee;
+            margin-bottom: 16px;
+        }
+        
+        .info-content ol {
+            list-style-type: decimal;
+            padding-left: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        
+        .info-content li {
+            margin-bottom: 12px;
+            color: white;
+        }
+        
+        .info-content .highlight {
+            font-weight: 600;
+            color: #22d3ee;
+        }
+        
+        .info-content .warning {
+            font-weight: 600;
+            color: #ef4444;
+        }
+        
+        .info-content .callout {
+            margin-top: 24px;
+            padding: 12px;
+            background-color: rgba(30, 64, 175, 0.5);
+            border-radius: 6px;
+        }
+        
+        .info-content .callout p {
+            color: #bfdbfe;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 160px;
+            right: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .legend-color.safe {
+            background-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .legend-color.danger {
+            background-color: rgba(244, 67, 54, 0.5);
+        }
+        
+        .legend-text {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .protocol-steps {
+            position: absolute;
+            top: 220px;  /* Increased from 160px to 220px to move it lower */
+            left: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+            max-width: 300px;
+        }
+        
+        .protocol-steps h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        
+        .step.active {
+            opacity: 1;
+        }
+        
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 50%;
+            margin-right: 8px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            font-size: 14px;
+            color: white;
+        }
+        
+        .scenario-selector {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .scenario-selector h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .scenario-button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .scenario-button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .scenario-button.active {
+            background-color: #2563eb;
+        }
+        
+        .scenario-button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .back-button:hover {
+            background: rgba(0, 0, 0, 0.85);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .back-button:hover svg {
+            transform: translateX(-3px);
+        }
+        
+        .safety-protocol {
+            position: absolute;
+            top: 220px;  /* Increased from 160px to 220px to move it lower */
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 400px;
+        }
+        
+        .protocol-step {
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        
+        .message-box {
+            margin-top: 20px;
+        }
+        
+        /* Ensure the canvas doesn't interfere with the text */
+        #simulation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <a href="beach_rescue.html" class="back-button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"/>
+                <path d="M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Safety Guide
+        </a>
+        <canvas id="simulation"></canvas>
+        
+        <div id="title" class="title">
+            <h2 id="titleText">Water Safety Protocol</h2>
+        </div>
+        
+        <div id="message" class="message">
+            <p>Learn the proper response when a child is in trouble in the water</p>
+            <div class="indicator"></div>
+        </div>
+        
+        <div class="protocol-steps">
+            <h3>Safety Protocol</h3>
+            <div class="step" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-text">Stay calm and locate the child in distress</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-text">DO NOT enter the water - many drownings occur during rescue attempts</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-text">Call for lifeguard help immediately</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-text">If possible, throw a flotation device</div>
+            </div>
+            <div class="step" id="step5">
+                <div class="step-number">5</div>
+                <div class="step-text">Keep visual contact with the child until help arrives</div>
+            </div>
+        </div>
+        
+        <div class="scenario-selector">
+            <h3>Scenarios</h3>
+            <button id="scenarioCorrect" class="scenario-button active">Correct Response</button>
+            <button id="scenarioIncorrect" class="scenario-button">Incorrect Response</button>
+        </div>
+        
+        <div class="legend">
+            <h3>Legend</h3>
+            <div class="legend-item">
+                <div class="legend-color safe"></div>
+                <div class="legend-text">Safe Swimming Area (Between Flags)</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color danger"></div>
+                <div class="legend-text">Dangerous Area - Avoid</div>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <button id="resetBtn" class="button" title="Reset">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+            </button>
+            
+            <button id="playBtn" class="button" title="Play/Pause">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </button>
+            
+            <button id="infoBtn" class="button" title="Information">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            
+            <button id="fullscreenBtn" class="button" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="infoPanel" class="info-panel hidden">
+            <div class="info-content">
+                <button class="close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <h2>Water Safety Protocol for Parents</h2>
+                
+                <ol>
+                    <li>
+                        <span class="highlight">Always ensure children swim between the flags</span> - These areas are monitored by lifeguards and are designated as safe swimming zones.
+                    </li>
+                    <li>
+                        <span class="warning">NEVER enter the water to rescue</span> - Many drownings occur when parents attempt to rescue their children and get into trouble themselves.
+                    </li>
+                    <li>
+                        <span class="highlight">Call for lifeguard help immediately</span> - Lifeguards are trained in water rescue and have proper equipment.
+                    </li>
+                    <li>
+                        <span class="highlight">Throw a flotation device if possible</span> - This can help keep the person afloat until professional help arrives.
+                    </li>
+                    <li>
+                        <span class="highlight">Keep visual contact</span> - Maintain sight of the person in distress and point to their location to help rescuers.
+                    </li>
+                </ol>
+                
+                <div class="callout">
+                    <p>
+                        Remember: The best way to prevent drowning is proper supervision and ensuring children swim in designated safe areas between the flags.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const canvas = document.getElementById('simulation');
+        const container = document.getElementById('container');
+        const titleText = document.getElementById('titleText');
+        const messageEl = document.querySelector('.message p');
+        const resetBtn = document.getElementById('resetBtn');
+        const playBtn = document.getElementById('playBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const infoPanel = document.getElementById('infoPanel');
+        const infoCloseBtn = document.querySelector('.info-content .close');
+        
+        // Scenario buttons
+        const scenarioCorrectBtn = document.getElementById('scenarioCorrect');
+        const scenarioIncorrectBtn = document.getElementById('scenarioIncorrect');
+        
+        // Step elements
+        const steps = [
+            document.getElementById('step1'),
+            document.getElementById('step2'),
+            document.getElementById('step3'),
+            document.getElementById('step4'),
+            document.getElementById('step5')
+        ];
+        
+        // State variables
+        let started = false;
+        let paused = true;
+        let animationTime = 0;
+        let animationFrame = null;
+        let isFullscreen = false;
+        let currentScenario = 'correct'; // correct, incorrect
+        
+        // Character positions
+        let childPosition = { x: 0.5, y: 0.35 }; // Start in water
+        let parentPosition = { x: 0.3, y: 0.22 }; // Start on beach
+        let lifeguardPosition = { x: 0.8, y: 0.22 }; // Start at lifeguard tower
+        
+        // Animation state
+        let childInDistress = false;
+        let parentCalling = false;
+        let lifeguardRescuing = false;
+        let parentEnteringWater = false; // For incorrect scenario
+        let rescueComplete = false;
+        let currentStep = 0;
+        
+        // Initialize canvas
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas to fill container
+        function resizeCanvas() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Redraw if animation is not running
+            if (!started || paused) {
+                drawSimulation();
+            }
+        }
+        
+        // Event listeners
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Initialize
+        resizeCanvas();
+        
+        // Reset simulation
+        function resetSimulation() {
+            started = true;
+            paused = false;
+            animationTime = 0;
+            messageEl.textContent = "Learn the proper response when a child is in trouble in the water";
+            
+            // Reset animation state
+            childInDistress = false;
+            parentCalling = false;
+            lifeguardRescuing = false;
+            parentEnteringWater = false;
+            rescueComplete = false;
+            currentStep = 0;
+            
+            // Reset character positions
+            childPosition = { x: 0.5, y: 0.35 }; // Start in water
+            parentPosition = { x: 0.3, y: 0.22 }; // Start on beach
+            lifeguardPosition = { x: 0.8, y: 0.22 }; // Start at lifeguard tower
+            
+            // Reset step highlighting
+            steps.forEach(step => step.classList.remove('active'));
+            
+            // Update play button icon
+            updatePlayButton();
+            
+            // Cancel animation frame if running
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            
+            // Start animation
+            startAnimation();
+            
+            // Draw initial state
+            drawSimulation();
+        }
+        
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (!started) {
+                started = true;
+                paused = false;
+                startAnimation();
+            } else {
+                paused = !paused;
+                if (!paused) {
+                    startAnimation();
+                } else if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+            }
+            
+            updatePlayButton();
+        }
+        
+        // Update play button icon
+        function updatePlayButton() {
+            if (!started || paused) {
+                playBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+            } else {
+                playBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Toggle info panel
+        function toggleInfo() {
+            infoPanel.classList.toggle('hidden');
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Handle fullscreen change
+        function handleFullscreenChange() {
+            isFullscreen = !!document.fullscreenElement;
+            updateFullscreenButton();
+        }
+        
+        // Update fullscreen button icon
+        function updateFullscreenButton() {
+            if (isFullscreen) {
+                fullscreenBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                    </svg>
+                `;
+            } else {
+                fullscreenBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Change scenario
+        function changeScenario(scenario) {
+            currentScenario = scenario;
+            
+            // Update active button
+            scenarioCorrectBtn.classList.remove('active');
+            scenarioIncorrectBtn.classList.remove('active');
+            
+            if (scenario === 'correct') {
+                scenarioCorrectBtn.classList.add('active');
+                titleText.textContent = "Water Safety Protocol - Correct Response";
+            } else {
+                scenarioIncorrectBtn.classList.add('active');
+                titleText.textContent = "Water Safety Protocol - Incorrect Response";
+            }
+            
+            // Reset simulation
+            resetSimulation();
+        }
+        
+        // Start animation loop
+        function startAnimation() {
+            const animate = () => {
+                if (!paused) {
+                    animationTime += 16; // ~60fps
+                    updateAnimation();
+                    drawSimulation();
+                    animationFrame = requestAnimationFrame(animate);
+                }
+            };
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // Update animation based on time
+        function updateAnimation() {
+            const time = animationTime / 1000; // Convert to seconds
+            const cycleTime = 15; // 15 seconds for full animation
+            const normalizedTime = (time % cycleTime) / cycleTime;
+            
+            // Update animation state based on normalized time
+            if (normalizedTime < 0.1) {
+                // Initial state - child swimming
+                childInDistress = false;
+                parentCalling = false;
+                lifeguardRescuing = false;
+                parentEnteringWater = false;
+                rescueComplete = false;
+                
+                // Reset step highlighting
+                steps.forEach(step => step.classList.remove('active'));
+                currentStep = 0;
+                
+                // Child swimming in water
+                childPosition = { 
+                    x: 0.5 + Math.sin(time * 0.5) * 0.05, 
+                    y: 0.35 + Math.cos(time * 0.5) * 0.02 
+                };
+                
+                // Parent on beach
+                parentPosition = { x: 0.3, y: 0.22 };
+                
+                // Lifeguard at tower
+                lifeguardPosition = { x: 0.8, y: 0.22 };
+                
+                messageEl.textContent = "Child swimming in the water while parent watches from shore";
+                
+            } else if (normalizedTime < 0.2) {
+                // Child starts to struggle
+                childInDistress = true;
+                
+                // Highlight step 1
+                steps.forEach(step => step.classList.remove('active'));
+                steps[0].classList.add('active');
+                currentStep = 1;
+                
+                // Child struggling in water
+                childPosition = { 
+                    x: 0.5 + Math.sin(time * 3) * 0.03, 
+                    y: 0.35 + Math.sin(time * 4) * 0.02 
+                };
+                
+                messageEl.textContent = "Child begins to struggle in the water";
+                
+            } else if (normalizedTime < 0.4) {
+                // Parent notices and reacts
+                childInDistress = true;
+                
+                // Highlight step 2
+                steps.forEach(step => step.classList.remove('active'));
+                steps[1].classList.add('active');
+                currentStep = 2;
+                
+                if (currentScenario === 'correct') {
+                    // Parent stays on shore
+                    parentPosition = { 
+                        x: 0.3 + Math.sin(time * 5) * 0.01, 
+                        y: 0.22 
+                    };
+                    parentCalling = true;
+                    messageEl.textContent = "Parent stays on shore and calls for help";
+                } else {
+                    // Parent starts to enter water (incorrect)
+                    parentEnteringWater = true;
+                    const progress = (normalizedTime - 0.2) / 0.2; // 0 to 1 during this phase
+                    parentPosition = {
+                        x: 0.3 + (0.5 - 0.3) * progress,
+                        y: 0.22 + (0.35 - 0.22) * progress
+                    };
+                    messageEl.textContent = "INCORRECT: Parent enters water to attempt rescue";
+                }
+                
+            } else if (normalizedTime < 0.6) {
+                // Lifeguard responds
+                childInDistress = true;
+                
+                // Highlight step 3
+                steps.forEach(step => step.classList.remove('active'));
+                steps[2].classList.add('active');
+                currentStep = 3;
+                
+                if (currentScenario === 'correct') {
+                    // Parent stays on shore and calls
+                    parentPosition = { 
+                        x: 0.3 + Math.sin(time * 5) * 0.01, 
+                        y: 0.22 
+                    };
+                    parentCalling = true;
+                    
+                    // Lifeguard starts moving
+                    const progress = (normalizedTime - 0.4) / 0.2; // 0 to 1 during this phase
+                    lifeguardPosition = {
+                        x: 0.8 - (0.8 - 0.5) * progress,
+                        y: 0.22 + (0.35 - 0.22) * progress
+                    };
+                    lifeguardRescuing = true;
+                    
+                    messageEl.textContent = "Lifeguard responds to the call for help";
+                } else {
+                    // Both parent and child in trouble (incorrect)
+                    parentEnteringWater = true;
+                    parentPosition = { 
+                        x: 0.5 + Math.sin(time * 3) * 0.04, 
+                        y: 0.35 + Math.cos(time * 4) * 0.03 
+                    };
+                    
+                    // Lifeguard starts moving
+                    const progress = (normalizedTime - 0.4) / 0.2; // 0 to 1 during this phase
+                    lifeguardPosition = {
+                        x: 0.8 - (0.8 - 0.5) * progress,
+                        y: 0.22 + (0.35 - 0.22) * progress
+                    };
+                    lifeguardRescuing = true;
+                    
+                    messageEl.textContent = "INCORRECT: Now both parent and child need rescue";
+                }
+                
+            } else if (normalizedTime < 0.8) {
+                // Rescue in progress
+                childInDistress = true;
+                
+                // Highlight step 4
+                steps.forEach(step => step.classList.remove('active'));
+                steps[3].classList.add('active');
+                currentStep = 4;
+                
+                if (currentScenario === 'correct') {
+                    // Parent stays on shore and calls
+                    parentPosition = { 
+                        x: 0.3 + Math.sin(time * 5) * 0.01, 
+                        y: 0.22 
+                    };
+                    parentCalling = true;
+                    
+                    // Lifeguard reaches child
+                    lifeguardPosition = { 
+                        x: 0.5 + Math.sin(time * 2) * 0.02, 
+                        y: 0.35 
+                    };
+                    lifeguardRescuing = true;
+                    
+                    // Child being rescued
+                    childPosition = { 
+                        x: 0.5 + Math.sin(time * 2) * 0.02, 
+                        y: 0.35 
+                    };
+                    
+                    messageEl.textContent = "Lifeguard reaches child and begins rescue";
+                } else {
+                    // Both parent and child in trouble (incorrect)
+                    parentEnteringWater = true;
+                    parentPosition = { 
+                        x: 0.5 + Math.sin(time * 3) * 0.04, 
+                        y: 0.35 + Math.cos(time * 4) * 0.03 
+                    };
+                    
+                    // Lifeguard has to rescue both
+                    lifeguardPosition = { 
+                        x: 0.5 + Math.cos(time * 2) * 0.03, 
+                        y: 0.35 
+                    };
+                    lifeguardRescuing = true;
+                    
+                    messageEl.textContent = "INCORRECT: Lifeguard now has to rescue two people";
+                }
+                
+            } else {
+                // Rescue complete
+                rescueComplete = true;
+                
+                // Highlight step 5
+                steps.forEach(step => step.classList.remove('active'));
+                steps[4].classList.add('active');
+                currentStep = 5;
+                
+                if (currentScenario === 'correct') {
+                    // Everyone safe on shore
+                    childPosition = { x: 0.4, y: 0.22 };
+                    parentPosition = { x: 0.3, y: 0.22 };
+                    lifeguardPosition = { x: 0.5, y: 0.22 };
+                    childInDistress = false;
+                    parentCalling = false;
+                    lifeguardRescuing = false;
+                    
+                    messageEl.textContent = "Rescue successful - everyone safe on shore";
+                } else {
+                    // Everyone eventually rescued but with more difficulty
+                    childPosition = { x: 0.4, y: 0.22 };
+                    parentPosition = { x: 0.3, y: 0.22 };
+                    lifeguardPosition = { x: 0.5, y: 0.22 };
+                    childInDistress = false;
+                    parentCalling = false;
+                    lifeguardRescuing = false;
+                    parentEnteringWater = false;
+                    
+                    messageEl.textContent = "Entering water created additional risk";
+                }
+            }
+        }
+        
+        // Draw the simulation
+        function drawSimulation() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Set up time variables
+            const time = animationTime / 1000; // Convert to seconds
+            
+            // Enhanced color palette
+            const colors = {
+                // Sky colors
+                skyTop: "#87CEEB",
+                skyBottom: "#ADD8E6",
+                
+                // Water colors
+                shallowWater: "#64B5F6",
+                midWater: "#1976D2",
+                deepWater: "#0D47A1",
+                
+                // Beach colors
+                beach: "#F5DEB3",
+                beachDark: "#E6C99F",
+                
+                // Character colors
+                skin: "#FFD0A9",
+                hair: "#8B4513",
+                swimsuit: "#FF5252",
+                lifeguardRed: "#FF0000",
+                
+                // Flag colors
+                flagRed: "#FF0000",
+                flagYellow: "#FFFF00"
+            };
+            
+            // Shoreline position (constant)
+            const baseShoreLineValue = height * 0.25;
+            const shoreLineValue = baseShoreLineValue;
+            
+            // Draw sky with enhanced gradient and sun
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.2);
+            skyGradient.addColorStop(0, colors.skyTop);
+            skyGradient.addColorStop(1, colors.skyBottom);
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, width, height * 0.2);
+            
+            // Draw sun
+            const sunX = width * 0.8;
+            const sunY = height * 0.1;
+            const sunRadius = 30;
+            
+            // Sun glow
+            const sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius * 3);
+            sunGlow.addColorStop(0, "rgba(255, 255, 200, 0.8)");
+            sunGlow.addColorStop(0.2, "rgba(255, 255, 150, 0.4)");
+            sunGlow.addColorStop(1, "rgba(255, 255, 100, 0)");
+            
+            ctx.fillStyle = sunGlow;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius * 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Sun itself
+            ctx.fillStyle = "#FFFFA0";
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw beach with enhanced gradient and texture
+            const beachGradient = ctx.createLinearGradient(0, height * 0.2, 0, height * 0.25);
+            beachGradient.addColorStop(0, colors.beach);
+            beachGradient.addColorStop(1, colors.beachDark);
+            ctx.fillStyle = beachGradient;
+            ctx.fillRect(0, height * 0.2, width, height * 0.05);
+            
+            // Add beach texture - using subtle gradient and lines
+            for (let i = 0; i < 15; i++) {
+                const y = height * 0.2 + (i / 15) * (height * 0.05);
+                const lineWidth = 0.5 + Math.random() * 0.5;
+                const alpha = 0.05 + Math.random() * 0.05;
+                
+                ctx.strokeStyle = `rgba(160, 140, 110, ${alpha})`;
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(0, y + Math.sin(y * 0.1) * 2);
+                
+                // Create wavy line
+                for (let x = 0; x < width; x += 20) {
+                    const waveHeight = Math.sin(x * 0.01 + i) * 1.5;
+                    ctx.lineTo(x, y + waveHeight);
+                }
+                
+                ctx.stroke();
+            }
+            
+            // Draw water with enhanced effects
+            // Deep water base with more realistic gradient
+            const waterGradient = ctx.createLinearGradient(0, shoreLineValue, 0, height);
+            waterGradient.addColorStop(0, colors.shallowWater);
+            waterGradient.addColorStop(0.3, colors.midWater);
+            waterGradient.addColorStop(1, colors.deepWater);
+            ctx.fillStyle = waterGradient;
+            ctx.fillRect(0, shoreLineValue, width, height - shoreLineValue);
+            
+            // Draw underwater sand gradient at the shore
+            const sandGradient = ctx.createLinearGradient(0, shoreLineValue, 0, shoreLineValue + height * 0.1);
+            sandGradient.addColorStop(0, "rgba(245, 222, 179, 0.7)");
+            sandGradient.addColorStop(1, "rgba(245, 222, 179, 0)");
+            ctx.fillStyle = sandGradient;
+            ctx.fillRect(0, shoreLineValue, width, height * 0.1);
+            
+            // Draw safe swimming area (between flags)
+            const flagLeftX = width * 0.4;
+            const flagRightX = width * 0.6;
+            
+            // Safe zone
+            ctx.fillStyle = "rgba(76, 175, 80, 0.1)";
+            ctx.beginPath();
+            ctx.moveTo(flagLeftX, shoreLineValue);
+            ctx.lineTo(flagRightX, shoreLineValue);
+            ctx.lineTo(flagRightX, height * 0.6);
+            ctx.lineTo(flagLeftX, height * 0.6);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Border for safe zone
+            ctx.strokeStyle = "rgba(76, 175, 80, 0.7)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(flagLeftX, shoreLineValue);
+            ctx.lineTo(flagLeftX, height * 0.6);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(flagRightX, shoreLineValue);
+            ctx.lineTo(flagRightX, height * 0.6);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // Draw flags
+            drawFlag(ctx, flagLeftX, shoreLineValue, colors.flagRed, colors.flagYellow);
+            drawFlag(ctx, flagRightX, shoreLineValue, colors.flagRed, colors.flagYellow);
+            
+            // Draw lifeguard tower
+            drawLifeguardTower(ctx, width * 0.8, height * 0.2, colors);
+            
+            // Draw breaking waves
+            drawBreakingWaves(ctx, width, height, shoreLineValue, time);
+            
+            // Draw characters
+            
+            // Draw child
+            const childX = width * childPosition.x;
+            const childY = height * childPosition.y;
+            drawChild(ctx, childX, childY, time, colors, childInDistress);
+            
+            // Draw parent
+            const parentX = width * parentPosition.x;
+            const parentY = height * parentPosition.y;
+            drawParent(ctx, parentX, parentY, time, colors, parentCalling, parentEnteringWater);
+            
+            // Draw lifeguard
+            const lifeguardX = width * lifeguardPosition.x;
+            const lifeguardY = height * lifeguardPosition.y;
+            drawLifeguard(ctx, lifeguardX, lifeguardY, time, colors, lifeguardRescuing);
+            
+            // Draw speech bubbles if needed
+            if (parentCalling) {
+                drawSpeechBubble(ctx, parentX, parentY - 40, "HELP!", 30);
+            }
+            
+            if (childInDistress) {
+                drawSpeechBubble(ctx, childX, childY - 30, "HELP!", 30);
+            }
+            
+            // Draw rescue tube if lifeguard is rescuing
+            if (lifeguardRescuing) {
+                drawRescueTube(ctx, lifeguardX, lifeguardY, colors.lifeguardRed);
+            }
+            
+            // Apply cinematic letterbox effect
+            const letterboxHeight = height * 0.1;
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, width, letterboxHeight);
+            ctx.fillRect(0, height - letterboxHeight, width, letterboxHeight);
+        }
+        
+        // Draw breaking waves
+        function drawBreakingWaves(ctx, width, height, shoreLine, time) {
+            // Draw multiple layers of breaking waves
+            const waveY = shoreLine + 5;
+            
+            // Draw waves
+            for (let x = 0; x < width; x += 10) {
+                const waveHeight = 8 + Math.sin(x * 0.05 + time * 2) * 4;
+                const waveFoam = 3 + Math.sin(x * 0.1 + time) * 2;
+                
+                // Wave
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.ellipse(x, waveY, waveFoam, waveHeight, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw foam particles in the water
+            for (let i = 0; i < 60; i++) {
+                const x = Math.random() * width;
+                const yOffset = Math.sin(x * 0.05 + time * 2) * 5;
+                const y = shoreLine + 10 + yOffset;
+                const size = Math.random() * 3 + 1;
+                const alpha = Math.random() * 0.5 + 0.3;
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Draw a flag
+        function drawFlag(ctx, x, y, poleColor, flagColor) {
+            // Flag pole
+            ctx.fillStyle = "#8B4513";
+            ctx.fillRect(x - 2, y - 60, 4, 60);
+            
+            // Flag
+            ctx.fillStyle = poleColor;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 60);
+            ctx.lineTo(x + 30, y - 50);
+            ctx.lineTo(x, y - 40);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Yellow stripe
+            ctx.fillStyle = flagColor;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 55);
+            ctx.lineTo(x + 20, y - 50);
+            ctx.lineTo(x, y - 45);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Draw lifeguard tower
+        function drawLifeguardTower(ctx, x, y, colors) {
+            // Tower base
+            ctx.fillStyle = "#D2B48C";
+            ctx.beginPath();
+            ctx.moveTo(x - 30, y);
+            ctx.lineTo(x + 30, y);
+            ctx.lineTo(x + 20, y - 40);
+            ctx.lineTo(x - 20, y - 40);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Tower roof
+            ctx.fillStyle = "#8B0000";
+            ctx.beginPath();
+            ctx.moveTo(x - 25, y - 40);
+            ctx.lineTo(x + 25, y - 40);
+            ctx.lineTo(x, y - 60);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Tower window
+            ctx.fillStyle = "#87CEEB";
+            ctx.fillRect(x - 10, y - 30, 20, 15);
+            
+            // Tower sign
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(x - 15, y - 55, 30, 10);
+            
+            ctx.fillStyle = "#FF0000";
+            ctx.font = "bold 8px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("LIFEGUARD", x, y - 47);
+            ctx.textAlign = "start";
+        }
+        
+        // Draw child
+        function drawChild(ctx, x, y, time, colors, inDistress) {
+            const baseSize = 15; // Smaller than adult
+            
+            // Draw shadow under water
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.beginPath();
+            ctx.ellipse(x, y + baseSize * 0.5, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            if (inDistress) {
+                // Struggling motion
+                const struggleX = Math.sin(time * 8) * baseSize * 0.2;
+                const struggleY = Math.cos(time * 10) * baseSize * 0.2;
+                
+                // Draw arms flailing
+                ctx.strokeStyle = colors.skin;
+                ctx.lineWidth = baseSize * 0.2;
+                
+                // Left arm
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x - baseSize * 0.8 + struggleX, y - baseSize * 0.6 + struggleY);
+                ctx.stroke();
+                
+                // Right arm
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x + baseSize * 0.8 - struggleX, y - baseSize * 0.6 - struggleY);
+                ctx.stroke();
+                
+                // Draw legs kicking
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - baseSize * 0.5 - struggleX, y + baseSize * 0.8);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + baseSize * 0.5 + struggleX, y + baseSize * 0.8);
+                ctx.stroke();
+            } else {
+                // Normal swimming motion
+                const swimCycle = time * 4;
+                const legKick = Math.sin(swimCycle) * baseSize * 0.3;
+                const armStroke = Math.cos(swimCycle) * baseSize * 0.3;
+                
+                // Draw legs with kicking motion
+                ctx.strokeStyle = colors.skin;
+                ctx.lineWidth = baseSize * 0.2;
+                
+                // Left leg
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - baseSize * 0.4 - legKick, y + baseSize * 0.6);
+                ctx.stroke();
+                
+                // Right leg
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + baseSize * 0.4 + legKick, y + baseSize * 0.6);
+                ctx.stroke();
+                
+                // Draw arms with swimming motion
+                // Left arm
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x - baseSize * 0.6 - armStroke, y - baseSize * 0.1);
+                ctx.stroke();
+                
+                // Right arm
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x + baseSize * 0.6 + armStroke, y - baseSize * 0.1);
+                ctx.stroke();
+            }
+            
+            // Draw swimsuit
+            ctx.fillStyle = "#00BCD4"; // Different color from parent
+            ctx.beginPath();
+            ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw torso
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.ellipse(x, y - baseSize * 0.3, baseSize * 0.4, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw head
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.7, baseSize * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw hair
+            ctx.fillStyle = colors.hair;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.85, baseSize * 0.35, Math.PI, 0);
+            ctx.fill();
+            
+            // Draw face
+            if (inDistress) {
+                // Distressed face
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth - distressed
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.55, baseSize * 0.1, 0, Math.PI, false);
+                ctx.stroke();
+            } else {
+                // Normal face
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth - happy
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.55, baseSize * 0.1, 0.1, Math.PI - 0.1, false);
+                ctx.stroke();
+            }
+            
+            // Water splash effects around child if in distress
+            if (inDistress) {
+                for (let i = 0; i < 8; i++) {
+                    const splashX = x + (Math.random() - 0.5) * baseSize * 4;
+                    const splashY = y + (Math.random() - 0.5) * baseSize * 3;
+                    const splashSize = Math.random() * baseSize * 0.3 + baseSize * 0.1;
+                    
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                    ctx.beginPath();
+                    ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Draw parent
+        function drawParent(ctx, x, y, time, colors, calling, inWater) {
+            const baseSize = 20;
+            
+            if (inWater) {
+                // Parent in water
+                // Draw shadow under water
+                ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                ctx.beginPath();
+                ctx.ellipse(x, y + baseSize * 0.5, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Struggling motion
+                const struggleX = Math.sin(time * 6) * baseSize * 0.2;
+                const struggleY = Math.cos(time * 8) * baseSize * 0.2;
+                
+                // Draw arms flailing
+                ctx.strokeStyle = colors.skin;
+                ctx.lineWidth = baseSize * 0.2;
+                
+                // Left arm
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x - baseSize * 0.8 + struggleX, y - baseSize * 0.6 + struggleY);
+                ctx.stroke();
+                
+                // Right arm
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x + baseSize * 0.8 - struggleX, y - baseSize * 0.6 - struggleY);
+                ctx.stroke();
+                
+                // Draw legs kicking
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - baseSize * 0.5 - struggleX, y + baseSize * 0.8);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + baseSize * 0.5 + struggleX, y + baseSize * 0.8);
+                ctx.stroke();
+                
+                // Draw swimsuit
+                ctx.fillStyle = colors.swimsuit;
+                ctx.beginPath();
+                ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw torso
+                ctx.fillStyle = colors.skin;
+                ctx.beginPath();
+                ctx.ellipse(x, y - baseSize * 0.3, baseSize * 0.4, baseSize * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw head
+                ctx.fillStyle = colors.skin;
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.7, baseSize * 0.35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw hair
+                ctx.fillStyle = colors.hair;
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.85, baseSize * 0.35, Math.PI, 0);
+                ctx.fill();
+                
+                // Draw distressed face
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth - distressed
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.55, baseSize * 0.1, 0, Math.PI, false);
+                ctx.stroke();
+                
+                // Water splash effects around parent
+                for (let i = 0; i < 8; i++) {
+                    const splashX = x + (Math.random() - 0.5) * baseSize * 4;
+                    const splashY = y + (Math.random() - 0.5) * baseSize * 3;
+                    const splashSize = Math.random() * baseSize * 0.3 + baseSize * 0.1;
+                    
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                    ctx.beginPath();
+                    ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else {
+                // Parent on beach
+                // Draw shadow
+                ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                ctx.beginPath();
+                ctx.ellipse(x, y + baseSize * 1.8, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw legs
+                ctx.strokeStyle = colors.skin;
+                ctx.lineWidth = baseSize * 0.25;
+                
+                // Left leg
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.3, y + baseSize * 0.8);
+                ctx.lineTo(x - baseSize * 0.5, y + baseSize * 1.7);
+                ctx.stroke();
+                
+                // Right leg
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.3, y + baseSize * 0.8);
+                ctx.lineTo(x + baseSize * 0.5, y + baseSize * 1.7);
+                ctx.stroke();
+                
+                // Draw shorts
+                ctx.fillStyle = "#3F51B5"; // Blue shorts
+                ctx.beginPath();
+                ctx.rect(x - baseSize * 0.5, y + baseSize * 0.4, baseSize, baseSize * 0.4);
+                ctx.fill();
+                
+                // Draw torso
+                ctx.fillStyle = colors.skin;
+                ctx.beginPath();
+                ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw head
+                ctx.fillStyle = colors.skin;
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.8, baseSize * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw hair
+                ctx.fillStyle = colors.hair;
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.9, baseSize * 0.42, Math.PI, 0);
+                ctx.fill();
+                
+                if (calling) {
+                    // Arms waving for help
+                    const waveOffset = Math.sin(time * 5) * baseSize * 0.3;
+                    
+                    ctx.strokeStyle = colors.skin;
+                    ctx.lineWidth = baseSize * 0.2;
+                    
+                    // Left arm waving
+                    ctx.beginPath();
+                    ctx.moveTo(x - baseSize * 0.4, y);
+                    ctx.lineTo(x - baseSize * 0.6, y - baseSize * 0.5 - waveOffset);
+                    ctx.stroke();
+                    
+                    // Right arm waving
+                    ctx.beginPath();
+                    ctx.moveTo(x + baseSize * 0.4, y);
+                    ctx.lineTo(x + baseSize * 0.6, y - baseSize * 0.5 - waveOffset);
+                    ctx.stroke();
+                    
+                    // Draw worried face
+                    ctx.fillStyle = "#000";
+                    ctx.beginPath();
+                    ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Mouth - worried
+                    ctx.beginPath();
+                    ctx.arc(x, y - baseSize * 0.55, baseSize * 0.1, 0, Math.PI, false);
+                    ctx.stroke();
+                } else {
+                    // Normal standing pose
+                    ctx.strokeStyle = colors.skin;
+                    ctx.lineWidth = baseSize * 0.2;
+                    
+                    // Left arm (down)
+                    ctx.beginPath();
+                    ctx.moveTo(x - baseSize * 0.4, y);
+                    ctx.lineTo(x - baseSize * 0.6, y + baseSize * 0.5);
+                    ctx.stroke();
+                    
+                    // Right arm (down)
+                    ctx.beginPath();
+                    ctx.moveTo(x + baseSize * 0.4, y);
+                    ctx.lineTo(x + baseSize * 0.6, y + baseSize * 0.5);
+                    ctx.stroke();
+                    
+                    // Draw face - normal
+                    ctx.fillStyle = "#000";
+                    ctx.beginPath();
+                    ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Mouth - neutral
+                    ctx.beginPath();
+                    ctx.moveTo(x - baseSize * 0.1, y - baseSize * 0.65);
+                    ctx.lineTo(x + baseSize * 0.1, y - baseSize * 0.65);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // Draw lifeguard
+        function drawLifeguard(ctx, x, y, time, colors, rescuing) {
+            const baseSize = 20;
+            
+            if (rescuing) {
+                // Lifeguard in water
+                // Draw shadow under water
+                ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                ctx.beginPath();
+                ctx.ellipse(x, y + baseSize * 0.5, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Swimming motion
+                const swimCycle = time * 4;
+                const legKick = Math.sin(swimCycle) * baseSize * 0.3;
+                const armStroke = Math.cos(swimCycle) * baseSize * 0.3;
+                
+                // Draw legs with kicking motion
+                ctx.strokeStyle = colors.skin;
+                ctx.lineWidth = baseSize * 0.2;
+                
+                // Left leg
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - baseSize * 0.4 - legKick, y + baseSize * 0.6);
+                ctx.stroke();
+                
+                // Right leg
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + baseSize * 0.4 + legKick, y + baseSize * 0.6);
+                ctx.stroke();
+                
+                // Draw arms with swimming motion
+                // Left arm
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x - baseSize * 0.6 - armStroke, y - baseSize * 0.1);
+                ctx.stroke();
+                
+                // Right arm
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y - baseSize * 0.3);
+                ctx.lineTo(x + baseSize * 0.6 + armStroke, y - baseSize * 0.1);
+                ctx.stroke();
+                
+                // Draw swimsuit - lifeguard red
+                ctx.fillStyle = colors.lifeguardRed;
+            ctx.beginPath();
+            ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw torso
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.ellipse(x, y - baseSize * 0.3, baseSize * 0.4, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw head
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.7, baseSize * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw hair
+            ctx.fillStyle = colors.hair;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.85, baseSize * 0.35, Math.PI, 0);
+            ctx.fill();
+            
+            // Draw face - determined
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mouth - determined
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.1, y - baseSize * 0.6);
+            ctx.lineTo(x + baseSize * 0.1, y - baseSize * 0.6);
+            ctx.stroke();
+            
+            // Water splash effects around lifeguard
+            for (let i = 0; i < 5; i++) {
+                const splashX = x + (Math.random() - 0.5) * baseSize * 3;
+                const splashY = y + (Math.random() - 0.5) * baseSize * 2;
+                const splashSize = Math.random() * baseSize * 0.2 + baseSize * 0.1;
+                
+                ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+                ctx.beginPath();
+                ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        } else {
+            // Lifeguard on beach
+            // Draw shadow
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.beginPath();
+            ctx.ellipse(x, y + baseSize * 1.8, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw legs
+            ctx.strokeStyle = colors.skin;
+            ctx.lineWidth = baseSize * 0.25;
+            
+            // Left leg
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.3, y + baseSize * 0.8);
+            ctx.lineTo(x - baseSize * 0.5, y + baseSize * 1.7);
+            ctx.stroke();
+            
+            // Right leg
+            ctx.beginPath();
+            ctx.moveTo(x + baseSize * 0.3, y + baseSize * 0.8);
+            ctx.lineTo(x + baseSize * 0.5, y + baseSize * 1.7);
+            ctx.stroke();
+            
+            // Draw shorts - lifeguard red
+            ctx.fillStyle = colors.lifeguardRed;
+            ctx.beginPath();
+            ctx.rect(x - baseSize * 0.5, y + baseSize * 0.4, baseSize, baseSize * 0.4);
+            ctx.fill();
+            
+            // Draw torso with "LIFEGUARD" text
+            ctx.fillStyle = colors.lifeguardRed;
+            ctx.beginPath();
+            ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // "LIFEGUARD" text
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "bold 6px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("LIFE", x, y - baseSize * 0.1);
+            ctx.fillText("GUARD", x, y + baseSize * 0.1);
+            ctx.textAlign = "start";
+            
+            // Draw head
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.8, baseSize * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw hair
+            ctx.fillStyle = colors.hair;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.9, baseSize * 0.42, Math.PI, 0);
+            ctx.fill();
+            
+            // Draw arms
+            ctx.strokeStyle = colors.skin;
+            ctx.lineWidth = baseSize * 0.2;
+            
+            // Left arm (down)
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.4, y);
+            ctx.lineTo(x - baseSize * 0.6, y + baseSize * 0.5);
+            ctx.stroke();
+            
+            // Right arm (down)
+            ctx.beginPath();
+            ctx.moveTo(x + baseSize * 0.4, y);
+            ctx.lineTo(x + baseSize * 0.6, y + baseSize * 0.5);
+            ctx.stroke();
+            
+            // Draw face - alert
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mouth - alert
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.1, y - baseSize * 0.65);
+            ctx.lineTo(x + baseSize * 0.1, y - baseSize * 0.65);
+            ctx.stroke();
+        }
+    }
+    
+    // Draw speech bubble
+    function drawSpeechBubble(ctx, x, y, text, size) {
+        // Bubble
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.beginPath();
+        ctx.ellipse(x, y, size, size / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Pointer
+        ctx.beginPath();
+        ctx.moveTo(x, y + size / 2);
+        ctx.lineTo(x - 10, y + size);
+        ctx.lineTo(x + 10, y + size / 2 + 5);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Text
+        ctx.fillStyle = "#FF0000";
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(text, x, y + 5);
+        ctx.textAlign = "start";
+    }
+    
+    // Draw rescue tube
+    function drawRescueTube(ctx, x, y, color) {
+        // Draw rescue tube
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.ellipse(x + 30, y, 40, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw rope
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 30, y);
+        ctx.stroke();
+    }
+    
+    // Event listeners
+    resetBtn.addEventListener('click', resetSimulation);
+    playBtn.addEventListener('click', togglePlayPause);
+    infoBtn.addEventListener('click', toggleInfo);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    infoCloseBtn.addEventListener('click', toggleInfo);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    
+    // Scenario buttons
+    scenarioCorrectBtn.addEventListener('click', () => changeScenario('correct'));
+    scenarioIncorrectBtn.addEventListener('click', () => changeScenario('incorrect'));
+    
+    // Start the simulation automatically
+    resetSimulation();
+</script>
+</body>
+</html>
+

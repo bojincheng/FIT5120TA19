@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identifying Rip Currents - Interactive Guide</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .story-title {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px;
+            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #22d3ee;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 400px;
+            z-index: 10;
+        }
+        
+        .story-title h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin: 0;
+        }
+        
+        .story-title span {
+            color: #22d3ee;
+            margin: 0 8px;
+        }
+        
+        .message {
+            position: absolute;
+            bottom: 96px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px;
+            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.9), rgba(0,0,0,0.8));
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            border: 1px solid #374151;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .message p {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .message .indicator {
+            height: 4px;
+            width: 96px;
+            background-color: #22d3ee;
+            margin: 8px auto 0;
+            border-radius: 9999px;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 9999px;
+            z-index: 10;
+        }
+        
+        .button {
+            background-color: transparent;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .hotspot-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 16px;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            border-radius: 8px;
+            max-width: 384px;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+        
+        .hotspot-info .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .hotspot-info .close:hover {
+            color: white;
+            background-color: #374151;
+        }
+        
+        .hotspot-info p {
+            font-size: 18px;
+            margin: 0;
+        }
+        
+        .info-panel {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 30;
+        }
+        
+        .info-content {
+            background-color: #111827;
+            border-radius: 8px;
+            max-width: 512px;
+            padding: 24px;
+            position: relative;
+        }
+        
+        .info-content .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .info-content .close:hover {
+            color: white;
+            background-color: #374151;
+        }
+        
+        .info-content h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #22d3ee;
+            margin-bottom: 16px;
+        }
+        
+        .info-content ol {
+            list-style-type: decimal;
+            padding-left: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        
+        .info-content li {
+            margin-bottom: 12px;
+            color: white;
+        }
+        
+        .info-content .highlight {
+            font-weight: 600;
+        }
+        
+        .info-content .callout {
+            margin-top: 24px;
+            padding: 12px;
+            background-color: rgba(30, 64, 175, 0.5);
+            border-radius: 6px;
+        }
+        
+        .info-content .callout p {
+            color: #bfdbfe;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .info-content .footer {
+            margin-top: 16px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .rip-type-selector {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .rip-type-selector h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .rip-type-button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .rip-type-button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .rip-type-button.active {
+            background-color: #2563eb;
+        }
+        
+        .rip-type-button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .wave-controls {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .wave-controls h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .wave-control-group {
+            margin-bottom: 12px;
+        }
+        
+        .wave-control-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #e5e7eb;
+        }
+        
+        .wave-control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        .wave-control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .toggle-group label {
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #374151;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #2563eb;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .magnifier {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 3px solid white;
+            border-radius: 50%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 15;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        .magnifier-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .quiz-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            z-index: 25;
+        }
+        
+        .quiz-panel h2 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 24px;
+            color: #22d3ee;
+        }
+        
+        .quiz-panel p {
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .quiz-option {
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quiz-option:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .quiz-option.selected {
+            border-color: #2563eb;
+            background-color: rgba(37, 99, 235, 0.2);
+        }
+        
+        .quiz-option.correct {
+            border-color: #10b981;
+            background-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .quiz-option.incorrect {
+            border-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.2);
+        }
+        
+        .quiz-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .quiz-button {
+            padding: 8px 16px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .quiz-button:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .quiz-button:disabled {
+            background-color: #6b7280;
+            cursor: not-allowed;
+        }
+        
+        .quiz-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .quiz-close:hover {
+            color: white;
+            background-color: #374151;
+        }
+        
+        .wave-area {
+            position: absolute;
+            border: 2px dashed transparent;
+            z-index: 5;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .wave-area:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .wave-area.highlighted {
+            border-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .safe-zone-indicator {
+            position: absolute;
+            border: 2px dashed rgba(76, 175, 80, 0.7);
+            background-color: rgba(76, 175, 80, 0.1);
+            z-index: 4;
+            pointer-events: none;
+        }
+        
+        .danger-zone-indicator {
+            position: absolute;
+            border: 2px dashed rgba(244, 67, 54, 0.7);
+            background-color: rgba(244, 67, 54, 0.1);
+            z-index: 4;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="simulation"></canvas>
+        
+        <div id="storyTitle" class="story-title hidden">
+            <h2>
+                <span>•</span>
+                <span id="titleText"></span>
+                <span>•</span>
+            </h2>
+        </div>
+        
+        <div id="message" class="message">
+            <p>Press Start to learn how to identify rip currents</p>
+            <div class="indicator"></div>
+        </div>
+        
+        <div class="rip-type-selector">
+            <h3>Rip Current Types</h3>
+            <button id="channelRip" class="rip-type-button active">Channel Rip</button>
+            <button id="flashRip" class="rip-type-button">Flash Rip</button>
+            <button id="permanentRip" class="rip-type-button">Permanent Rip</button>
+        </div>
+        
+        <div class="wave-controls">
+            <h3>Wave Controls</h3>
+            <div class="wave-control-group">
+                <label for="waveHeight">Wave Height</label>
+                <input type="range" id="waveHeight" min="0" max="100" value="50">
+            </div>
+            <div class="wave-control-group">
+                <label for="waveSpeed">Wave Speed</label>
+                <input type="range" id="waveSpeed" min="0" max="100" value="50">
+            </div>
+            <div class="wave-control-group">
+                <div class="toggle-group">
+                    <label for="showIndicators">Show Indicators</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showIndicators" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-group">
+                    <label for="showLabels">Show Labels</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showLabels" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-group">
+                    <label for="showSafeZones">Show Safe/Danger Zones</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showSafeZones" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-group">
+                    <label for="magnifierTool">Magnifier Tool</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="magnifierTool">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <button id="resetBtn" class="button" title="Reset">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+            </button>
+            
+            <button id="playBtn" class="button" title="Play/Pause">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </button>
+            
+            <button id="infoBtn" class="button" title="Information">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            
+            <button id="quizBtn" class="button" title="Test Your Knowledge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+            </button>
+            
+            <button id="fullscreenBtn" class="button" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="hotspotInfo" class="hotspot-info hidden">
+            <button class="close">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <p id="hotspotText"></p>
+        </div>
+        
+        <div id="infoPanel" class="info-panel hidden">
+            <div class="info-content">
+                <button class="close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <h2>How to Identify Rip Currents</h2>
+                
+                <ol>
+                    <li>
+                        <span class="highlight">Look for a gap in breaking waves</span> - A calm area between breaking waves often indicates a rip current.
+                    </li>
+                    <li>
+                        <span class="highlight">Check for discolored water</span> - Rip currents may appear darker because they carry sand and sediment.
+                    </li>
+                    <li>
+                        <span class="highlight">Watch for foam or debris moving seaward</span> - If objects are moving away from shore, a rip current may be present.
+                    </li>
+                    <li>
+                        <span class="highlight">Notice a rippled surface</span> - Rip currents can create a rippled or choppy surface that looks different from surrounding water.
+                    </li>
+                    <li>
+                        <span class="highlight">Observe a different water color</span> - Sometimes rip currents appear as a different color than surrounding water.
+                    </li>
+                </ol>
+                
+                <div class="callout">
+                    <p>
+                        When in doubt, ask a lifeguard! Always swim at beaches with lifeguards and follow posted warnings.
+                    </p>
+                </div>
+                
+                <div class="footer">
+                    <p>
+                        Click on the blue information markers in the simulation to learn more about identifying rip currents.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="quizPanel" class="quiz-panel hidden">
+            <button class="quiz-close">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <h2>Test Your Knowledge</h2>
+            <p id="quizQuestion">Which of the following is a sign of a rip current?</p>
+            
+            <div class="quiz-options" id="quizOptions">
+                <!-- Options will be added dynamically -->
+            </div>
+            
+            <div id="quizFeedback" class="hidden" style="margin-bottom: 16px; padding: 12px; border-radius: 4px; background-color: rgba(16, 185, 129, 0.2);">
+                <p style="margin: 0; color: white;">Feedback will appear here</p>
+            </div>
+            
+            <div class="quiz-buttons">
+                <button id="quizPrevBtn" class="quiz-button" disabled>Previous</button>
+                <button id="quizNextBtn" class="quiz-button" disabled>Next</button>
+            </div>
+        </div>
+        
+        <div id="magnifier" class="magnifier">
+            <canvas id="magnifierCanvas" class="magnifier-canvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const canvas = document.getElementById('simulation');
+        const container = document.getElementById('container');
+        const storyTitle = document.getElementById('storyTitle');
+        const titleText = document.getElementById('titleText');
+        const messageEl = document.querySelector('.message p');
+        const resetBtn = document.getElementById('resetBtn');
+        const playBtn = document.getElementById('playBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const quizBtn = document.getElementById('quizBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const hotspotInfo = document.getElementById('hotspotInfo');
+        const hotspotText = document.getElementById('hotspotText');
+        const hotspotCloseBtn = document.querySelector('.hotspot-info .close');
+        const infoPanel = document.getElementById('infoPanel');
+        const infoCloseBtn = document.querySelector('.info-content .close');
+        
+        // Rip type buttons
+        const channelRipBtn = document.getElementById('channelRip');
+        const flashRipBtn = document.getElementById('flashRip');
+        const permanentRipBtn = document.getElementById('permanentRip');
+        
+        // Wave controls
+        const waveHeightSlider = document.getElementById('waveHeight');
+        const waveSpeedSlider = document.getElementById('waveSpeed');
+        const showIndicatorsToggle = document.getElementById('showIndicators');
+        const showLabelsToggle = document.getElementById('showLabels');
+        const showSafeZonesToggle = document.getElementById('showSafeZones');
+        const magnifierToolToggle = document.getElementById('magnifierTool');
+        
+        // Magnifier
+        const magnifier = document.getElementById('magnifier');
+        const magnifierCanvas = document.getElementById('magnifierCanvas');
+        const magnifierCtx = magnifierCanvas.getContext('2d');
+        
+        // Quiz elements
+        const quizPanel = document.getElementById('quizPanel');
+        const quizQuestion = document.getElementById('quizQuestion');
+        const quizOptions = document.getElementById('quizOptions');
+        const quizFeedback = document.getElementById('quizFeedback');
+        const quizPrevBtn = document.getElementById('quizPrevBtn');
+        const quizNextBtn = document.getElementById('quizNextBtn');
+        const quizCloseBtn = document.querySelector('.quiz-close');
+        
+        // State variables
+        let started = false;
+        let paused = false;
+        let animationTime = 0;
+        let animationFrame = null;
+        let isFullscreen = false;
+        let hotspots = [];
+        let waveAreas = [];
+        let safeZones = [];
+        let dangerZones = [];
+        let activeHotspot = null;
+        let currentRipType = 'channel'; // channel, flash, permanent
+        const daytime = 0.5; // Fixed at noon
+        
+        // Wave control variables
+        let waveHeight = 0.5; // 0-1 range
+        let waveSpeed = 0.5; // 0-1 range
+        let showIndicators = true;
+        let showLabels = true;
+        let showSafeZones = true;
+        let magnifierActive = false;
+        
+        // Teen position variables
+        let teenPosition = { x: 0.2, y: 0.22 }; // Start on beach
+        let teenInWater = false;
+        let teenSwimmingInSafeZone = false;
+        
+        // Quiz variables
+        let currentQuizQuestion = 0;
+        let selectedOption = null;
+        let quizAnswered = false;
+        
+        // Quiz questions
+        const quizQuestions = [
+            {
+                question: "Which of the following is a sign of a channel rip current?",
+                options: [
+                    "Waves breaking consistently across the beach",
+                    "A gap in the breaking waves",
+                    "Water that is lighter in color than surrounding water",
+                    "Waves that are higher than surrounding waves"
+                ],
+                correct: 1,
+                feedback: "Channel rip currents often appear as a gap in the breaking waves because the water is flowing outward through the channel between sandbars."
+            },
+            {
+                question: "What color does the water in a rip current often appear?",
+                options: [
+                    "Lighter than surrounding water",
+                    "The same color as surrounding water",
+                    "Darker than surrounding water",
+                    "Bright blue"
+                ],
+                correct: 2,
+                feedback: "Rip currents often appear darker than surrounding water because they carry sand and sediment from the shore."
+            },
+            {
+                question: "Where do permanent rip currents typically form?",
+                options: [
+                    "In the middle of the beach",
+                    "Near structures like piers and jetties",
+                    "Only during storms",
+                    "In shallow water"
+                ],
+                correct: 1,
+                feedback: "Permanent rip currents typically form near fixed structures like piers, jetties, and rock formations."
+            },
+            {
+                question: "What should you do if you spot a rip current?",
+                options: [
+                    "Swim in a different area",
+                    "Test it by wading in slowly",
+                    "Dive under it",
+                    "Try to swim across it"
+                ],
+                correct: 0,
+                feedback: "The safest action is to swim in a different area away from the rip current. Always prioritize safety."
+            },
+            {
+                question: "Which of these is NOT a characteristic of a flash rip?",
+                options: [
+                    "Forms suddenly",
+                    "Is temporary",
+                    "Forms during changing tide conditions",
+                    "Only occurs near structures"
+                ],
+                correct: 3,
+                feedback: "Flash rips can form anywhere along the beach, not just near structures. They appear suddenly during changing tide conditions or after large wave sets."
+            }
+        ];
+        
+        // Initialize canvas
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas to fill container
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // Set magnifier canvas size
+            magnifierCanvas.width = 150;
+            magnifierCanvas.height = 150;
+            
+            // Redraw if animation is not running
+            if (!started || paused) {
+                drawSimulation();
+            }
+            
+            // Update wave areas and zones
+            createWaveAreas();
+            createSafeAndDangerZones();
+        }
+        
+        // Create clickable wave areas
+        function createWaveAreas() {
+            // Remove existing wave areas
+            document.querySelectorAll('.wave-area').forEach(area => area.remove());
+            
+            // Create new wave areas based on current rip type
+            const shoreLine = canvas.height * 0.25;
+            
+            if (currentRipType === 'channel') {
+                const ripWidth = canvas.width * 0.2;
+                const ripCenterX = canvas.width * 0.5;
+                
+                // Rip channel area
+                createWaveArea(
+                    ripCenterX - ripWidth/2,
+                    shoreLine,
+                    ripWidth,
+                    canvas.height * 0.2,
+                    "Rip Channel",
+                    "This calm area between breaking waves is a channel rip current. The water looks darker and smoother because it's flowing outward. AVOID swimming here."
+                );
+                
+                // Left sandbar area
+                createWaveArea(
+                    ripCenterX - ripWidth - canvas.width * 0.2,
+                    shoreLine,
+                    canvas.width * 0.2,
+                    canvas.height * 0.1,
+                    "Breaking Waves (Safe)",
+                    "Waves breaking consistently over a sandbar. This pattern indicates shallower water and is generally safer for swimming."
+                );
+                
+                // Right sandbar area
+                createWaveArea(
+                    ripCenterX + ripWidth/2,
+                    shoreLine,
+                    canvas.width * 0.2,
+                    canvas.height * 0.1,
+                    "Breaking Waves (Safe)",
+                    "Waves breaking consistently over a sandbar. This pattern indicates shallower water and is generally safer for swimming."
+                );
+            } else if (currentRipType === 'flash') {
+                const ripWidth = canvas.width * 0.1;
+                const ripCenterX = canvas.width * 0.5;
+                
+                // Flash rip area
+                createWaveArea(
+                    ripCenterX - ripWidth/2,
+                    shoreLine,
+                    ripWidth,
+                    canvas.height * 0.2,
+                    "Flash Rip",
+                    "This sudden disruption in the wave pattern is a flash rip. They form quickly after large waves or changing tides and can disappear just as fast. AVOID swimming here."
+                );
+                
+                // Safe areas
+                createWaveArea(
+                    canvas.width * 0.2,
+                    shoreLine,
+                    canvas.width * 0.2,
+                    canvas.height * 0.1,
+                    "Normal Wave Pattern (Safe)",
+                    "Regular, consistent wave patterns without disruptions are typically safer for swimming."
+                );
+            } else {
+                const pierX = canvas.width * 0.7;
+                const ripWidth = canvas.width * 0.15;
+                
+                // Permanent rip area
+                createWaveArea(
+                    pierX - ripWidth,
+                    shoreLine,
+                    ripWidth,
+                    canvas.height * 0.2,
+                    "Permanent Rip",
+                    "This rip current forms alongside the pier structure. Permanent rips are consistently present and extremely dangerous. AVOID swimming near structures."
+                );
+                
+                // Pier structure
+                createWaveArea(
+                    pierX - 15,
+                    canvas.height * 0.2,
+                    30,
+                    canvas.height * 0.3,
+                    "Pier Structure",
+                    "Structures like piers, jetties, and rock formations create permanent rip currents. Never swim near these structures."
+                );
+                
+                // Safe area
+                createWaveArea(
+                    canvas.width * 0.2,
+                    shoreLine,
+                    canvas.width * 0.2,
+                    canvas.height * 0.1,
+                    "Safe Swimming Area",
+                    "This area away from the pier has consistent wave patterns and is safer for swimming."
+                );
+            }
+        }
+        
+        // Create safe and danger zones
+        function createSafeAndDangerZones() {
+            // Remove existing zones
+            document.querySelectorAll('.safe-zone-indicator, .danger-zone-indicator').forEach(zone => zone.remove());
+            
+            // Only create if toggle is on
+            if (!showSafeZones) return;
+            
+            const shoreLine = canvas.height * 0.25;
+            
+            if (currentRipType === 'channel') {
+                const ripWidth = canvas.width * 0.2;
+                const ripCenterX = canvas.width * 0.5;
+                
+                // Danger zone - rip channel
+                createDangerZone(
+                    ripCenterX - ripWidth/2,
+                    shoreLine,
+                    ripWidth,
+                    canvas.height * 0.4
+                );
+                
+                // Safe zones - sandbars
+                createSafeZone(
+                    ripCenterX - ripWidth - canvas.width * 0.25,
+                    shoreLine,
+                    canvas.width * 0.25,
+                    canvas.height * 0.2
+                );
+                
+                createSafeZone(
+                    ripCenterX + ripWidth/2,
+                    shoreLine,
+                    canvas.width * 0.25,
+                    canvas.height * 0.2
+                );
+                
+            } else if (currentRipType === 'flash') {
+                const ripWidth = canvas.width * 0.1;
+                const ripCenterX = canvas.width * 0.5;
+                
+                // Danger zone - flash rip
+                createDangerZone(
+                    ripCenterX - ripWidth/2,
+                    shoreLine,
+                    ripWidth,
+                    canvas.height * 0.3
+                );
+                
+                // Safe zone
+                createSafeZone(
+                    canvas.width * 0.15,
+                    shoreLine,
+                    canvas.width * 0.25,
+                    canvas.height * 0.2
+                );
+                
+            } else {
+                const pierX = canvas.width * 0.7;
+                const ripWidth = canvas.width * 0.15;
+                
+                // Danger zone - permanent rip and pier
+                createDangerZone(
+                    pierX - ripWidth,
+                    shoreLine,
+                    ripWidth + 30,
+                    canvas.height * 0.4
+                );
+                
+                // Safe zone - away from pier
+                createSafeZone(
+                    canvas.width * 0.15,
+                    shoreLine,
+                    canvas.width * 0.25,
+                    canvas.height * 0.2
+                );
+            }
+        }
+        
+        // Create a safe zone indicator
+        function createSafeZone(x, y, width, height) {
+            const zone = document.createElement('div');
+            zone.className = 'safe-zone-indicator';
+            zone.style.left = `${x}px`;
+            zone.style.top = `${y}px`;
+            zone.style.width = `${width}px`;
+            zone.style.height = `${height}px`;
+            container.appendChild(zone);
+            safeZones.push(zone);
+        }
+        
+        // Create a danger zone indicator
+        function createDangerZone(x, y, width, height) {
+            const zone = document.createElement('div');
+            zone.className = 'danger-zone-indicator';
+            zone.style.left = `${x}px`;
+            zone.style.top = `${y}px`;
+            zone.style.width = `${width}px`;
+            zone.style.height = `${height}px`;
+            container.appendChild(zone);
+            dangerZones.push(zone);
+        }
+        
+        // Create a clickable wave area
+        function createWaveArea(x, y, width, height, title, description) {
+            const area = document.createElement('div');
+            area.className = 'wave-area';
+            area.style.left = `${x}px`;
+            area.style.top = `${y}px`;
+            area.style.width = `${width}px`;
+            area.style.height = `${height}px`;
+            area.dataset.title = title;
+            area.dataset.description = description;
+            
+            area.addEventListener('click', function() {
+                document.querySelectorAll('.wave-area').forEach(a => a.classList.remove('highlighted'));
+                this.classList.add('highlighted');
+                
+                hotspotText.innerHTML = `<strong>${this.dataset.title}</strong><br><br>${this.dataset.description}`;
+                hotspotInfo.classList.remove('hidden');
+            });
+            
+            container.appendChild(area);
+            waveAreas.push(area);
+        }
+        
+        // Event listeners
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Initialize
+        resizeCanvas();
+        
+        // Reset simulation
+        function resetSimulation() {
+            started = false;
+            paused = false;
+            animationTime = 0;
+            messageEl.textContent = "Press Start to learn how to identify rip currents";
+            titleText.textContent = "";
+            storyTitle.classList.add('hidden');
+            hotspots = [];
+            activeHotspot = null;
+            hotspotInfo.classList.add('hidden');
+            
+            // Reset teen position
+            teenPosition = { x: 0.2, y: 0.22 };
+            teenInWater = false;
+            teenSwimmingInSafeZone = false;
+            
+            // Reset wave controls
+            waveHeight = 0.5;
+            waveSpeed = 0.5;
+            waveHeightSlider.value = 50;
+            waveSpeedSlider.value = 50;
+            
+            // Update play button icon
+            updatePlayButton();
+            
+            // Cancel animation frame if running
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            
+            // Draw initial state
+            drawSimulation();
+        }
+        
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (!started) {
+                started = true;
+                paused = false;
+                messageEl.textContent = "Watch and learn how to identify rip currents";
+                startAnimation();
+                createWaveAreas();
+                createSafeAndDangerZones();
+            } else {
+                paused = !paused;
+                if (!paused) {
+                    startAnimation();
+                } else if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+            }
+            
+            updatePlayButton();
+        }
+        
+        // Update play button icon
+        function updatePlayButton() {
+            if (!started || paused) {
+                playBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+            } else {
+                playBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Toggle info panel
+        function toggleInfo() {
+            infoPanel.classList.toggle('hidden');
+        }
+        
+        // Toggle quiz panel
+        function toggleQuiz() {
+            if (quizPanel.classList.contains('hidden')) {
+                showQuiz();
+            } else {
+                hideQuiz();
+            }
+        }
+        
+        // Show quiz
+        function showQuiz() {
+            currentQuizQuestion = 0;
+            selectedOption = null;
+            quizAnswered = false;
+            updateQuiz();
+            quizPanel.classList.remove('hidden');
+        }
+        
+        // Hide quiz
+        function hideQuiz() {
+            quizPanel.classList.add('hidden');
+        }
+        
+        // Update quiz
+        function updateQuiz() {
+            const question = quizQuestions[currentQuizQuestion];
+            quizQuestion.textContent = question.question;
+            
+            // Clear options
+            quizOptions.innerHTML = '';
+            
+            // Add options
+            question.options.forEach((option, index) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'quiz-option';
+                optionEl.textContent = option;
+                optionEl.dataset.index = index;
+                
+                if (quizAnswered) {
+                    if (index === question.correct) {
+                        optionEl.classList.add('correct');
+                    } else if (index === selectedOption && index !== question.correct) {
+                        optionEl.classList.add('incorrect');
+                    }
+                } else if (index === selectedOption) {
+                    optionEl.classList.add('selected');
+                }
+                
+                optionEl.addEventListener('click', () => {
+                    if (!quizAnswered) {
+                        selectedOption = index;
+                        document.querySelectorAll('.quiz-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        optionEl.classList.add('selected');
+                        quizNextBtn.disabled = false;
+                    }
+                });
+                
+                quizOptions.appendChild(optionEl);
+            });
+            
+            // Update feedback
+            if (quizAnswered) {
+                quizFeedback.classList.remove('hidden');
+                quizFeedback.querySelector('p').textContent = question.feedback;
+                quizFeedback.style.backgroundColor = selectedOption === question.correct ? 
+                    'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            } else {
+                quizFeedback.classList.add('hidden');
+            }
+            
+            // Update buttons
+            quizPrevBtn.disabled = currentQuizQuestion === 0;
+            quizNextBtn.disabled = selectedOption === null;
+            quizNextBtn.textContent = quizAnswered ? 
+                (currentQuizQuestion < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz') : 
+                'Submit Answer';
+        }
+        
+        // Handle quiz next button
+        function handleQuizNext() {
+            if (!quizAnswered) {
+                // Submit answer
+                quizAnswered = true;
+                updateQuiz();
+            } else {
+                // Go to next question or finish quiz
+                if (currentQuizQuestion < quizQuestions.length - 1) {
+                    currentQuizQuestion++;
+                    selectedOption = null;
+                    quizAnswered = false;
+                    updateQuiz();
+                } else {
+                    hideQuiz();
+                }
+            }
+        }
+        
+        // Handle quiz previous button
+        function handleQuizPrev() {
+            if (currentQuizQuestion > 0) {
+                currentQuizQuestion--;
+                selectedOption = null;
+                quizAnswered = false;
+                updateQuiz();
+            }
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Handle fullscreen change
+        function handleFullscreenChange() {
+            isFullscreen = !!document.fullscreenElement;
+            updateFullscreenButton();
+        }
+        
+        // Update fullscreen button icon
+        function updateFullscreenButton() {
+            if (isFullscreen) {
+                fullscreenBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                    </svg>
+                `;
+            } else {
+                fullscreenBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Change rip current type
+        function changeRipType(type) {
+            currentRipType = type;
+            
+            // Update active button
+            channelRipBtn.classList.remove('active');
+            flashRipBtn.classList.remove('active');
+            permanentRipBtn.classList.remove('active');
+            
+            if (type === 'channel') {
+                channelRipBtn.classList.add('active');
+            } else if (type === 'flash') {
+                flashRipBtn.classList.add('active');
+            } else {
+                permanentRipBtn.classList.add('active');
+            }
+            
+            // Update hotspots based on rip type
+            updateHotspotsForRipType();
+            
+            // Update wave areas and zones
+            createWaveAreas();
+            createSafeAndDangerZones();
+            
+            // Reset teen position to safe area
+            resetTeenPosition();
+            
+            // Redraw simulation
+            drawSimulation();
+        }
+        
+        // Reset teen position to a safe area based on current rip type
+        function resetTeenPosition() {
+            if (currentRipType === 'channel') {
+                // Position in safe area to the left of channel rip
+                teenPosition = { x: 0.2, y: 0.22 };
+            } else if (currentRipType === 'flash') {
+                // Position in safe area away from flash rip
+                teenPosition = { x: 0.2, y: 0.22 };
+            } else {
+                // Position in safe area away from permanent rip
+                teenPosition = { x: 0.2, y: 0.22 };
+            }
+            teenInWater = false;
+            teenSwimmingInSafeZone = false;
+        }
+        
+        // Update hotspots based on rip type
+        function updateHotspotsForRipType() {
+            if (!started) return;
+            
+            if (currentRipType === 'channel') {
+                hotspots = [
+                    { x: 0.5, y: 0.4, text: "Channel rips form in gaps between sandbars and can be identified by a gap in the breaking waves", visible: true },
+                    { x: 0.3, y: 0.5, text: "Look for darker water color where sand is being pulled away from shore", visible: true },
+                    { x: 0.7, y: 0.5, text: "Notice how the waves break on either side but not in the rip channel", visible: true }
+                ];
+            } else if (currentRipType === 'flash') {
+                hotspots = [
+                    { x: 0.5, y: 0.4, text: "Flash rips appear suddenly during changing tide conditions or large wave sets", visible: true },
+                    { x: 0.3, y: 0.5, text: "They're temporary but powerful and can form anywhere along the beach", visible: true },
+                    { x: 0.7, y: 0.5, text: "Watch for sudden changes in water patterns after large waves break", visible: true }
+                ];
+            } else {
+                hotspots = [
+                    { x: 0.5, y: 0.4, text: "Permanent rips form near fixed structures like piers, jetties, and rock formations", visible: true },
+                    { x: 0.3, y: 0.5, text: "They're consistently present and can be extremely dangerous", visible: true },
+                    { x: 0.7, y: 0.5, text: "Always avoid swimming near structures where permanent rips form", visible: true }
+                ];
+            }
+        }
+        
+        // Handle canvas click for hotspots
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if any hotspot was clicked
+            for (const hotspot of hotspots) {
+                if (!hotspot.visible) continue;
+                
+                const hotspotX = hotspot.x * canvas.width;
+                const hotspotY = hotspot.y * canvas.height;
+                const distance = Math.sqrt(
+                    Math.pow(hotspotX - x, 2) + Math.pow(hotspotY - y, 2)
+                );
+                
+                if (distance < 30) {
+                    activeHotspot = hotspot.text;
+                    hotspotText.textContent = activeHotspot;
+                    hotspotInfo.classList.remove('hidden');
+                    return;
+                }
+            }
+            
+            // If we clicked elsewhere, close any active hotspot
+            if (!hotspotInfo.classList.contains('hidden')) {
+                hotspotInfo.classList.add('hidden');
+                activeHotspot = null;
+            }
+        }
+        
+        // Handle mouse move for magnifier
+        function handleMouseMove(e) {
+            if (!magnifierActive) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Position magnifier
+            magnifier.style.left = `${e.clientX - 75}px`;
+            magnifier.style.top = `${e.clientY - 75}px`;
+            
+            // Draw magnified content
+            magnifierCtx.clearRect(0, 0, magnifierCanvas.width, magnifierCanvas.height);
+            
+            // Scale factor for magnification
+            const scaleFactor = 2;
+            
+            // Draw the portion of the main canvas into the magnifier canvas
+            magnifierCtx.drawImage(
+                canvas,
+                x - 75 / scaleFactor, y - 75 / scaleFactor,
+                150 / scaleFactor, 150 / scaleFactor,
+                0, 0,
+                150, 150
+            );
+            
+            // Add crosshair
+            magnifierCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            magnifierCtx.lineWidth = 1;
+            magnifierCtx.beginPath();
+            magnifierCtx.moveTo(75, 0);
+            magnifierCtx.lineTo(75, 150);
+            magnifierCtx.moveTo(0, 75);
+            magnifierCtx.lineTo(150, 75);
+            magnifierCtx.stroke();
+        }
+        
+        // Close hotspot info
+        function closeHotspotInfo() {
+            hotspotInfo.classList.add('hidden');
+            activeHotspot = null;
+            document.querySelectorAll('.wave-area').forEach(area => {
+                area.classList.remove('highlighted');
+            });
+        }
+        
+        // Start animation loop
+        function startAnimation() {
+            const animate = () => {
+                if (!paused) {
+                    animationTime += 16; // ~60fps
+                    updateStory();
+                    drawSimulation();
+                    animationFrame = requestAnimationFrame(animate);
+                }
+            };
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // Update story based on animation time
+        function updateStory() {
+            if (!started) return;
+            
+            const time = animationTime / 1000;
+            const cycleTime = 30;
+            const normalizedTime = (time % cycleTime) / cycleTime;
+            
+            // Update message and title based on normalized time
+            if (normalizedTime < 0.2) {
+                messageEl.textContent = "First, scan the water for signs of rip currents before entering";
+                titleText.textContent = "Identifying Rip Currents";
+                storyTitle.classList.remove('hidden');
+                
+                // Update hotspots based on current rip type
+                updateHotspotsForRipType();
+                
+                // Teen on beach observing
+                teenPosition = { x: 0.2, y: 0.22 };
+                teenInWater = false;
+                teenSwimmingInSafeZone = false;
+                
+            } else if (normalizedTime < 0.4) {
+                if (currentRipType === 'channel') {
+                    messageEl.textContent = "Channel rips: Look for gaps in breaking waves and darker water";
+                    titleText.textContent = "Channel Rip Currents";
+                } else if (currentRipType === 'flash') {
+                    messageEl.textContent = "Flash rips: Appear suddenly after large waves and changing conditions";
+                    titleText.textContent = "Flash Rip Currents";
+                } else {
+                    messageEl.textContent = "Permanent rips: Form near structures like piers and jetties";
+                    titleText.textContent = "Permanent Rip Currents";
+                }
+                storyTitle.classList.remove('hidden');
+                
+                // Teen still on beach observing
+                teenPosition = { x: 0.2, y: 0.22 };
+                teenInWater = false;
+                teenSwimmingInSafeZone = false;
+                
+            } else if (normalizedTime < 0.6) {
+                messageEl.textContent = "Identify safe areas with consistent breaking waves, away from rip currents";
+                titleText.textContent = "Finding Safe Swimming Areas";
+                storyTitle.classList.remove('hidden');
+                
+                // Teen still on beach, but moving toward safe area
+                teenPosition = { x: 0.25, y: 0.22 };
+                teenInWater = false;
+                teenSwimmingInSafeZone = false;
+                
+            } else if (normalizedTime < 0.8) {
+                messageEl.textContent = "Always swim in areas with consistent breaking waves, away from rip currents";
+                titleText.textContent = "Swimming Safely";
+                storyTitle.classList.remove('hidden');
+                
+                // Teen now swimming in safe area
+                if (currentRipType === 'channel') {
+                    teenPosition = { x: 0.2, y: 0.35 }; // Left of channel rip
+                } else if (currentRipType === 'flash') {
+                    teenPosition = { x: 0.2, y: 0.35 }; // Away from flash rip
+                } else {
+                    teenPosition = { x: 0.2, y: 0.35 }; // Away from permanent rip
+                }
+                teenInWater = true;
+                teenSwimmingInSafeZone = true;
+                
+            } else {
+                messageEl.textContent = "Remember: When in doubt, don't go out! Ask a lifeguard if you're unsure.";
+                titleText.textContent = "Stay Safe at the Beach";
+                storyTitle.classList.remove('hidden');
+                
+                // Teen swimming in safe area
+                if (currentRipType === 'channel') {
+                    teenPosition = { x: 0.2, y: 0.35 }; // Left of channel rip
+                } else if (currentRipType === 'flash') {
+                    teenPosition = { x: 0.2, y: 0.35 }; // Away from flash rip
+                } else {
+                    teenPosition = { x: 0.2, y: 0.35 }; // Away from permanent rip
+                }
+                teenInWater = true;
+                teenSwimmingInSafeZone = true;
+            }
+        }
+        
+        // Draw the simulation
+        function drawSimulation() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Set up time variables
+            const time = animationTime / 1000; // Convert to seconds
+            
+            // Enhanced color palette
+            const colors = {
+                // Sky colors
+                skyTop: "#87CEEB",
+                skyBottom: "#ADD8E6",
+                
+                // Water colors
+                shallowWater: "#64B5F6",
+                midWater: "#1976D2",
+                deepWater: "#0D47A1",
+                
+                // Beach colors
+                beach: "#F5DEB3",
+                beachDark: "#E6C99F",
+                
+                // Rip current and zones
+                ripCurrent: "#01579B",
+                safeZone: "rgba(76, 175, 80, 0.1)",
+                dangerZone: "rgba(244, 67, 54, 0.05)",
+                
+                // Character colors
+                skin: "#FFD0A9",
+                hair: "#8B4513",
+                swimsuit: "#FF5252",
+            };
+            
+            // Shoreline position (constant)
+            const baseShoreLineValue = height * 0.25;
+            const shoreLineValue = baseShoreLineValue;
+            
+            // Draw sky with enhanced gradient and sun
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, height * 0.2);
+            skyGradient.addColorStop(0, colors.skyTop);
+            skyGradient.addColorStop(1, colors.skyBottom);
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, width, height * 0.2);
+            
+            // Draw sun
+            const sunX = width * 0.8;
+            const sunY = height * 0.1;
+            const sunRadius = 30;
+            
+            // Sun glow
+            const sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius * 3);
+            sunGlow.addColorStop(0, "rgba(255, 255, 200, 0.8)");
+            sunGlow.addColorStop(0.2, "rgba(255, 255, 150, 0.4)");
+            sunGlow.addColorStop(1, "rgba(255, 255, 100, 0)");
+            
+            ctx.fillStyle = sunGlow;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius * 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Sun itself
+            ctx.fillStyle = "#FFFFA0";
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw clouds
+            drawClouds(ctx, width, height, time);
+            
+            // Draw beach with enhanced gradient and texture
+            const beachGradient = ctx.createLinearGradient(0, height * 0.2, 0, height * 0.25);
+            beachGradient.addColorStop(0, colors.beach);
+            beachGradient.addColorStop(1, colors.beachDark);
+            ctx.fillStyle = beachGradient;
+            ctx.fillRect(0, height * 0.2, width, height * 0.05);
+            
+            // Add beach texture - using subtle gradient and lines
+            for (let i = 0; i < 15; i++) {
+                const y = height * 0.2 + (i / 15) * (height * 0.05);
+                const lineWidth = 0.5 + Math.random() * 0.5;
+                const alpha = 0.05 + Math.random() * 0.05;
+                
+                ctx.strokeStyle = `rgba(160, 140, 110, ${alpha})`;
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(0, y + Math.sin(y * 0.1) * 2);
+                
+                // Create wavy line
+                for (let x = 0; x < width; x += 20) {
+                    const waveHeight = Math.sin(x * 0.01 + i) * 1.5;
+                    ctx.lineTo(x, y + waveHeight);
+                }
+                
+                ctx.stroke();
+            }
+            
+            // Draw water with enhanced effects
+            // Deep water base with more realistic gradient
+            const waterGradient = ctx.createLinearGradient(0, shoreLineValue, 0, height);
+            waterGradient.addColorStop(0, colors.shallowWater);
+            waterGradient.addColorStop(0.3, colors.midWater);
+            waterGradient.addColorStop(1, colors.deepWater);
+            ctx.fillStyle = waterGradient;
+            ctx.fillRect(0, shoreLineValue, width, height - shoreLineValue);
+            
+            // Draw underwater sand gradient at the shore
+            const sandGradient = ctx.createLinearGradient(0, shoreLineValue, 0, shoreLineValue + height * 0.1);
+            sandGradient.addColorStop(0, "rgba(245, 222, 179, 0.7)");
+            sandGradient.addColorStop(1, "rgba(245, 222, 179, 0)");
+            ctx.fillStyle = sandGradient;
+            ctx.fillRect(0, shoreLineValue, width, height * 0.1);
+            
+            // Draw different types of rip currents based on selected type
+            if (currentRipType === 'channel') {
+                // Channel rip - gap between sandbars
+                drawChannelRip(ctx, width, height, shoreLineValue, time);
+            } else if (currentRipType === 'flash') {
+                // Flash rip - temporary and sudden
+                drawFlashRip(ctx, width, height, shoreLineValue, time);
+            } else {
+                // Permanent rip - near structures
+                drawPermanentRip(ctx, width, height, shoreLineValue, time);
+            }
+            
+            // Draw breaking waves with enhanced visibility
+            drawBreakingWaves(ctx, width, height, shoreLineValue, time, currentRipType);
+            
+            // Draw foam particles in the water
+            for (let i = 0; i < 60; i++) {
+                const x = Math.random() * width;
+                const yOffset = Math.sin(x * 0.05 + time * 2) * 5;
+                const y = shoreLineValue + 10 + yOffset;
+                const size = Math.random() * 3 + 1;
+                const alpha = Math.random() * 0.5 + 0.3;
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw teenager based on position
+            if (teenInWater) {
+                // Teen swimming
+                const swimX = width * teenPosition.x;
+                const swimY = height * teenPosition.y;
+                
+                drawTeenSwimming(ctx, swimX, swimY, time, colors);
+                
+                // Add safe zone indicator if teen is in safe zone
+                if (teenSwimmingInSafeZone && showIndicators) {
+                    const safeRadius = 30 + Math.sin(time * 2) * 5;
+                    ctx.strokeStyle = "rgba(76, 175, 80, 0.7)";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(swimX, swimY, safeRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // "SAFE" text
+                    ctx.fillStyle = "rgba(76, 175, 80, 0.9)";
+                    ctx.font = "bold 14px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("SAFE", swimX, swimY - 40);
+                    ctx.textAlign = "start";
+                }
+            } else {
+                // Teen on beach observing
+                const beachX = width * teenPosition.x;
+                const beachY = height * teenPosition.y;
+                drawTeenObserving(ctx, beachX, beachY, time, colors);
+            }
+            
+            // Draw interactive hotspots
+            if (showIndicators) {
+                hotspots.forEach((hotspot) => {
+                    if (hotspot.visible) {
+                        const hotspotX = hotspot.x * width;
+                        const hotspotY = hotspot.y * height;
+                        
+                        // Pulsing effect
+                        const pulseSize = 15 + Math.sin(time * 3) * 5;
+                        
+                        // Outer glow
+                        const glowGradient = ctx.createRadialGradient(hotspotX, hotspotY, 0, hotspotX, hotspotY, pulseSize * 1.5);
+                        glowGradient.addColorStop(0, "rgba(100, 200, 255, 0.7)");
+                        glowGradient.addColorStop(0.5, "rgba(100, 200, 255, 0.3)");
+                        glowGradient.addColorStop(1, "rgba(100, 200, 255, 0)");
+                        
+                        ctx.fillStyle = glowGradient;
+                        ctx.beginPath();
+                        ctx.arc(hotspotX, hotspotY, pulseSize * 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Inner circle
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                        ctx.beginPath();
+                        ctx.arc(hotspotX, hotspotY, pulseSize * 0.6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Center dot
+                        ctx.fillStyle = "#2196F3";
+                        ctx.beginPath();
+                        ctx.arc(hotspotX, hotspotY, pulseSize * 0.3, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // "i" letter
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.font = "bold 12px Arial";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText("i", hotspotX, hotspotY);
+                        
+                        // Reset text alignment
+                        ctx.textAlign = "start";
+                        ctx.textBaseline = "alphabetic";
+                    }
+                });
+            }
+            
+            // Apply cinematic letterbox effect
+            const letterboxHeight = height * 0.1;
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, width, letterboxHeight);
+            ctx.fillRect(0, height - letterboxHeight, width, letterboxHeight);
+        }
+        
+        // Draw channel rip current
+        function drawChannelRip(ctx, width, height, shoreLine, time) {
+            const ripWidth = width * 0.2;
+            const ripCenterX = width * 0.5;
+            
+            // Rip current path with gradient
+            const ripGradient = ctx.createLinearGradient(0, shoreLine, 0, height);
+            ripGradient.addColorStop(0, "rgba(1, 87, 155, 0.2)");
+            ripGradient.addColorStop(0.5, "rgba(1, 87, 155, 0.4)");
+            ripGradient.addColorStop(1, "rgba(1, 87, 155, 0.6)");
+            
+            ctx.fillStyle = ripGradient;
+            ctx.beginPath();
+            ctx.moveTo(ripCenterX - ripWidth / 2, shoreLine);
+            ctx.lineTo(ripCenterX + ripWidth / 2, shoreLine);
+            ctx.lineTo(ripCenterX + ripWidth / 3, height);
+            ctx.lineTo(ripCenterX - ripWidth / 3, height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw sandbars on either side (lighter areas)
+            const sandbarGradient1 = ctx.createLinearGradient(0, shoreLine, 0, shoreLine + height * 0.15);
+            sandbarGradient1.addColorStop(0, "rgba(245, 222, 179, 0.6)");
+            sandbarGradient1.addColorStop(1, "rgba(245, 222, 179, 0)");
+            
+            ctx.fillStyle = sandbarGradient1;
+            ctx.fillRect(ripCenterX - ripWidth - width * 0.2, shoreLine, width * 0.2, height * 0.15);
+            ctx.fillRect(ripCenterX + ripWidth / 2, shoreLine, width * 0.2, height * 0.15);
+            
+            // Draw rip current flow visualization
+            drawRipCurrentFlow(ctx, ripCenterX, ripWidth, shoreLine, height, time);
+            
+            // Add labels if enabled
+            if (showLabels) {
+                ctx.font = "bold 16px Arial";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.fillText("Sandbar", ripCenterX - ripWidth - width * 0.1, shoreLine + 20);
+                ctx.fillText("Sandbar", ripCenterX + ripWidth / 2 + width * 0.1, shoreLine + 20);
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.fillText("Rip Channel", ripCenterX - 40, shoreLine + 40);
+                
+                // Add arrow indicators for the rip current
+                drawArrow(ctx, ripCenterX, shoreLine + 60, ripCenterX, shoreLine + 120, "rgba(255, 50, 50, 0.8)", 3);
+                drawArrow(ctx, ripCenterX - 20, shoreLine + 80, ripCenterX - 20, shoreLine + 140, "rgba(255, 50, 50, 0.8)", 3);
+                drawArrow(ctx, ripCenterX + 20, shoreLine + 80, ripCenterX + 20, shoreLine + 140, "rgba(255, 50, 50, 0.8)", 3);
+            }
+        }
+        
+        // Draw flash rip current
+        function drawFlashRip(ctx, width, height, shoreLine, time) {
+            // Flash rips are temporary and can appear suddenly
+            // They're often narrower and more concentrated
+            
+            const ripWidth = width * 0.1;
+            const ripCenterX = width * 0.5;
+            
+            // Make the rip pulsate to show its temporary nature
+            const pulseFactor = 0.8 + Math.sin(time * 2) * 0.2;
+            const adjustedRipWidth = ripWidth * pulseFactor;
+            
+            // Rip current path with gradient
+            const ripGradient = ctx.createLinearGradient(0, shoreLine, 0, height);
+            ripGradient.addColorStop(0, "rgba(1, 87, 155, 0.3)");
+            ripGradient.addColorStop(0.5, "rgba(1, 87, 155, 0.5)");
+            ripGradient.addColorStop(1, "rgba(1, 87, 155, 0.7)");
+            
+            ctx.fillStyle = ripGradient;
+            ctx.beginPath();
+            ctx.moveTo(ripCenterX - adjustedRipWidth / 2, shoreLine);
+            ctx.lineTo(ripCenterX + adjustedRipWidth / 2, shoreLine);
+            ctx.lineTo(ripCenterX + adjustedRipWidth / 4, height * 0.6);
+            ctx.lineTo(ripCenterX - adjustedRipWidth / 4, height * 0.6);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw more intense flow for flash rip
+            for (let i = 0; i < 12; i++) {
+                const xOffset = ((i - 6) / 6) * (adjustedRipWidth * 0.8);
+                const x = ripCenterX + xOffset;
+                const flowSpeed = 2.5 - Math.abs(xOffset) / (adjustedRipWidth * 0.4); // Faster in center
+                
+                // Create multiple particles flowing down the current
+                for (let j = 0; j < 3; j++) {
+                    const flowOffset = (time * flowSpeed + j * 0.33) % 1;
+                    const yStart = shoreLine + flowOffset * (height * 0.35);
+                    const yEnd = Math.min(yStart + 15, height * 0.6);
+                    
+                    // Adjust x position to follow the narrowing current
+                    const progress = (yStart - shoreLine) / (height * 0.35);
+                    const narrowingFactor = 1 - progress * 0.5;
+                    const adjustedX = ripCenterX + xOffset * narrowingFactor;
+                    
+                    const alpha = 0.8 - flowOffset * 0.5;
+                    
+                    // Draw flow particle
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yStart);
+                    ctx.lineTo(adjustedX, yEnd);
+                    ctx.stroke();
+                    
+                    // Draw small arrow at the end
+                    const arrowSize = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yEnd);
+                    ctx.lineTo(adjustedX - arrowSize, yEnd - arrowSize);
+                    ctx.lineTo(adjustedX + arrowSize, yEnd - arrowSize);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            // Add labels if enabled
+            if (showLabels) {
+                ctx.font = "bold 16px Arial";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.fillText("Flash Rip", ripCenterX - 30, shoreLine + 40);
+                
+                // Add warning indicators
+                const warningSize = 15 + Math.sin(time * 3) * 3;
+                
+                ctx.fillStyle = "rgba(255, 50, 50, 0.7)";
+                ctx.beginPath();
+                ctx.moveTo(ripCenterX - warningSize, shoreLine + 70);
+                ctx.lineTo(ripCenterX, shoreLine + 70 - warningSize);
+                ctx.lineTo(ripCenterX + warningSize, shoreLine + 70);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.font = "bold 14px Arial";
+                ctx.fillStyle = "#FFFFFF";
+                ctx.textAlign = "center";
+                ctx.fillText("!", ripCenterX, shoreLine + 67);
+                ctx.textAlign = "start";
+                
+                // Add pulsating circle to indicate sudden appearance
+                const pulseRadius = 30 + Math.sin(time * 4) * 15;
+                ctx.strokeStyle = "rgba(255, 50, 50, 0.5)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(ripCenterX, shoreLine + 100, pulseRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        // Draw permanent rip current
+        function drawPermanentRip(ctx, width, height, shoreLine, time) {
+            // Permanent rips form near structures like piers or jetties
+            // Draw a pier/jetty structure
+            const pierWidth = 30;
+            const pierX = width * 0.7;
+            
+            // Draw pier/jetty
+            ctx.fillStyle = "#8B4513";
+            ctx.fillRect(pierX - pierWidth/2, height * 0.2, pierWidth, height * 0.8);
+            
+            // Draw pier supports
+            for (let y = height * 0.25; y < height; y += 40) {
+                ctx.fillRect(pierX - pierWidth/2 - 5, y, pierWidth + 10, 10);
+            }
+            
+            // Draw rip current along the structure
+            const ripWidth = width * 0.15;
+            const ripCenterX = pierX - ripWidth/2;
+            
+            // Rip current path with gradient
+            const ripGradient = ctx.createLinearGradient(0, shoreLine, 0, height);
+            ripGradient.addColorStop(0, "rgba(1, 87, 155, 0.3)");
+            ripGradient.addColorStop(0.5, "rgba(1, 87, 155, 0.5)");
+            ripGradient.addColorStop(1, "rgba(1, 87, 155, 0.7)");
+            
+            ctx.fillStyle = ripGradient;
+            ctx.beginPath();
+            ctx.moveTo(pierX - ripWidth, shoreLine);
+            ctx.lineTo(pierX, shoreLine);
+            ctx.lineTo(pierX, height);
+            ctx.lineTo(pierX - ripWidth * 0.7, height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw rip current flow visualization
+            for (let i = 0; i < 10; i++) {
+                const xOffset = ((i) / 10) * ripWidth;
+                const x = pierX - xOffset;
+                const flowSpeed = 1.5 - Math.abs(xOffset) / ripWidth; // Faster near structure
+                
+                // Create multiple particles flowing down the current
+                for (let j = 0; j < 3; j++) {
+                    const flowOffset = (time * flowSpeed + j * 0.33) % 1;
+                    const yStart = shoreLine + flowOffset * (height - shoreLine);
+                    const yEnd = Math.min(yStart + 20, height);
+                    
+                    // Adjust x position to follow the current
+                    const progress = (yStart - shoreLine) / (height - shoreLine);
+                    const narrowingFactor = 1 - progress * 0.3;
+                    const adjustedX = x * narrowingFactor + pierX * (1 - narrowingFactor);
+                    
+                    const alpha = 0.7 - flowOffset * 0.5;
+                    
+                    // Draw flow particle
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yStart);
+                    ctx.lineTo(adjustedX, yEnd);
+                    ctx.stroke();
+                    
+                    // Draw small arrow at the end
+                    const arrowSize = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yEnd);
+                    ctx.lineTo(adjustedX - arrowSize, yEnd - arrowSize);
+                    ctx.lineTo(adjustedX + arrowSize, yEnd - arrowSize);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            // Add labels if enabled
+            if (showLabels) {
+                ctx.font = "bold 16px Arial";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.fillText("Pier", pierX - 15, height * 0.2 - 10);
+                ctx.fillText("Permanent Rip", pierX - ripWidth/2 - 50, shoreLine + 40);
+                
+                // Add warning sign on pier
+                ctx.fillStyle = "#FF0000";
+                ctx.beginPath();
+                ctx.moveTo(pierX - 15, height * 0.2 + 30);
+                ctx.lineTo(pierX + 15, height * 0.2 + 30);
+                ctx.lineTo(pierX, height * 0.2 + 10);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.font = "bold 14px Arial";
+                ctx.fillStyle = "#FFFFFF";
+                ctx.textAlign = "center";
+                ctx.fillText("!", pierX, height * 0.2 + 25);
+                ctx.textAlign = "start";
+                
+                // Add "DANGER" text
+                ctx.font = "bold 14px Arial";
+                ctx.fillStyle = "#FF0000";
+                ctx.textAlign = "center";
+                ctx.fillText("DANGER", pierX - ripWidth/2, shoreLine + 70);
+                ctx.textAlign = "start";
+                
+                // Add arrows showing flow direction
+                drawArrow(ctx, pierX - ripWidth/2, shoreLine + 100, pierX - ripWidth/2, shoreLine + 160, "rgba(255, 50, 50, 0.8)", 3);
+                drawArrow(ctx, pierX - ripWidth/4, shoreLine + 120, pierX - ripWidth/4, shoreLine + 180, "rgba(255, 50, 50, 0.8)", 3);
+            }
+        }
+        
+        // Draw breaking waves with enhanced visibility
+        function drawBreakingWaves(ctx, width, height, shoreLine, time, ripType) {
+            // Apply wave height and speed from controls
+            const adjustedWaveHeight = 8 + waveHeight * 12; // 8-20 range
+            const adjustedWaveSpeed = 1 + waveSpeed * 3; // 1-4 range
+            
+            // Draw multiple layers of breaking waves
+            const waveY = shoreLine + 5;
+            
+            // Different wave patterns based on rip type
+            if (ripType === 'channel') {
+                // Channel rip - gap in breaking waves
+                const ripWidth = width * 0.2;
+                const ripCenterX = width * 0.5;
+                
+                // Left side waves
+                drawWaveSection(ctx, 0, ripCenterX - ripWidth/2, waveY, time, 1.0, adjustedWaveHeight, adjustedWaveSpeed);
+                
+                // Right side waves
+                drawWaveSection(ctx, ripCenterX + ripWidth/2, width, waveY, time, 1.0, adjustedWaveHeight, adjustedWaveSpeed);
+                
+                // Reduced waves in the rip channel
+                drawWaveSection(ctx, ripCenterX - ripWidth/2, ripCenterX + ripWidth/2, waveY, time, 0.2, adjustedWaveHeight, adjustedWaveSpeed);
+                
+                // Add visual indicator for the gap in waves
+                if (showIndicators) {
+                    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                    ctx.setLineDash([5, 5]);
+                    ctx.lineWidth = 2;
+                    
+                    // Draw lines indicating the gap
+                    ctx.beginPath();
+                    ctx.moveTo(ripCenterX - ripWidth/2, shoreLine);
+                    ctx.lineTo(ripCenterX - ripWidth/2, shoreLine + 50);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(ripCenterX + ripWidth/2, shoreLine);
+                    ctx.lineTo(ripCenterX + ripWidth/2, shoreLine + 50);
+                    ctx.stroke();
+                    
+                    ctx.setLineDash([]);
+                }
+            } else if (ripType === 'flash') {
+                // Flash rip - sudden disruption in wave pattern
+                const ripWidth = width * 0.1;
+                const ripCenterX = width * 0.5;
+                const pulseFactor = 0.8 + Math.sin(time * 2) * 0.2;
+                const adjustedRipWidth = ripWidth * pulseFactor;
+                
+                // Draw waves with a sudden disruption
+                for (let x = 0; x < width; x += 10) {
+                    // Skip or reduce waves in the flash rip area
+                    const distFromRip = Math.abs(x - ripCenterX);
+                    if (distFromRip < adjustedRipWidth/2) {
+                        continue; // Skip waves in rip channel
+                    }
+                    
+                    const waveHeight = adjustedWaveHeight + Math.sin(x * 0.05 + time * adjustedWaveSpeed) * 4;
+                    const waveFoam = 3 + Math.sin(x * 0.1 + time) * 2;
+                    
+                    // Wave
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.beginPath();
+                    ctx.ellipse(x, waveY, waveFoam, waveHeight, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Add visual indicator for the flash rip
+                if (showIndicators) {
+                    const flashOpacity = 0.3 + Math.sin(time * 4) * 0.2;
+                    ctx.fillStyle = `rgba(255, 50, 50, ${flashOpacity})`;
+                    ctx.beginPath();
+                    ctx.moveTo(ripCenterX - adjustedRipWidth/2, shoreLine);
+                    ctx.lineTo(ripCenterX + adjustedRipWidth/2, shoreLine);
+                    ctx.lineTo(ripCenterX + adjustedRipWidth/4, shoreLine + 50);
+                    ctx.lineTo(ripCenterX - adjustedRipWidth/4, shoreLine + 50);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            } else {
+                // Permanent rip - waves disrupted near structure
+                const pierX = width * 0.7;
+                const ripWidth = width * 0.15;
+                
+                // Draw waves except near the pier
+                for (let x = 0; x < width; x += 10) {
+                    // Skip or reduce waves in the permanent rip area
+                    if (x > pierX - ripWidth && x < pierX) {
+                        continue; // Skip waves in rip area
+                    }
+                    
+                    const waveHeight = adjustedWaveHeight + Math.sin(x * 0.05 + time * adjustedWaveSpeed) * 4;
+                    const waveFoam = 3 + Math.sin(x * 0.1 + time) * 2;
+                    
+                    // Wave
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.beginPath();
+                    ctx.ellipse(x, waveY, waveFoam, waveHeight, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Add visual indicator for the permanent rip
+                if (showIndicators) {
+                    ctx.strokeStyle = "rgba(255, 50, 50, 0.5)";
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([8, 4]);
+                    
+                    // Draw line indicating the danger zone
+                    ctx.beginPath();
+                    ctx.moveTo(pierX - ripWidth, shoreLine + 20);
+                    ctx.lineTo(pierX, shoreLine + 20);
+                    ctx.stroke();
+                    
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+        
+        // Draw a section of breaking waves
+        function drawWaveSection(ctx, startX, endX, y, time, intensity, waveHeight, waveSpeed) {
+            for (let x = startX; x < endX; x += 10) {
+                const waveHeightVal = intensity * (waveHeight + Math.sin(x * 0.05 + time * waveSpeed) * 4);
+                const waveFoam = intensity * (3 + Math.sin(x * 0.1 + time) * 2);
+                
+                if (waveHeightVal < 1) continue; // Skip very small waves
+                
+                // Wave
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.ellipse(x, y, waveFoam, waveHeightVal, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Helper function to draw rip current flow
+        function drawRipCurrentFlow(ctx, ripCenterX, ripWidth, shoreLine, height, time) {
+            // Draw rip current flow lines
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 1.5;
+            
+            for (let i = 0; i < 8; i++) {
+                const xOffset = ((i - 4) / 4) * (ripWidth * 0.8);
+                const x = ripCenterX + xOffset;
+                const flowSpeed = 1.5 - Math.abs(xOffset) / (ripWidth * 0.4); // Faster in center
+                
+                // Create multiple particles flowing down the current
+                for (let j = 0; j < 3; j++) {
+                    const flowOffset = (time * flowSpeed + j * 0.33) % 1;
+                    const yStart = shoreLine + flowOffset * (height - shoreLine);
+                    const yEnd = Math.min(yStart + 20, height);
+                    
+                    // Adjust x position to follow the narrowing current
+                    const progress = (yStart - shoreLine) / (height - shoreLine);
+                    const narrowingFactor = 1 - progress * 0.4;
+                    const adjustedX = ripCenterX + xOffset * narrowingFactor;
+                    
+                    const alpha = 0.7 - flowOffset * 0.5;
+                    
+                    // Draw flow particle
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yStart);
+                    ctx.lineTo(adjustedX, yEnd);
+                    ctx.stroke();
+                    
+                    // Draw small arrow at the end
+                    const arrowSize = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yEnd);
+                    ctx.lineTo(adjustedX - arrowSize, yEnd - arrowSize);
+                    ctx.lineTo(adjustedX + arrowSize, yEnd - arrowSize);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Helper function to draw an arrow
+        function drawArrow(ctx, fromX, fromY, toX, toY, color, width) {
+            const headLength = 10;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            
+            // Draw line
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            // Draw arrowhead
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI/6), toY - headLength * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI/6), toY - headLength * Math.sin(angle + Math.PI/6));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+        
+        // Draw clouds
+        function drawClouds(ctx, width, height, time) {
+            // Cloud color
+            const cloudColor = "255, 255, 255";
+            const cloudAlpha = 0.9;
+            
+            // Draw several clouds
+            const cloudPositions = [
+                { x: width * 0.1 + ((time * 5) % (width * 1.2)), y: height * 0.1, size: 20 },
+                { x: width * 0.5 + ((time * 3) % (width * 1.2)), y: height * 0.08, size: 25 },
+                { x: width * 0.8 + ((time * 7) % (width * 1.2)), y: height * 0.12, size: 15 }
+            ];
+            
+            cloudPositions.forEach((cloud) => {
+                // Wrap clouds around
+                const cloudX = (cloud.x % (width * 1.2)) - width * 0.1;
+                
+                // Draw cloud as a collection of circles
+                for (let i = 0; i < 5; i++) {
+                    const offsetX = (i - 2) * cloud.size * 0.6;
+                    const offsetY = Math.sin(i * 1.5) * cloud.size * 0.2;
+                    const size = cloud.size * (0.7 + Math.sin(i * 2) * 0.3);
+                    
+                    ctx.fillStyle = `rgba(${cloudColor}, ${cloudAlpha})`;
+                    ctx.beginPath();
+                    ctx.arc(cloudX + offsetX, cloud.y + offsetY, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Draw teenager observing the water
+        function drawTeenObserving(ctx, x, y, time, colors) {
+            const baseSize = 20;
+            
+            // Draw shadow
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.beginPath();
+            ctx.ellipse(x, y + baseSize * 1.8, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw legs
+            ctx.strokeStyle = colors.skin;
+            ctx.lineWidth = baseSize * 0.25;
+            
+            // Left leg
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.3, y + baseSize * 0.8);
+            ctx.lineTo(x - baseSize * 0.5, y + baseSize * 1.7);
+            ctx.stroke();
+            
+            // Right leg
+            ctx.beginPath();
+            ctx.moveTo(x + baseSize * 0.3, y + baseSize * 0.8);
+            ctx.lineTo(x + baseSize * 0.5, y + baseSize * 1.7);
+            ctx.stroke();
+            
+            // Draw shorts
+            ctx.fillStyle = "#3F51B5"; // Blue shorts
+            ctx.beginPath();
+            ctx.rect(x - baseSize * 0.5, y + baseSize * 0.4, baseSize, baseSize * 0.4);
+            ctx.fill();
+            
+            // Draw torso
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw head
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.8, baseSize * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw hair
+            ctx.fillStyle = colors.hair;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.9, baseSize * 0.42, Math.PI, 0);
+            ctx.fill();
+            
+            // Draw arms - one pointing at the water
+            ctx.strokeStyle = colors.skin;
+            ctx.lineWidth = baseSize * 0.2;
+            
+            // Left arm (down)
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.4, y);
+            ctx.lineTo(x - baseSize * 0.6, y + baseSize * 0.5);
+            ctx.stroke();
+            
+            // Right arm (pointing)
+            ctx.beginPath();
+            ctx.moveTo(x + baseSize * 0.4, y);
+            ctx.lineTo(x + baseSize * 0.8, y - baseSize * 0.2);
+            ctx.lineTo(x + baseSize * 1.2, y - baseSize * 0.1);
+            ctx.stroke();
+            
+            // Draw face - looking at water
+            if (baseSize > 10) {
+                // Eyes
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.8, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.65, baseSize * 0.1, 0.1, Math.PI - 0.1, false);
+                ctx.stroke();
+            }
+            
+            // Draw thought bubble showing they're thinking about safety
+            const bubbleX = x + baseSize * 2;
+            const bubbleY = y - baseSize * 1.5;
+            
+            // Main bubble
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.ellipse(bubbleX, bubbleY, baseSize * 1.2, baseSize * 0.8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Connection bubbles
+            ctx.beginPath();
+            ctx.arc(x + baseSize * 0.8, y - baseSize, baseSize * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(x + baseSize * 1.2, y - baseSize * 1.2, baseSize * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw warning symbol in thought bubble
+            ctx.fillStyle = "#FF5252";
+            ctx.beginPath();
+            ctx.moveTo(bubbleX - baseSize * 0.5, bubbleY + baseSize * 0.3);
+            ctx.lineTo(bubbleX + baseSize * 0.5, bubbleY + baseSize * 0.3);
+            ctx.lineTo(bubbleX, bubbleY - baseSize * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("!", bubbleX, bubbleY + baseSize * 0.1);
+            ctx.textAlign = "start";
+        }
+        
+        // Draw teenager swimming
+        function drawTeenSwimming(ctx, x, y, time, colors) {
+            const baseSize = 20;
+            const swimCycle = time * 4;
+            const legKick = Math.sin(swimCycle) * baseSize * 0.5;
+            const armStroke = Math.cos(swimCycle) * baseSize * 0.5;
+            
+            // Draw shadow under water
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.beginPath();
+            ctx.ellipse(x, y + baseSize * 0.5, baseSize, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw legs with kicking motion
+            ctx.strokeStyle = colors.skin;
+            ctx.lineWidth = baseSize * 0.25;
+            
+            // Left leg
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - baseSize * 0.5 - legKick, y + baseSize * 0.8);
+            ctx.stroke();
+            
+            // Right leg
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + baseSize * 0.5 + legKick, y + baseSize * 0.8);
+            ctx.stroke();
+            
+            // Draw swimsuit
+            ctx.fillStyle = colors.swimsuit;
+            ctx.beginPath();
+            ctx.ellipse(x, y, baseSize * 0.5, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw torso
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.ellipse(x, y - baseSize * 0.3, baseSize * 0.4, baseSize * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw head
+            ctx.fillStyle = colors.skin;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.7, baseSize * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw hair
+            ctx.fillStyle = colors.hair;
+            ctx.beginPath();
+            ctx.arc(x, y - baseSize * 0.85, baseSize * 0.35, Math.PI, 0);
+            ctx.fill();
+            
+            // Draw arms with swimming motion
+            ctx.strokeStyle = colors.skin;
+            ctx.lineWidth = baseSize * 0.2;
+            
+            // Left arm
+            ctx.beginPath();
+            ctx.moveTo(x - baseSize * 0.4, y - baseSize * 0.3);
+            ctx.lineTo(x - baseSize * 0.8 - armStroke, y - baseSize * 0.1);
+            ctx.stroke();
+            
+            // Right arm
+            ctx.beginPath();
+            ctx.moveTo(x + baseSize * 0.4, y - baseSize * 0.3);
+            ctx.lineTo(x + baseSize * 0.8 + armStroke, y - baseSize * 0.1);
+            ctx.stroke();
+            
+            // Draw face
+            if (baseSize > 10) {
+                // Eyes
+                ctx.fillStyle = "#000";
+                ctx.beginPath();
+                ctx.ellipse(x - baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(x + baseSize * 0.1, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.03, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth - happy
+                ctx.beginPath();
+                ctx.arc(x, y - baseSize * 0.55, baseSize * 0.1, 0.1, Math.PI - 0.1, false);
+                ctx.stroke();
+            }
+            
+            // Water splash effects around swimmer
+            for (let i = 0; i < 5; i++) {
+                const splashX = x + (Math.random() - 0.5) * baseSize * 3;
+                const splashY = y + (Math.random() - 0.5) * baseSize * 2;
+                const splashSize = Math.random() * baseSize * 0.2 + baseSize * 0.1;
+                
+                ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+                ctx.beginPath();
+                ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Event listeners
+        resetBtn.addEventListener('click', resetSimulation);
+        playBtn.addEventListener('click', togglePlayPause);
+        infoBtn.addEventListener('click', toggleInfo);
+        quizBtn.addEventListener('click', toggleQuiz);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        hotspotCloseBtn.addEventListener('click', closeHotspotInfo);
+        infoCloseBtn.addEventListener('click', toggleInfo);
+        canvas.addEventListener('click', handleCanvasClick);
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        container.addEventListener('mousemove', handleMouseMove);
+        
+        // Wave control event listeners
+        waveHeightSlider.addEventListener('input', function() {
+            waveHeight = this.value / 100;
+        });
+        
+        waveSpeedSlider.addEventListener('input', function() {
+            waveSpeed = this.value / 100;
+        });
+        
+        showIndicatorsToggle.addEventListener('change', function() {
+            showIndicators = this.checked;
+        });
+        
+        showLabelsToggle.addEventListener('change', function() {
+            showLabels = this.checked;
+        });
+        
+        showSafeZonesToggle.addEventListener('change', function() {
+            showSafeZones = this.checked;
+            if (showSafeZones) {
+                createSafeAndDangerZones();
+            } else {
+                document.querySelectorAll('.safe-zone-indicator, .danger-zone-indicator').forEach(zone => zone.remove());
+            }
+        });
+        
+        magnifierToolToggle.addEventListener('change', function() {
+            magnifierActive = this.checked;
+            magnifier.style.display = magnifierActive ? 'block' : 'none';
+        });
+        
+        // Rip type buttons
+        channelRipBtn.addEventListener('click', () => changeRipType('channel'));
+        flashRipBtn.addEventListener('click', () => changeRipType('flash'));
+        permanentRipBtn.addEventListener('click', () => changeRipType('permanent'));
+        
+        // Quiz buttons
+        quizNextBtn.addEventListener('click', handleQuizNext);
+        quizPrevBtn.addEventListener('click', handleQuizPrev);
+        quizCloseBtn.addEventListener('click', hideQuiz);
+        
+        // Initial draw
+        drawSimulation();
+        
+        // Create wave areas and zones
+        createWaveAreas();
+        createSafeAndDangerZones();
+    </script>
+</body>
+</html>
+

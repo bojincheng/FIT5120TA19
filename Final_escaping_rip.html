@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rip Current Simulation</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+            --water-light: #60a5fa;
+            --water-mid: #2563eb;
+            --water-dark: #1d4ed8;
+            --rip-current: #0c4a6e; /* Darker blue for rip current */
+            --sand: #fcd34d;
+            --sand-dark: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            overflow: hidden;
+            line-height: 1.5;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .scenario-tabs {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 20;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            width: auto;
+            min-width: 650px;
+        }
+        
+        .scenario-tab {
+            flex: 1;
+            padding: 15px 25px;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+            text-align: center;
+        }
+        
+        .scenario-tab.active {
+            background-color: var(--primary);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .story-title {
+            position: absolute;
+            top: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 32px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 650px;
+            z-index: 10;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .story-title h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .message {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 32px;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            text-align: center;
+            max-width: 600px;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .message p {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            background-color: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 50px;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .button {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .button:hover {
+            background-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .info-panel {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .info-panel.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .info-content {
+            background-color: var(--dark);
+            border-radius: 12px;
+            max-width: 550px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+        
+        .info-panel.visible .info-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .info-content .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--light);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .info-content .close:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .info-content h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .info-content ol {
+            list-style-type: decimal;
+            padding-left: 24px;
+            margin: 0;
+        }
+        
+        .info-content li {
+            margin-bottom: 14px;
+            color: var(--light);
+        }
+        
+        .info-content .highlight {
+            font-weight: 600;
+            color: white;
+        }
+        
+        .info-content .callout {
+            margin-top: 24px;
+            padding: 16px;
+            background-color: rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .info-content .callout p {
+            color: #bfdbfe;
+            font-size: 15px;
+            margin: 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            max-width: 250px;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .area-label {
+            position: absolute;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 5;
+            background: rgba(0,0,0,0.4);
+            padding: 6px 12px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .area-label.safe {
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .area-label.danger {
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            transform: translateX(-45%) !important; /* Adjust horizontal position */
+        }
+        
+        .approach-indicator {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90%;
+        }
+        
+        .approach-indicator.correct {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 2px solid var(--success);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+        
+        .approach-indicator.incorrect {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+        
+        .approach-indicator.visible {
+            opacity: 1;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        /* Add back button styles */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: inline-flex;
+            align-items: center;
+            padding: 1rem 1.8rem;
+            background: #2563eb;
+            border: 3px solid #ffffff;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4),
+                        0 0 0 2px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .back-button:active {
+            transform: translateY(0);
+        }
+
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+        }
+
+        .back-button:hover svg {
+            transform: translateX(-3px);
+        }
+
+        /* Adjust area labels specific positions */
+        #safeLabel1 {
+            left: 15%;
+            top: 35%;
+        }
+
+        #safeLabel2 {
+            right: 15%;
+            top: 35%;
+        }
+
+        #dangerLabel {
+            left: 55%;
+            top: 45%;
+            transform: translateX(-45%);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .scenario-tabs {
+                top: 30px;
+                width: 90%;
+                min-width: unset;
+                flex-direction: column;
+                gap: 8px;
+                padding: 8px;
+            }
+
+            .scenario-tab {
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 14px;
+                white-space: normal;
+            }
+
+            .story-title {
+                top: 120px;
+                width: 90%;
+                padding: 12px 20px;
+            }
+
+            .story-title h2 {
+                font-size: 16px;
+                white-space: normal;
+            }
+
+            .approach-indicator {
+                bottom: 160px;
+                font-size: 14px;
+                padding: 10px 20px;
+                width: 90%;
+            }
+
+            .message {
+                bottom: 100px;
+                width: 90%;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="beach_rescue.html#escape" class="back-button" style="
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        display: inline-flex;
+        align-items: center;
+        padding: 1rem 1.8rem;
+        background: #2563eb;
+        border: 3px solid #ffffff;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        z-index: 100;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4),
+                    0 0 0 2px rgba(255, 255, 255, 0.5);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Info Page
+    </a>
+    <div id="container">
+        <canvas id="simulation"></canvas>
+        
+        <div class="scenario-tabs">
+            <button id="incorrectTab" class="scenario-tab active">Incorrect Response</button>
+            <button id="correctTab" class="scenario-tab">Correct Response</button>
+        </div>
+        
+        <div id="storyTitle" class="story-title">
+            <h2 id="titleText">Incorrect Response: Swimming Against the Current</h2>
+        </div>
+        
+        <div id="message" class="message">
+            <p>Press Play to start the simulation</p>
+        </div>
+        
+        <div id="correctIndicator" class="approach-indicator correct">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Correct Approach</span>
+        </div>
+        
+        <div id="incorrectIndicator" class="approach-indicator incorrect">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span>Incorrect Approach</span>
+        </div>
+        
+        <div class="control-panel">
+            <button id="resetBtn" class="button" title="Reset">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+            </button>
+            
+            <button id="playBtn" class="button" title="Play/Pause">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </button>
+            
+            <button id="infoBtn" class="button" title="Information">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            
+            <button id="fullscreenBtn" class="button" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="infoPanel" class="info-panel">
+            <div class="info-content">
+                <button class="close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <h2>How to Escape a Rip Current</h2>
+                
+                <ol>
+                    <li>
+                        <span class="highlight">Don't panic</span> - Stay calm and conserve your energy.
+                    </li>
+                    <li>
+                        <span class="highlight">Don't swim against the current</span> - You'll quickly become exhausted.
+                    </li>
+                    <li>
+                        <span class="highlight">Swim parallel to the shore</span> - Move sideways (left or right) to escape the narrow rip current.
+                    </li>
+                    <li>
+                        <span class="highlight">Once free, swim at an angle back to shore</span> - Use the incoming waves to help you return.
+                    </li>
+                    <li>
+                        <span class="highlight">If you can't escape</span> - Float or tread water and call for help. Wave your arms to attract attention.
+                    </li>
+                </ol>
+                
+                <div class="callout">
+                    <p>
+                        Rip currents are powerful, narrow channels of water flowing away from shore. They can move at speeds up to 8 feet per second—faster than an Olympic swimmer.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area labels -->
+        <div id="safeLabel1" class="area-label safe" style="left: 15%; top: 35%;">SAFE ZONE</div>
+        <div id="safeLabel2" class="area-label safe" style="right: 15%; top: 35%;">SAFE ZONE</div>
+        <div id="dangerLabel" class="area-label danger" style="left: 55%; top: 45%;">RIP CURRENT</div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const canvas = document.getElementById('simulation');
+        const container = document.getElementById('container');
+        const titleText = document.getElementById('titleText');
+        const messageEl = document.querySelector('.message p');
+        const resetBtn = document.getElementById('resetBtn');
+        const playBtn = document.getElementById('playBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const infoPanel = document.getElementById('infoPanel');
+        const infoCloseBtn = document.querySelector('.info-content .close');
+        const correctTab = document.getElementById('correctTab');
+        const incorrectTab = document.getElementById('incorrectTab');
+        const correctIndicator = document.getElementById('correctIndicator');
+        const incorrectIndicator = document.getElementById('incorrectIndicator');
+        
+        // State variables
+        let started = false;
+        let paused = false;
+        let animationTime = 0;
+        let animationFrame = null;
+        let isFullscreen = false;
+        const daytime = 0.5; // Fixed at noon
+        let currentScenario = 'incorrect'; // 'correct' or 'incorrect'
+        
+        // Initialize canvas
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas to fill container
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // Redraw if animation is not running
+            if (!started || paused) {
+                drawSimulation();
+            }
+            
+            // Position area labels
+            positionAreaLabels();
+        }
+        
+        // Position area labels based on canvas size
+        function positionAreaLabels() {
+            const safeLabel1 = document.getElementById('safeLabel1');
+            const safeLabel2 = document.getElementById('safeLabel2');
+            const dangerLabel = document.getElementById('dangerLabel');
+            
+            safeLabel1.style.left = `${canvas.width * 0.25 - 50}px`;
+            safeLabel1.style.top = `${canvas.height * 0.35}px`;
+            
+            safeLabel2.style.left = `${canvas.width * 0.75 - 50}px`;
+            safeLabel2.style.top = `${canvas.height * 0.35}px`;
+            
+            dangerLabel.style.left = `${canvas.width * 0.5}px`;
+            dangerLabel.style.top = `${canvas.height * 0.25}px`;
+            dangerLabel.style.transform = 'translateX(-50%)';
+        }
+        
+        // Event listeners
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Initialize
+        resizeCanvas();
+        
+        // Reset simulation
+        function resetSimulation() {
+            started = false;
+            paused = false;
+            animationTime = 0;
+            messageEl.textContent = "Press Play to start the simulation";
+            
+            // Hide approach indicators
+            correctIndicator.classList.remove('visible');
+            incorrectIndicator.classList.remove('visible');
+            
+            // Update play button icon
+            updatePlayButton();
+            
+            // Cancel animation frame if running
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            
+            // Draw initial state
+            drawSimulation();
+        }
+        
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (!started) {
+                started = true;
+                paused = false;
+                messageEl.textContent = "Watch the simulation";
+                startAnimation();
+            } else {
+                paused = !paused;
+                if (!paused) {
+                    startAnimation();
+                } else if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+            }
+            
+            updatePlayButton();
+        }
+        
+        // Update play button icon
+        function updatePlayButton() {
+            if (!started || paused) {
+                playBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+            } else {
+                playBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Toggle info panel
+        function toggleInfo() {
+            infoPanel.classList.toggle('visible');
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Handle fullscreen change
+        function handleFullscreenChange() {
+            isFullscreen = !!document.fullscreenElement;
+            updateFullscreenButton();
+        }
+        
+        // Update fullscreen button icon
+        function updateFullscreenButton() {
+            if (isFullscreen) {
+                fullscreenBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                    </svg>
+                `;
+            } else {
+                fullscreenBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Switch scenario
+        function switchScenario(scenario) {
+            currentScenario = scenario;
+            
+            // Update tab styling
+            if (scenario === 'correct') {
+                correctTab.classList.add('active');
+                incorrectTab.classList.remove('active');
+                titleText.textContent = "Correct Response: Swim Parallel to Shore";
+            } else {
+                incorrectTab.classList.add('active');
+                correctTab.classList.remove('active');
+                titleText.textContent = "Incorrect Response: Swimming Against the Current";
+            }
+            
+            // Reset animation
+            resetSimulation();
+        }
+        
+        // Start animation loop
+        function startAnimation() {
+            const animate = () => {
+                if (!paused) {
+                    animationTime += 16; // ~60fps
+                    updateSimulation();
+                    drawSimulation();
+                    animationFrame = requestAnimationFrame(animate);
+                }
+            };
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // Update simulation based on animation time
+        function updateSimulation() {
+            if (!started) return;
+            
+            const time = animationTime / 1000;
+            const cycleTime = 15; // shorter cycle time
+            const normalizedTime = (time % cycleTime) / cycleTime;
+            
+            // Update message based on scenario and time
+            if (currentScenario === 'correct') {
+                if (normalizedTime < 0.3) {
+                    messageEl.textContent = "Swimmer realizes they're caught in a rip current";
+                    correctIndicator.classList.remove('visible');
+                } else if (normalizedTime < 0.7) {
+                    messageEl.textContent = "Swimming parallel to shore to escape the rip current";
+                    correctIndicator.classList.add('visible');
+                    correctIndicator.classList.add('pulse');
+                } else {
+                    messageEl.textContent = "After escaping the rip, swimmer angles back to shore safely";
+                    correctIndicator.classList.add('visible');
+                    correctIndicator.classList.remove('pulse');
+                }
+            } else {
+                if (normalizedTime < 0.3) {
+                    messageEl.textContent = "Swimmer realizes they're caught in a rip current";
+                    incorrectIndicator.classList.remove('visible');
+                } else if (normalizedTime < 0.7) {
+                    messageEl.textContent = "Trying to swim directly against the current";
+                    incorrectIndicator.classList.add('visible');
+                    incorrectIndicator.classList.add('pulse');
+                } else {
+                    messageEl.textContent = "Swimmer becomes exhausted and is pulled further from shore";
+                    incorrectIndicator.classList.add('visible');
+                    incorrectIndicator.classList.remove('pulse');
+                }
+            }
+        }
+        
+        // Draw the simulation
+        function drawSimulation() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Set up time variables
+            const time = animationTime / 1000; // Convert to seconds
+            
+            // Enhanced color palette
+            const colors = {
+                // Sky colors
+                skyTop: "#87CEEB",
+                skyBottom: "#ADD8E6",
+                
+                // Water colors
+                shallowWater: "#60a5fa",
+                midWater: "#2563eb",
+                deepWater: "#1d4ed8",
+                
+                // Beach colors
+                beach: "#fcd34d",
+                beachDark: "#f59e0b",
+                
+                // Rip current and zones
+                ripCurrent: "var(--rip-current)",
+                safeZone: "rgba(16, 185, 129, 0.1)", // green tint
+                dangerZone: "rgba(239, 68, 68, 0.1)", // red tint
+            };
+            
+            // Shoreline position (constant)
+            const shoreLineY = height * 0.2;
+            
+            // Draw sky with gradient
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, shoreLineY);
+            skyGradient.addColorStop(0, colors.skyTop);
+            skyGradient.addColorStop(1, colors.skyBottom);
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, width, shoreLineY);
+            
+            // Draw sun with glow
+            const sunX = width * 0.8;
+            const sunY = height * 0.1;
+            const sunRadius = 30;
+            
+            // Sun glow
+            const sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius * 3);
+            sunGlow.addColorStop(0, "rgba(255, 255, 200, 0.8)");
+            sunGlow.addColorStop(0.3, "rgba(255, 255, 150, 0.4)");
+            sunGlow.addColorStop(1, "rgba(255, 255, 100, 0)");
+            
+            ctx.fillStyle = sunGlow;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius * 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Sun itself
+            ctx.fillStyle = "#FFFFA0";
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw some clouds
+            drawClouds(ctx, width, shoreLineY, time);
+            
+            // Draw beach with gradient
+            const beachGradient = ctx.createLinearGradient(0, 0, 0, shoreLineY);
+            beachGradient.addColorStop(0, colors.beach);
+            beachGradient.addColorStop(1, colors.beachDark);
+            ctx.fillStyle = beachGradient;
+            ctx.fillRect(0, 0, width, shoreLineY * 0.3);
+            
+            // Add beach texture
+            drawBeachTexture(ctx, width, shoreLineY);
+            
+            // Draw water with gradient
+            const waterGradient = ctx.createLinearGradient(0, shoreLineY, 0, height);
+            waterGradient.addColorStop(0, colors.shallowWater);
+            waterGradient.addColorStop(0.3, colors.midWater);
+            waterGradient.addColorStop(1, colors.deepWater);
+            ctx.fillStyle = waterGradient;
+            ctx.fillRect(0, shoreLineY, width, height - shoreLineY);
+            
+            // Draw rip current zone
+            const ripWidth = width * 0.3;
+            const ripCenterX = width * 0.5;
+            
+            // Draw safe zones with clear green borders
+            // Left safe zone
+            ctx.fillStyle = colors.safeZone;
+            ctx.fillRect(0, shoreLineY, ripCenterX - ripWidth/2, height - shoreLineY);
+            
+            // Right safe zone
+            ctx.fillRect(ripCenterX + ripWidth/2, shoreLineY, width - (ripCenterX + ripWidth/2), height - shoreLineY);
+            
+            // Draw green borders for safe zones
+            ctx.strokeStyle = "rgba(16, 185, 129, 0.7)"; // green
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]);
+            
+            // Left safe zone border
+            ctx.beginPath();
+            ctx.moveTo(0, shoreLineY);
+            ctx.lineTo(ripCenterX - ripWidth/2, shoreLineY);
+            ctx.lineTo(ripCenterX - ripWidth/2, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Right safe zone border
+            ctx.beginPath();
+            ctx.moveTo(ripCenterX + ripWidth/2, shoreLineY);
+            ctx.lineTo(width, shoreLineY);
+            ctx.lineTo(width, height);
+            ctx.lineTo(ripCenterX + ripWidth/2, height);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Draw danger zone with clear red border and darker water
+            ctx.fillStyle = colors.ripCurrent;
+            ctx.fillRect(ripCenterX - ripWidth/2, shoreLineY, ripWidth, height - shoreLineY);
+
+            // Add a subtle gradient to the rip current to make it look more realistic
+            const ripGradient = ctx.createLinearGradient(0, shoreLineY, 0, height);
+            ripGradient.addColorStop(0, "rgba(12, 74, 110, 0.6)"); // Lighter at top
+            ripGradient.addColorStop(1, "rgba(7, 54, 92, 0.9)"); // Darker at bottom
+            ctx.fillStyle = ripGradient;
+            ctx.fillRect(ripCenterX - ripWidth/2, shoreLineY, ripWidth, height - shoreLineY);
+            
+            // Draw red border for danger zone
+            ctx.strokeStyle = "rgba(239, 68, 68, 0.7)"; // red
+            ctx.beginPath();
+            ctx.moveTo(ripCenterX - ripWidth/2, shoreLineY);
+            ctx.lineTo(ripCenterX + ripWidth/2, shoreLineY);
+            ctx.lineTo(ripCenterX + ripWidth/2, height);
+            ctx.lineTo(ripCenterX - ripWidth/2, height);
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Reset line dash
+            ctx.setLineDash([]);
+            
+            // Draw rip current flow arrows
+            drawRipCurrentFlow(ctx, ripCenterX, ripWidth, shoreLineY, height, time);
+            
+            // Draw waves
+            drawWaves(ctx, shoreLineY, width, time);
+            
+            // Draw swimmer based on scenario
+            if (currentScenario === 'correct') {
+                drawCorrectScenario(ctx, ripCenterX, ripWidth, shoreLineY, width, height, time);
+            } else {
+                drawIncorrectScenario(ctx, ripCenterX, ripWidth, shoreLineY, width, height, time);
+            }
+        }
+        
+        // Draw clouds
+        function drawClouds(ctx, width, shoreLineY, time) {
+            const cloudPositions = [
+                { x: width * 0.2 + time * 5 % width, y: shoreLineY * 0.4, size: 20 },
+                { x: width * 0.5 + time * 3 % width, y: shoreLineY * 0.3, size: 25 },
+                { x: width * 0.8 + time * 7 % width, y: shoreLineY * 0.5, size: 15 }
+            ];
+            
+            cloudPositions.forEach(cloud => {
+                const cloudX = cloud.x % (width * 1.2) - width * 0.1;
+                
+                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                
+                // Draw cloud as a collection of circles
+                for (let i = 0; i < 5; i++) {
+                    const offsetX = (i - 2) * cloud.size * 0.6;
+                    const offsetY = Math.sin(i * 1.5) * cloud.size * 0.2;
+                    const size = cloud.size * (0.7 + Math.sin(i * 2) * 0.3);
+                    
+                    ctx.beginPath();
+                    ctx.arc(cloudX + offsetX, cloud.y + offsetY, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // Draw beach texture
+        function drawBeachTexture(ctx, width, shoreLineY) {
+            // Add subtle horizontal texture lines to the beach
+            for (let i = 0; i < 15; i++) {
+                const y = shoreLineY * 0.3 * (i / 15);
+                const lineWidth = 0.5 + Math.random() * 0.5;
+                const alpha = 0.05 + Math.random() * 0.05;
+                
+                ctx.strokeStyle = `rgba(160, 140, 110, ${alpha})`;
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(0, y + Math.sin(y * 0.1) * 2);
+                
+                // Create wavy line
+                for (let x = 0; x < width; x += 20) {
+                    const waveHeight = Math.sin(x * 0.01 + i) * 1.5;
+                    ctx.lineTo(x, y + waveHeight);
+                }
+                
+                ctx.stroke();
+            }
+        }
+        
+        // Draw the correct scenario (swimming parallel to shore)
+        function drawCorrectScenario(ctx, ripCenterX, ripWidth, shoreLineY, width, height, time) {
+            const normalizedTime = (time % 15) / 15; // 15-second cycle
+            let swimmerX, swimmerY, swimDirection, isStruggling;
+            
+            if (normalizedTime < 0.3) {
+                // Getting caught in the rip
+                const progress = normalizedTime / 0.3;
+                swimmerX = ripCenterX;
+                swimmerY = shoreLineY + progress * height * 0.3;
+                swimDirection = 2; // trying to swim up/toward shore
+                isStruggling = progress > 0.5;
+                
+                // Show realization at the end of this phase
+                if (progress > 0.8) {
+                    // Draw thinking bubble
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.beginPath();
+                    ctx.ellipse(swimmerX + 40, swimmerY - 30, 30, 20, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(swimmerX + 15, swimmerY - 15);
+                    ctx.lineTo(swimmerX + 25, swimmerY - 25);
+                    ctx.lineTo(swimmerX + 10, swimmerY - 25);
+                    ctx.fill();
+                    
+                    // Draw arrow in thinking bubble
+                    ctx.strokeStyle = "#10b981";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(swimmerX + 30, swimmerY - 30);
+                    ctx.lineTo(swimmerX + 50, swimmerY - 30);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(swimmerX + 45, swimmerY - 35);
+                    ctx.lineTo(swimmerX + 50, swimmerY - 30);
+                    ctx.lineTo(swimmerX + 45, swimmerY - 25);
+                    ctx.stroke();
+                }
+            } else if (normalizedTime < 0.7) {
+                // Swimming parallel to shore
+                const progress = (normalizedTime - 0.3) / 0.4;
+                swimmerX = ripCenterX - progress * width * 0.4;
+                swimmerY = shoreLineY + height * 0.3 + Math.sin(time * 3) * 10;
+                swimDirection = -1; // swimming left
+                isStruggling = false;
+                
+                // Draw correct approach indicator
+                ctx.fillStyle = "rgba(16, 185, 129, 0.1)";
+                ctx.beginPath();
+                ctx.ellipse(swimmerX, swimmerY, 100, 50, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Correct direction arrow
+                ctx.strokeStyle = "#10b981";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(swimmerX - 60, swimmerY);
+                ctx.lineTo(swimmerX - 20, swimmerY);
+                ctx.stroke();
+                
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(swimmerX - 60, swimmerY);
+                ctx.lineTo(swimmerX - 45, swimmerY - 10);
+                ctx.lineTo(swimmerX - 45, swimmerY + 10);
+                ctx.closePath();
+                ctx.fillStyle = "#10b981";
+                ctx.fill();
+            } else {
+                // Swimming back to shore
+                const progress = (normalizedTime - 0.7) / 0.3;
+                swimmerX = ripCenterX - width * 0.4 + progress * width * 0.1;
+                swimmerY = shoreLineY + height * 0.3 - progress * height * 0.25;
+                swimDirection = 2; // swimming up/toward shore
+                isStruggling = false;
+                
+                // Draw path arrow
+                ctx.strokeStyle = "#10b981";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(ripCenterX - width * 0.4, shoreLineY + height * 0.3);
+                ctx.lineTo(ripCenterX - width * 0.3, shoreLineY + height * 0.05);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Draw arrow head
+                ctx.beginPath();
+                ctx.moveTo(ripCenterX - width * 0.3, shoreLineY + height * 0.05);
+                ctx.lineTo(ripCenterX - width * 0.3 - 10, shoreLineY + height * 0.05 + 10);
+                ctx.lineTo(ripCenterX - width * 0.3 + 10, shoreLineY + height * 0.05 + 15);
+                ctx.closePath();
+                ctx.fillStyle = "#10b981";
+                ctx.fill();
+            }
+            
+            // Draw the swimmer
+            drawSwimmer(ctx, swimmerX, swimmerY, time, swimDirection, isStruggling);
+        }
+        
+        // Draw the incorrect scenario (swimming against the current)
+        function drawIncorrectScenario(ctx, ripCenterX, ripWidth, shoreLineY, width, height, time) {
+            const normalizedTime = (time % 15) / 15; // 15-second cycle
+            let swimmerX, swimmerY, swimDirection, isStruggling;
+            
+            if (normalizedTime < 0.3) {
+                // Getting caught in the rip
+                const progress = normalizedTime / 0.3;
+                swimmerX = ripCenterX;
+                swimmerY = shoreLineY + progress * height * 0.3;
+                swimDirection = 2; // trying to swim up/toward shore
+                isStruggling = progress > 0.5;
+                
+                // Show realization at the end of this phase
+                if (progress > 0.8) {
+                    // Draw thinking bubble
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.beginPath();
+                    ctx.ellipse(swimmerX + 40, swimmerY - 30, 30, 20, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(swimmerX + 15, swimmerY - 15);
+                    ctx.lineTo(swimmerX + 25, swimmerY - 25);
+                    ctx.lineTo(swimmerX + 10, swimmerY - 25);
+                    ctx.fill();
+                    
+                    // Draw question mark in thinking bubble
+                    ctx.fillStyle = "#ef4444";
+                    ctx.font = "bold 20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText("?", swimmerX + 40, swimmerY - 30);
+                    ctx.textAlign = "start";
+                    ctx.textBaseline = "alphabetic";
+                }
+            } else if (normalizedTime < 0.7) {
+                // Swimming against the current
+                const progress = (normalizedTime - 0.3) / 0.4;
+                swimmerX = ripCenterX + Math.sin(time * 8) * 15; // struggling side to side
+                swimmerY = shoreLineY + height * 0.3 - progress * height * 0.05 + progress * height * 0.15; // trying to go up but getting pulled back
+                swimDirection = 2; // trying to swim up/toward shore
+                isStruggling = true;
+                
+                // Draw wrong approach indicator
+                ctx.fillStyle = "rgba(239, 68, 68, 0.15)";
+                ctx.beginPath();
+                ctx.arc(swimmerX, swimmerY, 70, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Wrong direction arrow
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(swimmerX, swimmerY - 60);
+                ctx.lineTo(swimmerX, swimmerY - 20);
+                ctx.stroke();
+                
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(swimmerX, swimmerY - 60);
+                ctx.lineTo(swimmerX - 10, swimmerY - 45);
+                ctx.lineTo(swimmerX + 10, swimmerY - 45);
+                ctx.closePath();
+                ctx.fillStyle = "#ef4444";
+                ctx.fill();
+                
+                // Add exhaustion indicators (sweat drops)
+                for (let i = 0; i < 5; i++) {
+                    const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1;
+                    const distance = 30 + Math.random() * 20;
+                    const dropX = swimmerX + Math.cos(angle) * distance;
+                    const dropY = swimmerY - Math.sin(angle) * distance;
+                    
+                    // Draw sweat drop
+                    ctx.fillStyle = "rgba(200, 240, 255, 0.8)";
+                    ctx.beginPath();
+                    ctx.arc(dropX, dropY, 3 + Math.random() * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw drop trail
+                    ctx.beginPath();
+                    ctx.moveTo(dropX, dropY - 5);
+                    ctx.lineTo(dropX, dropY);
+                    ctx.strokeStyle = "rgba(200, 240, 255, 0.6)";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            } else {
+                // Getting pulled further out
+                const progress = (normalizedTime - 0.7) / 0.3;
+                swimmerX = ripCenterX + Math.sin(time * 4) * 20; // weaker struggling
+                swimmerY = shoreLineY + height * 0.4 + progress * height * 0.2; // getting pulled further out
+                swimDirection = 2; // still trying to swim up/toward shore
+                isStruggling = true;
+                
+                // Danger indicator
+                ctx.fillStyle = "rgba(239, 68, 68, 0.1)";
+                ctx.beginPath();
+                ctx.arc(swimmerX, swimmerY, 100, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw the swimmer
+            drawSwimmer(ctx, swimmerX, swimmerY, time, swimDirection, isStruggling);
+        }
+        
+        // Draw a swimmer
+        function drawSwimmer(ctx, x, y, time, swimDirection, isStruggling) {
+            // Calculate perspective scale based on y position
+            const perspectiveScale = Math.max(0.7, Math.min(1.2, 1 - (y - 125) / 400));
+            const baseSize = 25 * perspectiveScale;
+            
+            // Swimming animation parameters
+            const swimCycle = time * (isStruggling ? 8 : 4);
+            const legKick = Math.sin(swimCycle) * baseSize * 0.8;
+            const armStroke = Math.cos(swimCycle) * baseSize * 0.8;
+            
+            // Determine if swimmer is face down or face up based on direction
+            const faceDown = swimDirection !== 2; // Face up when swimming toward shore
+            
+            // Draw shadow
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.beginPath();
+            ctx.ellipse(x, y + baseSize * 0.8, baseSize * 1.5, baseSize * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw legs
+            ctx.strokeStyle = "#FFD0A9"; // skin color
+            ctx.lineWidth = baseSize * 0.3;
+            
+            // Left leg
+            ctx.beginPath();
+            ctx.moveTo(x, y + baseSize * 0.3);
+            if (faceDown) {
+                ctx.lineTo(x - baseSize * 0.5 - legKick, y + baseSize * 1.2);
+            } else {
+                ctx.lineTo(x - baseSize * 0.5 - legKick, y - baseSize * 0.8);
+            }
+            ctx.stroke();
+            
+            // Right leg
+            ctx.beginPath();
+            ctx.moveTo(x, y + baseSize * 0.3);
+            if (faceDown) {
+                ctx.lineTo(x + baseSize * 0.5 + legKick, y + baseSize * 1.2);
+            } else {
+                ctx.lineTo(x + baseSize * 0.5 + legKick, y - baseSize * 0.8);
+            }
+            ctx.stroke();
+            
+            // Draw swimsuit
+            ctx.fillStyle = "#3b82f6"; // blue swimsuit
+            ctx.beginPath();
+            ctx.ellipse(x, y, baseSize * 0.6, baseSize * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw torso
+            ctx.fillStyle = "#FFD0A9"; // skin color
+            ctx.beginPath();
+            if (faceDown) {
+                ctx.ellipse(x, y - baseSize * 0.3, baseSize * 0.5, baseSize * 0.3, 0, 0, Math.PI * 2);
+            } else {
+                ctx.ellipse(x, y + baseSize * 0.3, baseSize * 0.5, baseSize * 0.3, 0, 0, Math.PI * 2);
+            }
+            ctx.fill();
+            
+            // Draw head
+            ctx.fillStyle = "#FFD0A9"; // skin color
+            ctx.beginPath();
+            if (faceDown) {
+                ctx.arc(x, y - baseSize * 0.7, baseSize * 0.4, 0, Math.PI * 2);
+            } else {
+                ctx.arc(x, y + baseSize * 0.7, baseSize * 0.4, 0, Math.PI * 2);
+            }
+            ctx.fill();
+            
+            // Draw hair
+            ctx.fillStyle = "#8B4513"; // brown hair
+            if (faceDown) {
+                // Hair on top of head when face down
+                ctx.beginPath();
+                ctx.ellipse(x, y - baseSize * 0.9, baseSize * 0.45, baseSize * 0.25, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Hair visible from behind when face up
+                ctx.beginPath();
+                ctx.ellipse(x, y + baseSize * 0.5, baseSize * 0.45, baseSize * 0.25, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw arms with swimming motion
+            ctx.strokeStyle = "#FFD0A9"; // skin color
+            ctx.lineWidth = baseSize * 0.25;
+            
+            if (isStruggling) {
+                // Struggling arms - more frantic and uncoordinated
+                const struggleOffset1 = Math.sin(time * 15) * baseSize * 0.6;
+                const struggleOffset2 = Math.cos(time * 12) * baseSize * 0.6;
+                
+                // Left arm - more exaggerated movement
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y);
+                ctx.lineTo(x - baseSize * 1.2 + struggleOffset1, y - baseSize * 0.8 + struggleOffset2);
+                ctx.stroke();
+                
+                // Right arm - more exaggerated movement
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y);
+                ctx.lineTo(x + baseSize * 1.2 + struggleOffset2, y - baseSize * 0.8 - struggleOffset1);
+                ctx.stroke();
+                
+                // Add splashing effect around swimmer when struggling
+                for (let i = 0; i < 12; i++) {
+                    const splashAngle = Math.random() * Math.PI * 2;
+                    const splashDist = baseSize * (1 + Math.random() * 2);
+                    const splashX = x + Math.cos(splashAngle) * splashDist;
+                    const splashY = y + Math.sin(splashAngle) * splashDist;
+                    const splashSize = baseSize * (0.1 + Math.random() * 0.2);
+                    
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                    ctx.beginPath();
+                    ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (swimDirection === -1) {
+                // Swimming left
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y);
+                ctx.lineTo(x - baseSize * 1.2 - armStroke, y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y);
+                ctx.lineTo(x + baseSize * 1.2 + armStroke, y);
+                ctx.stroke();
+            } else if (swimDirection === 1) {
+                // Swimming right
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y);
+                ctx.lineTo(x - baseSize * 1.2 - armStroke, y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y);
+                ctx.lineTo(x + baseSize * 1.2 + armStroke, y);
+                ctx.stroke();
+            } else if (swimDirection === 2) {
+                // Swimming up/toward shore
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y);
+                ctx.lineTo(x - baseSize - armStroke, y - baseSize * 0.5);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y);
+                ctx.lineTo(x + baseSize + armStroke, y - baseSize * 0.5);
+                ctx.stroke();
+            } else {
+                // Neutral/floating
+                ctx.beginPath();
+                ctx.moveTo(x - baseSize * 0.4, y);
+                ctx.lineTo(x - baseSize * 0.9, y);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + baseSize * 0.4, y);
+                ctx.lineTo(x + baseSize * 0.9, y);
+                ctx.stroke();
+            }
+            
+            // Draw face details if large enough
+            if (baseSize > 10 && faceDown) {
+                // Face details
+                ctx.fillStyle = "#000";
+                
+                // Eyes
+                ctx.beginPath();
+                ctx.ellipse(x - baseSize * 0.15, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.08, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(x + baseSize * 0.15, y - baseSize * 0.7, baseSize * 0.05, baseSize * 0.08, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Mouth - changes based on struggling
+                ctx.beginPath();
+                if (isStruggling) {
+                    // Open mouth when struggling
+                    ctx.ellipse(x, y - baseSize * 0.55, baseSize * 0.1, baseSize * 0.08, 0, 0, Math.PI * 2);
+                } else {
+                    // Smile when not struggling
+                    ctx.arc(x, y - baseSize * 0.55, baseSize * 0.15, 0.1, Math.PI - 0.1, false);
+                }
+                ctx.stroke();
+            }
+            
+            // Water splash effects around swimmer
+            if (isStruggling || Math.abs(swimDirection) > 0) {
+                for (let i = 0; i < 5; i++) {
+                    const splashX = x + (Math.random() - 0.5) * baseSize * 3;
+                    const splashY = y + (Math.random() - 0.5) * baseSize * 2;
+                    const splashSize = Math.random() * baseSize * 0.3 + baseSize * 0.1;
+                    
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+                    ctx.beginPath();
+                    ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Helper function to draw waves
+        function drawWaves(ctx, shoreLineY, width, time) {
+            // Draw multiple layers of waves
+            for (let i = 0; i < 8; i++) {
+                const y = shoreLineY + i * 50;
+                const amplitude = 8 - i * 0.8;
+                const speed = 0.5 - i * 0.05;
+                const alpha = 0.7 - i * 0.08;
+                
+                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.lineWidth = 2 - i * 0.2;
+                ctx.beginPath();
+                
+                for (let x = 0; x < width; x += 10) {
+                    const waveY = y + Math.sin(x * 0.02 + time * speed) * amplitude;
+                    
+                    if (x === 0) {
+                        ctx.moveTo(x, waveY);
+                    } else {
+                        ctx.lineTo(x, waveY);
+                    }
+                }
+                
+                ctx.stroke();
+            }
+        }
+        
+        // Helper function to draw rip current flow
+        function drawRipCurrentFlow(ctx, ripCenterX, ripWidth, shoreLineY, height, time) {
+            // Draw rip current flow arrows
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 2;
+            
+            // Draw red arrows in the rip current
+            const arrowCount = 3;
+            const arrowSpacing = height * 0.2;
+            
+            for (let i = 0; i < arrowCount; i++) {
+                const y = shoreLineY + arrowSpacing * (i + 1);
+                const arrowLength = 40;
+                
+                // Draw arrow shaft
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(ripCenterX, y - arrowLength/2);
+                ctx.lineTo(ripCenterX, y + arrowLength/2);
+                ctx.stroke();
+                
+                // Draw arrow head
+                ctx.fillStyle = "#ef4444";
+                ctx.beginPath();
+                ctx.moveTo(ripCenterX, y + arrowLength/2);
+                ctx.lineTo(ripCenterX - 10, y + arrowLength/2 - 15);
+                ctx.lineTo(ripCenterX + 10, y + arrowLength/2 - 15);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Draw flow particles
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 1.5;
+            
+            for (let i = 0; i < 8; i++) {
+                const xOffset = ((i - 4) / 4) * (ripWidth * 0.8);
+                const x = ripCenterX + xOffset;
+                const flowSpeed = 1.5 - Math.abs(xOffset) / (ripWidth * 0.4); // Faster in center
+                
+                // Create multiple particles flowing down the current
+                for (let j = 0; j < 3; j++) {
+                    const flowOffset = (time * flowSpeed + j * 0.33) % 1;
+                    const yStart = shoreLineY + flowOffset * (height - shoreLineY);
+                    const yEnd = Math.min(yStart + 20, height);
+                    
+                    // Adjust x position to follow the narrowing current
+                    const progress = (yStart - shoreLineY) / (height - shoreLineY);
+                    const narrowingFactor = 1 - progress * 0.4;
+                    const adjustedX = ripCenterX + xOffset * narrowingFactor;
+                    
+                    const alpha = 0.7 - flowOffset * 0.5;
+                    
+                    // Draw flow particle
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.moveTo(adjustedX, yStart);
+                    ctx.lineTo(adjustedX, yEnd);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Event listeners
+        resetBtn.addEventListener('click', resetSimulation);
+        playBtn.addEventListener('click', togglePlayPause);
+        infoBtn.addEventListener('click', toggleInfo);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        infoCloseBtn.addEventListener('click', toggleInfo);
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        
+        // Scenario tab event listeners
+        correctTab.addEventListener('click', () => switchScenario('correct'));
+        incorrectTab.addEventListener('click', () => switchScenario('incorrect'));
+        
+        // Initial draw
+        drawSimulation();
+    </script>
+</body>
+</html>
+
