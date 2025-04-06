@@ -95,7 +95,7 @@
           return;
         }
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.value)}&limit=5&countrycodes=au`, {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.value)}&limit=5`, {
             headers: { 'User-Agent': 'BeachApp/1.0' }
           });
           suggestions.value = await res.json();
