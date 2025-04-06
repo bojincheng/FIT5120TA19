@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../components/HomePage.vue';
 import DrowningSearch from '../components/DrowningSearch.vue';
-import Beachdata from '../components/BeachData.vue';
+import BeachData from '../components/BeachData.vue';
 
 const routes = [
   {
@@ -17,7 +17,7 @@ const routes = [
   {
     path: '/Beachdata',
     name: 'Beachdata',
-    component: Beachdata
+    component: BeachData
   }
 ];
 

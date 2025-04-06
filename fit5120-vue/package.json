@@ -11,6 +11,7 @@
     "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.8",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "core-js": "^3.8.3",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
