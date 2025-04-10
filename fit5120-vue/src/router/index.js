@@ -15,8 +15,8 @@ const routes = [
     component: DrowningSearch
   },
   {
-    path: '/Beachdata',
-    name: 'Beachdata',
+    path: '/BeachData',
+    name: 'BeachData',
     component: BeachData
   }
 ];

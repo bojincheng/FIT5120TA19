@@ -3,7 +3,7 @@
       <h1>Welcome to Drowning Statistics</h1>
       <p>Explore drowning statistics, search for specific data, and learn more about water safety.</p>
       
-      <router-link to="/DrowningSearch">
+      <router-link to="/HomePage.html">
         <button>Go to Drowning Search</button>
       </router-link>
     </div>

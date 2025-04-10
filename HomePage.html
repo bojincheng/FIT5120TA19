@@ -1,0 +1,3266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>SwimFlow - Australian Swimming Heritage</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			background: #000;
+			color: #fff;
+			font-family: 'Cormorant Garamond', serif;
+			perspective: 1000px;
+			cursor: none;
+			min-height: 100vh;
+			overflow-y: auto;
+		}
+
+		/* --- Custom Cursor & Ripple --- */
+		#custom-cursor {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 50px;
+			height: 50px;
+			z-index: 9999;
+			pointer-events: none;
+			transition: opacity 0.2s ease;
+			animation: cursorRotate 2s linear infinite;
+			transform-origin: center;
+			will-change: transform, opacity;
+		}
+
+		#cursor-ripple {
+			position: fixed;
+			width: 50px;
+			height: 50px;
+			border: 2px solid rgba(255, 255, 255, 0.5);
+			border-radius: 50%;
+			transform: scale(0);
+			opacity: 0;
+			z-index: 9998;
+			pointer-events: none;
+			will-change: transform, opacity;
+		}
+
+		@keyframes cursorRotate {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+		@keyframes rippleEffect {
+			0% {
+				transform: scale(0);
+				opacity: 0.8;
+			}
+			50% {
+				transform: scale(2.5);
+				opacity: 0.4;
+			}
+			100% {
+				transform: scale(3.5);
+				opacity: 0;
+			}
+		}
+
+		/* --- Background Video --- */
+		.video-background {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			z-index: -1;
+			filter: brightness(0.15) blur(8px);
+			opacity: 0;
+			transition: 
+				filter 2s cubic-bezier(0.4, 0, 0.2, 1), 
+				opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.video-background.visible {
+			filter: brightness(0.95) blur(0px);
+			opacity: 1;
+		}
+
+		/* Add a subtle video placeholder to avoid black screen */
+		body::before {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: radial-gradient(ellipse at center, #0077B6 0%, #023E8A 100%);
+			z-index: -3; /* Below video */
+			opacity: 0.3;
+		}
+
+		/* --- Loading Screen --- */
+		.loading-screen {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(135deg, #0f172a, #1e293b);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 1000;
+			animation: fadeOut 1.5s ease 2.5s forwards;
+		}
+
+		.lifebuoy-logo {
+			width: 150px;
+			height: 150px;
+			fill: none;
+			stroke-width: 2;
+			transform-origin: center;
+			animation: rotateAndPulse 4s infinite ease-in-out;
+		}
+
+		/* Animation for waves */
+		@keyframes waveMove {
+			0% { transform: translateX(0) skewY(0deg); }
+			50% { transform: translateX(-25%) skewY(1deg); }
+			100% { transform: translateX(-50%) skewY(0deg); }
+		}
+
+		@keyframes shimmer {
+			0% { transform: translate(-50%, -50%) rotate(0deg); }
+			100% { transform: translate(-50%, -50%) rotate(360deg); }
+		}
+
+		/* --- Content Wrapper --- */
+		.content-wrapper {
+			position: relative;
+			z-index: 10;
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			align-items: center;
+			padding: 2rem;
+			background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+			opacity: 0;
+			transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.hero-text {
+			display: none;
+		}
+
+		.hero-title {
+			display: none;
+		}
+
+		/* Updated Mission Statement Styles */
+		.mission-statement {
+			position: fixed;
+			top: 40%;
+			left: 30.5%;
+			transform: translate(-30%, -30%);
+			width: auto;
+			max-width: 800px;
+			padding: 2rem;
+			background: rgba(0, 0, 0, 0.7);
+			backdrop-filter: blur(8px);
+			border-radius: 12px;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+			opacity: 0;
+			z-index: 50;
+			text-align: center;
+			animation: fadeIn 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards;
+			transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.mission-statement.moved {
+			/* Final position slightly higher to give search more space */
+			top: 6rem; /* Moved up from 8rem */
+			transform: translateX(-50%);
+			padding: 0.8rem 1.5rem; /* Reduced padding */
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 40; /* Can lower z-index after moving */
+			/* Removed incorrect transition */
+			max-width: 700px; /* Slightly reduced max-width */
+		}
+
+		.mission-text {
+			font-size: clamp(1.5rem, 3vw, 2.2rem);
+			line-height: 1.6;
+			text-align: center;
+			color: rgba(255, 255, 255, 0.95);
+			font-weight: 400;
+			letter-spacing: 0.02em;
+			/* Removed incorrect transition and margin-top */
+		}
+
+		.highlight {
+			color: #79C0E0;
+			font-weight: 500;
+		}
+
+		.menu-button,
+		.contact-button {
+			position: fixed;
+			z-index: 100;
+			color: white;
+			text-transform: uppercase;
+			letter-spacing: 0.2em;
+			font-size: 0.9rem;
+			text-decoration: none;
+			padding: 1rem;
+			opacity: 0;
+			animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.2s forwards;
+		}
+
+		.menu-button { top: 2rem; left: 2rem; }
+		.contact-button { top: 2rem; right: 2rem; }
+
+		/* --- Animations --- */
+		@keyframes fadeInUp {
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		@keyframes fadeIn {
+			to { opacity: 1; }
+		}
+
+		@keyframes fadeOut {
+			to { opacity: 0; visibility: hidden; }
+		}
+
+		@keyframes rotateAndPulse {
+			0% { transform: rotate(0deg) scale(1); }
+			50% { transform: rotate(180deg) scale(1.05); }
+			100% { transform: rotate(360deg) scale(1); }
+		}
+
+		@keyframes wave {
+			0% { transform: translateX(0); }
+			50% { transform: translateX(-10px); }
+			100% { transform: translateX(0); }
+		}
+
+		/* Beach welcome sign */
+		.welcome-sign {
+			position: absolute;
+			top: 10%;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 180px;
+			height: 60px;
+			background: #eab373;
+			border: 5px solid #85491e;
+			border-radius: 10px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+			z-index: 10;
+		}
+
+		.welcome-sign::before {
+			content: '';
+			position: absolute;
+			top: -30px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 5px;
+			height: 30px;
+			background: #85491e;
+		}
+
+		.welcome-text {
+			font-family: 'Cormorant Garamond', serif;
+			color: #5e3516;
+			font-size: 20px;
+			font-weight: bold;
+			text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+		}
+
+		/* Elegant buoy decoration */
+		.buoy-decoration {
+			position: absolute;
+			width: 40px;
+			height: 120px;
+			z-index: 5;
+		}
+
+		.buoy-left {
+			left: 30%;
+			bottom: 120px;
+		}
+
+		.buoy-right {
+			right: 30%;
+			bottom: 120px;
+		}
+
+		/* Buoy pole in beach theme */
+		.buoy-pole {
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 6px;
+			height: 100%;
+			background: #E2F4FF; /* Light blue */
+		}
+
+		/* Buoy float with colors matching the beachy theme */
+		.buoy-float {
+			position: absolute;
+			top: 10px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background: radial-gradient(circle at 30% 30%, #FFFFFF, #F0A89A); /* White to soft coral */
+			border: 3px solid #FFFFFF;
+			overflow: hidden;
+			box-shadow: 0 5px 10px rgba(240, 168, 154, 0.5);
+		}
+
+		.buoy-float::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: repeating-linear-gradient(
+				45deg,
+				rgba(255, 255, 255, 0.8),
+				rgba(255, 255, 255, 0.8) 8px,
+				rgba(240, 168, 154, 0.8) 8px,
+				rgba(240, 168, 154, 0.8) 16px
+			);
+			opacity: 0.5;
+			animation: bobFloat 3s ease-in-out infinite;
+		}
+
+		@keyframes bobFloat {
+			0% { transform: translateY(0); }
+			50% { transform: translateY(-5px); }
+			100% { transform: translateY(0); }
+		}
+
+		/* --- Hamburger Menu Styles --- */
+		.menu-container {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 1000;
+			padding: 2rem;
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+			opacity: 0;
+			animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.2s forwards;
+		}
+
+		.hamburger {
+			width: 45px;
+			height: 45px;
+			position: relative;
+			cursor: pointer;
+			background: rgba(0, 0, 0, 0.3);
+			backdrop-filter: blur(10px);
+			border-radius: 50%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+			transition: all 0.3s ease;
+			z-index: 1001;
+		}
+
+		.hamburger:hover {
+			background: rgba(0, 0, 0, 0.4);
+			transform: scale(1.05);
+		}
+
+		.hamburger span {
+			display: block;
+			width: 22px;
+			height: 2px;
+			background: white;
+			position: relative;
+			transition: all 0.3s ease;
+		}
+
+		.hamburger span::before,
+		.hamburger span::after {
+			content: '';
+			position: absolute;
+			width: 22px;
+			height: 2px;
+			background: white;
+			transition: all 0.3s ease;
+		}
+
+		.hamburger span::before {
+			top: -7px;
+		}
+
+		.hamburger span::after {
+			bottom: -7px;
+		}
+
+		/* Menu Panel */
+		.menu-panel {
+			position: fixed;
+			top: 0;
+			left: -400px;
+			width: 350px;
+			height: 100vh;
+			background: rgba(0, 0, 0, 0.85);
+			backdrop-filter: blur(10px);
+			transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+			display: flex;
+			flex-direction: column;
+			padding: 7rem 3rem 3rem 3rem;
+			border-right: 1px solid rgba(255, 255, 255, 0.1);
+			box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+		}
+
+		.menu-panel.active {
+			left: 0;
+		}
+
+		/* Menu title */
+		.menu-title {
+			color: white;
+			font-size: 1.5rem;
+			text-transform: uppercase;
+			letter-spacing: 0.2em;
+			margin-bottom: 3rem;
+			padding-bottom: 1rem;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			text-align: left;
+		}
+
+		.menu-items {
+			display: flex;
+			flex-direction: column;
+			gap: 2.5rem;
+			align-items: flex-start;
+		}
+
+		.menu-item {
+			color: white;
+			text-decoration: none;
+			text-transform: uppercase;
+			letter-spacing: 0.2em;
+			font-size: 1.1rem;
+			padding: 0.5rem 0;
+			position: relative;
+			transition: all 0.3s ease;
+			opacity: 0;
+			transform: translateX(-20px);
+			text-align: left;
+			width: fit-content;
+		}
+
+		.menu-panel.active .menu-item {
+			opacity: 1;
+			transform: translateX(0);
+			transition: all 0.3s ease calc(var(--delay) * 0.1s);
+		}
+
+		.menu-item::before {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 2px;
+			background: #79C0E0;
+			transform: scaleX(0);
+			transform-origin: right;
+			transition: transform 0.3s ease;
+		}
+
+		.menu-item:hover::before {
+			transform: scaleX(1);
+			transform-origin: left;
+		}
+
+		.menu-item:hover {
+			color: #79C0E0;
+			transform: translateX(5px);
+		}
+
+		/* Decorative wave line */
+		.menu-wave {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 20px;
+			background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%2379C0E0" fill-opacity="0.3" d="M0,96L48,106.7C96,117,192,139,288,149.3C384,160,480,160,576,144C672,128,768,96,864,101.3C960,107,1056,149,1152,160C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+			background-size: cover;
+			opacity: 0.5;
+		}
+
+		/* Add drowning search button styles */
+		.drowning-search-btn {
+			display: inline-block;
+			background-color: #3e8e41;
+			color: white;
+			padding: 12px 24px;
+			border: none;
+			cursor: pointer;
+			font-size: 16px;
+			margin-top: 20px;
+			text-decoration: none;
+			border-radius: 4px;
+			transition: background-color 0.3s ease;
+			font-family: 'Cormorant Garamond', serif;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+		}
+
+		.drowning-search-btn:hover {
+			background-color: #2e6b31;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 15px rgba(62, 142, 65, 0.3);
+		}
+
+		/* Add search styles before the closing style tag */
+		.search-container {
+			margin-top: 2.5rem;
+			width: 100%;
+			max-width: 900px;
+			padding: 2rem;
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(12px);
+			border-radius: 15px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.search-container:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+		}
+
+		.search-group {
+			display: flex;
+			gap: 20px;
+			justify-content: center;
+			flex-wrap: wrap;
+			margin-bottom: 1.5rem;
+		}
+
+		.search-select {
+			padding: 15px 25px;
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			background: rgba(0, 0, 0, 0.6);
+			color: white;
+			border-radius: 10px;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.1rem;
+			min-width: 220px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			backdrop-filter: blur(5px);
+			appearance: none;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6"><path d="M0 0l6 6 6-6z" fill="white"/></svg>');
+			background-repeat: no-repeat;
+			background-position: right 15px center;
+			background-size: 12px;
+			padding-right: 40px;
+		}
+
+		.search-select option {
+			background: white;
+			color: #333;
+			padding: 12px;
+			font-size: 1rem;
+		}
+
+		.search-select:hover {
+			background: rgba(0, 0, 0, 0.7);
+			border-color: rgba(255, 255, 255, 0.5);
+		}
+
+		.search-select:focus {
+			outline: none;
+			border-color: #79C0E0;
+			box-shadow: 0 0 15px rgba(121, 192, 224, 0.3);
+		}
+
+		/* Style for the first option (placeholder) */
+		.search-select option:first-child {
+			color: #666;
+			font-style: italic;
+		}
+
+		/* Add hover effect for options */
+		.search-select option:hover,
+		.search-select option:focus {
+			background-color: #f0f0f0;
+		}
+
+		/* Style for the dropdown when open */
+		.search-select:focus {
+			border-bottom-left-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+
+		/* Custom select wrapper for better control */
+		.select-wrapper {
+			position: relative;
+			display: inline-block;
+		}
+
+		.select-wrapper::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			right: 15px;
+			transform: translateY(-50%);
+			width: 0;
+			height: 0;
+			border-left: 6px solid transparent;
+			border-right: 6px solid transparent;
+			border-top: 6px solid white;
+			pointer-events: none;
+		}
+
+		/* ENLARGED SEARCH AND COMPARE FUNCTIONS */
+		/* Increase the size of the beach search container */
+		.beach-search-container {
+			position: relative;
+			width: 100%;
+			max-width: 1100px; /* Increased from 900px */
+			margin: 2rem auto;
+			padding: 3rem; /* Increased from 2rem */
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(12px);
+			border-radius: 15px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		/* Increase the size of the search tabs */
+		.search-tabs {
+			display: flex;
+			gap: 1.5rem; /* Increased from 1rem */
+			margin-bottom: 2.5rem; /* Increased from 2rem */
+		}
+
+		.search-tab {
+			padding: 1rem 2rem; /* Increased from 0.75rem 1.5rem */
+			background: rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			color: white;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.3rem; /* Increased from 1.1rem */
+			position: relative;
+			overflow: hidden;
+		}
+
+		/* Increase the size of the search input */
+		.search-input {
+			width: 100%;
+			padding: 1.25rem; /* Increased from 1rem */
+			background: rgba(0, 0, 0, 0.6);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			border-radius: 10px;
+			color: white;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.3rem; /* Increased from 1.1rem */
+			transition: all 0.3s ease;
+			cursor: text !important;
+		}
+
+		/* Increase the size of the compare inputs */
+		.compare-inputs {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Increased from 300px */
+			gap: 2.5rem; /* Increased from 2rem */
+			margin-bottom: 2.5rem; /* Increased from 2rem */
+		}
+
+		.compare-input-label {
+			color: #79C0E0;
+			font-size: 1.3rem; /* Increased from 1.1rem */
+			margin-bottom: 0.7rem; /* Increased from 0.5rem */
+			display: block;
+		}
+
+		.compare-input-description {
+			color: rgba(255, 255, 255, 0.8);
+			font-size: 1.1rem; /* Increased from 0.9rem */
+			margin-bottom: 1.2rem; /* Increased from 1rem */
+			line-height: 1.4;
+		}
+
+		/* Increase the size of the buttons */
+		.search-button, .clear-button, .compare-button {
+			background: linear-gradient(45deg, #3e8e41, #2e6b31);
+			color: white;
+			padding: 1.25rem 2.5rem; /* Increased from 15px 30px */
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.3rem; /* Increased from 1.1rem */
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			transition: all 0.3s ease;
+			box-shadow: 0 5px 15px rgba(62, 142, 65, 0.3);
+		}
+
+		.clear-button {
+			background: linear-gradient(45deg, #e74c3c, #c0392b);
+			box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+			margin-left: 15px; /* Increased from 10px */
+		}
+
+		/* Increase the size of the results display */
+		.beach-data-grid {
+			display: none; /* Hide initially */
+			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+			gap: 2.5rem;
+			margin-top: 2.5rem;
+		}
+
+		.data-card {
+			background: rgba(0, 0, 0, 0.3);
+			padding: 2rem;
+			border-radius: 10px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			display: none; /* Explicitly hide data cards initially */
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+			cursor: pointer;
+		}
+
+		.data-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+		}
+
+		.data-card h3 {
+			color: #79C0E0;
+			margin-bottom: 1.5rem;
+			font-size: 1.4rem;
+		}
+
+		.data-card p {
+			color: white;
+			margin-bottom: 0.7rem;
+			font-size: 1.2rem;
+		}
+
+		/* Increase the size of the weather and marine items */
+		.weather-item, .marine-item {
+			display: flex;
+			align-items: center;
+			margin-bottom: 20px;
+			padding: 15px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 10px;
+			transition: all 0.3s ease;
+		}
+
+		.weather-item:hover, .marine-item:hover {
+			transform: translateY(-3px);
+			background: rgba(255, 255, 255, 0.1);
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		.weather-icon, .marine-icon {
+			font-size: 28px;
+			margin-right: 20px;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 50%;
+		}
+
+		.weather-label, .marine-label {
+			display: block;
+			font-size: 1.1em;
+			color: rgba(255, 255, 255, 0.7);
+			margin-bottom: 3px;
+		}
+
+		.weather-value, .marine-value {
+			font-size: 1.4em;
+			font-weight: 500;
+			color: white;
+			margin-right: 10px;
+		}
+
+		/* Increase the size of the comparison chart */
+		.compare-chart {
+			width: 100%;
+			height: 600px; /* Increased from 500px */
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 10px;
+			padding: 1.5rem; /* Increased from 1rem */
+			display: none;
+			position: relative;
+		}
+
+		/* End of enlarged search and compare functions */
+
+		.search-button {
+			background: linear-gradient(45deg, #3e8e41, #2e6b31);
+			color: white;
+			padding: 15px 30px;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.1rem;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			transition: all 0.3s ease;
+			box-shadow: 0 5px 15px rgba(62, 142, 65, 0.3);
+		}
+
+		.search-button:hover {
+			background: linear-gradient(45deg, #2e6b31, #3e8e41);
+			transform: translateY(-2px);
+			box-shadow: 0 8px 20px rgba(62, 142, 65, 0.4);
+		}
+
+		/* Add clear button styles */
+		.clear-button {
+			background: linear-gradient(45deg, #e74c3c, #c0392b);
+			color: white;
+			padding: 15px 30px;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.1rem;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			transition: all 0.3s ease;
+			box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+			margin-left: 10px;
+		}
+
+		.clear-button:hover {
+			background: linear-gradient(45deg, #c0392b, #e74c3c);
+			transform: translateY(-2px);
+			box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+		}
+
+		.clear-button:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+			transform: none;
+			box-shadow: none;
+		}
+
+		.search-results {
+			margin-top: 25px;
+			width: 100%;
+			overflow: hidden;
+			color: white;
+		}
+
+		.search-results table {
+			width: 100%;
+			border-collapse: separate;
+			border-spacing: 0;
+			margin-top: 20px;
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 12px;
+			overflow: hidden;
+			box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+		}
+
+		.search-results th {
+			background: rgba(121, 192, 224, 0.1);
+			font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			padding: 15px 20px;
+			border-bottom: 2px solid rgba(121, 192, 224, 0.2);
+		}
+
+		.search-results td {
+			padding: 15px 20px;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			transition: all 0.3s ease;
+		}
+
+		.search-results tr:hover td {
+			background: rgba(121, 192, 224, 0.1);
+		}
+
+		.search-results tr:last-child td {
+			border-bottom: none;
+		}
+
+		/* Add this before the closing style tag */
+		.drowning-danger-btn {
+			display: inline-block;
+			background: linear-gradient(45deg, #ff4444, #cc0000);
+			color: white;
+			padding: 12px 24px;
+			border-radius: 8px;
+			text-decoration: none;
+			font-size: 1.1rem;
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			margin-bottom: 2rem;
+			text-align: center;
+			transition: all 0.3s ease;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3);
+		}
+
+		.drowning-danger-btn:hover {
+			transform: translateY(-2px);
+			background: linear-gradient(45deg, #cc0000, #ff4444);
+			box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+		}
+
+		/* Beach Search Styles */
+		.beach-search-container {
+			position: relative;
+			width: 100%;
+			max-width: 1100px;
+			margin: 2rem auto;
+			padding: 3rem;
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(12px);
+			border-radius: 15px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.beach-search-container:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+		}
+
+		.search-tabs {
+			display: flex;
+			gap: 1.5rem;
+			margin-bottom: 2.5rem;
+		}
+
+		.search-tab {
+			padding: 1rem 2rem;
+			background: rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			color: white;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.3rem;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.search-tab::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 2px;
+			background: #79C0E0;
+			transform: scaleX(0);
+			transition: transform 0.3s ease;
+		}
+
+		.search-tab:hover {
+			background: rgba(0, 0, 0, 0.4);
+			transform: translateY(-2px);
+		}
+
+		.search-tab.active {
+			background: rgba(121, 192, 224, 0.3);
+			border-color: rgba(121, 192, 224, 0.5);
+		}
+
+		.search-tab.active::after {
+			transform: scaleX(1);
+		}
+
+		.search-input-container {
+			position: relative;
+			margin-bottom: 1.5rem;
+		}
+
+		.search-input {
+			width: 100%;
+			padding: 1.25rem;
+			background: rgba(0, 0, 0, 0.6);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			border-radius: 10px;
+			color: white;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.3rem;
+			transition: all 0.3s ease;
+			cursor: text !important;
+		}
+
+		.search-input:hover {
+			border-color: rgba(255, 255, 255, 0.5);
+		}
+
+		.search-input:focus {
+			outline: none;
+			border-color: #79C0E0;
+			box-shadow: 0 0 15px rgba(121, 192, 224, 0.3);
+		}
+
+		.search-suggestions {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background: rgba(0, 0, 0, 0.8);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 8px;
+			max-height: 200px;
+			overflow-y: auto;
+			z-index: 1000;
+			display: none;
+			cursor: default !important;
+			min-height: 0; /* Ensure no minimum height when empty */
+			height: auto; /* Adjust height to content */
+		}
+
+		.search-suggestions:empty {
+			display: none !important; /* Forcefully hide when empty */
+			border: none; /* Remove border when empty */
+		}
+
+		.search-suggestions li {
+			padding: 0.75rem 1rem;
+			color: white;
+			cursor: pointer !important;
+			
+			transition: all 0.2s ease;
+		}
+
+		.search-suggestions li:hover {
+			background: rgba(121, 192, 224, 0.3);
+		}
+
+		.loading-indicator {
+			color: #79C0E0;
+			margin-bottom: 1rem;
+			display: none;
+		}
+
+		.error-message {
+			color: #ff4444;
+			margin-bottom: 1rem;
+			display: none;
+		}
+
+		.beach-data-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+			gap: 2.5rem;
+			margin-top: 2.5rem;
+		}
+
+		.data-card {
+			background: rgba(0, 0, 0, 0.3);
+			padding: 2rem;
+			border-radius: 10px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.data-card h3 {
+			color: #79C0E0;
+			margin-bottom: 1.5rem;
+			font-size: 1.4rem;
+		}
+
+		.data-card p {
+			color: white;
+			margin-bottom: 0.7rem;
+			font-size: 1.2rem;
+		}
+
+		.compare-inputs {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+			gap: 2.5rem;
+			margin-bottom: 2.5rem;
+		}
+
+		.compare-input-container {
+			position: relative;
+		}
+
+		.compare-input-label {
+			color: #79C0E0;
+			font-size: 1.3rem;
+			margin-bottom: 0.7rem;
+			display: block;
+		}
+
+		.compare-input-description {
+			color: rgba(255, 255, 255, 0.8);
+			font-size: 1.1rem;
+			margin-bottom: 1.2rem;
+			line-height: 1.4;
+		}
+
+		.compare-button {
+			padding: 1.25rem 2.5rem;
+			background: linear-gradient(45deg, #3e8e41, #2e6b31);
+			color: white;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer !important;
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.3rem;
+			transition: all 0.3s ease;
+			margin-bottom: 2rem;
+		}
+
+		.compare-button:disabled {
+			opacity: 0.5;
+			cursor: not-allowed !important;
+		}
+
+		.compare-button:hover:not(:disabled) {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 20px rgba(62, 142, 65, 0.4);
+		}
+
+		.compare-chart {
+			width: 100%;
+			height: 600px;
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 10px;
+			padding: 1.5rem;
+			display: none;
+			position: relative;
+		}
+
+		.compare-chart canvas {
+			width: 100% !important;
+			height: 100% !important;
+			position: absolute;
+			top: 0;
+			left: 0;
+			padding: 1rem;
+		}
+
+		/* Make sure the chart text is visible */
+		.chartjs-tooltip {
+			background: rgba(0, 0, 0, 0.8) !important;
+			color: white !important;
+			font-family: 'Cormorant Garamond', serif !important;
+		}
+
+		.chartjs-tooltip-key {
+			border-color: white !important;
+		}
+
+		.search-content {
+			display: none;
+			
+		}
+
+		.search-content.active {
+			display: block;
+		}
+
+		/* Add new beach comparison styles */
+		.beaches-comparison {
+			display: none;
+			flex-direction: column;
+			gap: 2rem;
+			margin-top: 2rem;
+			background: rgba(0, 0, 0, 0.4);
+			padding: 2rem;
+			border-radius: 15px;
+			max-height: 80vh;
+			overflow-y: auto;
+		}
+
+		.comparison-header {
+			position: sticky;
+			top: 0;
+			background: rgba(0, 0, 0, 0.8);
+			padding: 1rem;
+			border-radius: 10px;
+			z-index: 10;
+			backdrop-filter: blur(10px);
+		}
+
+		.beach-conditions {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 2rem;
+			margin-top: 2rem;
+		}
+
+		.condition-card {
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 15px;
+			padding: 2rem;
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+		}
+
+		.condition-item {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			padding: 1rem;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 10px;
+			transition: transform 0.3s ease;
+		}
+
+		.condition-item:hover {
+			transform: translateY(-5px);
+		}
+
+		.condition-icon {
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			font-size: 24px;
+		}
+
+		.condition-details {
+			flex: 1;
+		}
+
+		.condition-title {
+			font-size: 1.1rem;
+			color: #79C0E0;
+			margin-bottom: 0.5rem;
+		}
+
+		.condition-value {
+			font-size: 1.3rem;
+			font-weight: bold;
+		}
+
+		.condition-description {
+			font-size: 0.9rem;
+			color: rgba(255, 255, 255, 0.8);
+			margin-top: 0.5rem;
+		}
+
+		.comparison-summary {
+			margin-top: 2rem;
+			padding: 2rem;
+			background: rgba(121, 192, 224, 0.1);
+			border-radius: 15px;
+			border: 1px solid rgba(121, 192, 224, 0.3);
+		}
+
+		.summary-title {
+			color: #79C0E0;
+			font-size: 1.5rem;
+			margin-bottom: 1.5rem;
+			text-align: center;
+		}
+
+		.key-differences {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.difference-item {
+			display: flex;
+			align-items: flex-start;
+			gap: 1rem;
+			padding: 1rem;
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 10px;
+		}
+
+		.difference-icon {
+			font-size: 24px;
+			color: #79C0E0;
+		}
+
+		.difference-text {
+			flex: 1;
+			line-height: 1.6;
+		}
+
+		.safety-advice {
+			margin-top: 2rem;
+			padding: 2rem;
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 15px;
+		}
+
+		.advice-title {
+			color: #79C0E0;
+			font-size: 1.3rem;
+			margin-bottom: 1.5rem;
+			text-align: center;
+		}
+
+		.advice-list {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.advice-item {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			padding: 1rem;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 10px;
+		}
+
+		.advice-icon {
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: rgba(121, 192, 224, 0.2);
+			border-radius: 50%;
+			font-size: 20px;
+			color: #79C0E0;
+		}
+
+		.advice-text {
+			flex: 1;
+			line-height: 1.6;
+		}
+
+		.weather-card, .marine-card {
+			background: rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+			border-radius: 15px;
+			padding: 20px;
+			margin-bottom: 20px;
+		}
+
+		.weather-item, .marine-item {
+			display: flex;
+			align-items: center;
+			margin-bottom: 20px;
+			padding: 15px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 10px;
+			transition: all 0.3s ease;
+		}
+
+		.weather-item:hover, .marine-item:hover {
+			transform: translateY(-3px);
+			background: rgba(255, 255, 255, 0.1);
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		.weather-icon, .marine-icon {
+			font-size: 28px;
+			margin-right: 20px;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 50%;
+		}
+
+		.weather-content, .marine-content {
+			flex: 1;
+		}
+
+		.weather-label, .marine-label {
+			display: block;
+			font-size: 1.1em;
+			color: rgba(255, 255, 255, 0.7);
+			margin-bottom: 3px;
+		}
+
+		.weather-value, .marine-value {
+			font-size: 1.4em;
+			font-weight: 500;
+			color: white;
+			margin-right: 10px;
+		}
+
+		.weather-description, .marine-description {
+			font-size: 0.9em;
+			color: rgba(255, 255, 255, 0.6);
+			margin-left: 10px;
+			padding-left: 10px;
+			border-left: 2px solid rgba(255, 255, 255, 0.2);
+		}
+
+		.advice-container {
+			width: 95%;
+			max-width: 1200px;
+			margin: 3rem auto;
+			padding: 2.5rem;
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(12px);
+			border-radius: 15px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+		}
+
+		.advice-item {
+			display: flex;
+			align-items: center;
+			gap: 2rem;
+			padding: 2rem;
+			margin-bottom: 1.5rem;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 12px;
+			transition: all 0.3s ease;
+		}
+
+		.advice-item:hover {
+			background: rgba(255, 255, 255, 0.1);
+			transform: translateX(10px);
+		}
+
+		.advice-icon {
+			font-size: 3rem;
+			min-width: 60px;
+			text-align: center;
+			background: rgba(255, 255, 255, 0.1);
+			padding: 1rem;
+			border-radius: 50%;
+			box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+		}
+
+		.advice-text {
+			font-size: 1.4rem;
+			line-height: 1.6;
+			color: rgba(255, 255, 255, 0.9);
+			font-weight: 400;
+			letter-spacing: 0.02em;
+		}
+
+		.advice-title {
+			font-size: 2.2rem;
+			color: #79C0E0;
+			margin-bottom: 2rem;
+			text-align: center;
+			font-weight: 500;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+		}
+
+		/* Beach comparison results section */
+		.comparison-results {
+			margin-top: 2rem;
+			padding: 2rem;
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(12px);
+			border-radius: 15px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			display: none;
+			animation: fadeIn 0.5s ease-out forwards;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.comparison-tabs {
+			display: flex;
+			gap: 1.5rem;
+			margin-bottom: 2rem;
+		}
+
+		.comparison-tab {
+			padding: 0.8rem 1.5rem;
+			border: none;
+			background: transparent;
+			color: rgba(255, 255, 255, 0.7);
+			font-size: 1.1rem;
+			font-weight: 500;
+			border-radius: 8px 8px 0 0;
+			transition: all 0.3s ease;
+			cursor: pointer;
+		}
+
+		.comparison-tab:hover {
+			background: rgba(0, 0, 0, 0.4);
+			transform: translateY(-2px);
+		}
+
+		.comparison-tab.active {
+			background: rgba(121, 192, 224, 0.3);
+			border-color: rgba(121, 192, 224, 0.5);
+		}
+
+		.comparison-tab-content {
+			display: none;
+		}
+
+		.comparison-tab-content.active {
+			display: block;
+		}
+
+		/* Recommendation section */
+		.recommendation-banner {
+			background: linear-gradient(135deg, rgba(121, 192, 224, 0.2), rgba(0, 0, 0, 0.3));
+			border-radius: 15px;
+			padding: 2rem;
+			border: 1px solid rgba(121, 192, 224, 0.3);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.recommendation-banner::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 4px;
+			background: linear-gradient(90deg, #79C0E0, #3e8e41);
+		}
+
+		.recommendation-header {
+			display: flex;
+			align-items: center;
+			gap: 1.5rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.recommendation-icon {
+			font-size: 2.5rem;
+			color: #79C0E0;
+		}
+
+		.recommendation-title {
+			font-size: 1.8rem;
+			color: #79C0E0;
+			margin: 0;
+		}
+
+		.recommendation-beach {
+			font-size: 2.2rem;
+			color: white;
+			margin-bottom: 1rem;
+			text-align: center;
+		}
+
+		.recommendation-reasons {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 1.5rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.recommendation-reason {
+			background: rgba(255, 255, 255, 0.05);
+			padding: 1.5rem;
+			border-radius: 10px;
+			border-left: 4px solid #79C0E0;
+			display: flex;
+			align-items: flex-start;
+			gap: 1rem;
+			cursor: pointer;
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.recommendation-reason:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		.reason-icon {
+			font-size: 1.5rem;
+			color: #79C0E0;
+			min-width: 40px;
+			text-align: center;
+		}
+
+		.reason-content {
+			flex: 1;
+		}
+
+		.reason-title {
+			color: #79C0E0;
+			font-size: 1.2rem;
+			margin-bottom: 0.5rem;
+		}
+
+		.reason-description {
+			color: rgba(255, 255, 255, 0.9);
+			line-height: 1.6;
+		}
+
+		.safety-tips {
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: 12px;
+			padding: 1.5rem;
+			margin-top: 1.5rem;
+		}
+
+		.safety-tips-title {
+			color: #79C0E0;
+			font-size: 1.3rem;
+			margin-bottom: 1rem;
+			text-align: center;
+		}
+
+		.safety-tips-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 1rem;
+		}
+
+		.safety-tip {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+			padding: 1rem;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 8px;
+			cursor: pointer;
+			transition: transform 0.3s ease, background 0.3s ease;
+		}
+
+		.safety-tip:hover {
+			transform: translateY(-3px);
+			background: rgba(255, 255, 255, 0.1);
+		}
+
+		.tip-icon {
+			font-size: 1.2rem;
+			color: #79C0E0;
+		}
+
+		.tip-text {
+			color: rgba(255, 255, 255, 0.9);
+			font-size: 1.1rem;
+			line-height: 1.6;
+		}
+
+		/* Beach comparison section */
+		.beach-comparison {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.beach-names {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding-bottom: 1rem;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.beach-name {
+			font-size: 1.3rem;
+			color: white;
+			max-width: 45%;
+			font-weight: 500;
+			text-align: center;
+		}
+
+		.vs-badge {
+			background: rgba(121, 192, 224, 0.2);
+			color: #79C0E0;
+			padding: 0.5rem 1rem;
+			border-radius: 50px;
+			font-size: 1.1rem;
+			font-weight: bold;
+			margin: 0 1rem;
+			align-self: center;
+		}
+
+		.comparison-row {
+			display: flex;
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: 10px;
+			margin-bottom: 1rem;
+			overflow: hidden;
+			transition: transform 0.3s ease;
+		}
+
+		.comparison-row:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+			cursor: pointer;
+		}
+
+		.metric-header {
+			width: 25%;
+			padding: 1.5rem;
+			background: rgba(0, 0, 0, 0.3);
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			border-right: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.metric-icon {
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			font-size: 24px;
+			margin-bottom: 0.8rem;
+		}
+
+		.metric-name {
+			color: #79C0E0;
+			font-size: 1.2rem;
+			font-weight: 500;
+		}
+
+		.comparison-values {
+			display: flex;
+			flex: 1;
+		}
+
+		.beach-value {
+			flex: 1;
+			padding: 1.5rem;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+
+		.beach-value:first-child {
+			border-right: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.value-number {
+			font-size: 1.6rem;
+			font-weight: bold;
+			color: white;
+			margin-bottom: 0.5rem;
+		}
+
+		.value-description {
+			font-size: 1.1rem;
+			color: rgba(255, 255, 255, 0.7);
+			line-height: 1.4;
+		}
+
+		/* Responsive adjustments */
+		@media (max-width: 768px) {
+			.comparison-row {
+				flex-direction: column;
+			}
+			
+			.metric-header {
+				width: 100%;
+				border-right: none;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+				padding: 1rem;
+			}
+			
+			.comparison-values {
+				flex-direction: column;
+			}
+			
+			.beach-value:first-child {
+				border-right: none;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			}
+		}
+
+		/* Suitability Summary Styles */
+		#suitability-summary {
+			display: none; /* Hide by default - only show after beach search */
+			padding: 1.5rem 2rem;
+			margin-bottom: 2rem;
+			border-radius: 12px;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+			align-items: center;
+			gap: 1.5rem;
+		}
+
+		.suitability-icon {
+			font-size: 2.5rem;
+			min-width: 50px;
+			text-align: center;
+		}
+
+		.suitability-text {
+			flex: 1;
+		}
+
+		.suitability-title {
+			font-size: 1.4rem;
+			font-weight: 500;
+			margin-bottom: 0.5rem;
+			color: white;
+		}
+
+		.suitability-description {
+			font-size: 1.1rem;
+			color: rgba(255, 255, 255, 0.8);
+			line-height: 1.6;
+		}
+
+		/* Style variations based on suitability */
+		#suitability-summary.good {
+			border-left: 5px solid #2ecc71; /* Green */
+		}
+		#suitability-summary.caution {
+			border-left: 5px solid #f1c40f; /* Yellow */
+		}
+		#suitability-summary.experienced {
+			border-left: 5px solid #e74c3c; /* Red */
+		}
+
+		/* Add initial state and transition for slide-up effect */
+		.beach-search-container {
+			position: relative; /* Ensure positioning context */
+			width: 100%;
+			max-width: 1100px;
+			margin: 2rem auto; /* Keep horizontal centering */
+			padding: 3rem;
+			background: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(12px);
+			border-radius: 15px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			opacity: 0;
+			transform: translateY(50px); /* Start slightly lower */
+			transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+						transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+						box-shadow 0.3s ease; /* Keep existing hover transition */
+			margin-top: 16rem; /* Adjusted margin to match mission statement's final position */
+		}
+
+		.beach-search-container.visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		/* Styles for the new title */
+		.search-container-title {
+			color: #79C0E0; /* Use highlight color */
+			font-size: 1.8rem;
+			font-weight: 500;
+			text-align: center;
+			margin-bottom: 2rem; /* Space below title */
+			letter-spacing: 0.05em;
+		}
+
+		.search-tabs {
+			display: flex;
+			justify-content: center; /* Center the tabs below the title */
+			gap: 1.5rem; /* Increased from 1rem */
+			margin-bottom: 2.5rem; /* Increased from 2rem */
+		}
+
+		.search-tab[data-tab="recommendation"],
+		.search-tab[data-tab="compare"] {
+			cursor: none !important;
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.search-tab[data-tab="recommendation"]:hover,
+		.search-tab[data-tab="compare"]:hover {
+			transform: translateY(-3px);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+		}
+
+		/* Add styles for the site name */
+		.site-name {
+			position: fixed;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%) translateY(-50px);
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 2.5rem;
+			font-weight: bold;
+			color: white;
+			text-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+			z-index: 100;
+			opacity: 0;
+			transition: opacity 1s ease, transform 0.8s ease;
+			pointer-events: none;
+			background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+			padding: 0.5rem 2rem;
+			border-radius: 5px;
+			letter-spacing: 0.1em;
+			border-bottom: 2px solid rgba(121, 192, 224, 0.7);
+		}
+
+		.site-name.visible {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
+
+		.site-name::after {
+			content: "🌊";
+			margin-left: 0.5rem;
+			font-size: 1.8rem;
+			vertical-align: middle;
+			display: inline-block;
+			animation: waveMotion 2s ease-in-out infinite;
+		}
+
+		@keyframes waveMotion {
+			0%, 100% {
+				transform: translateY(0);
+			}
+			50% {
+				transform: translateY(-5px);
+			}
+		}
+
+		.site-name .blue-text {
+			color: #79C0E0; /* Blue color to match the site theme */
+			text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+		}
+	</style>
+</head>
+<body>
+
+	<!-- Cursor SVG with Bigger Flag -->
+	<svg id="custom-cursor" viewBox="0 0 100 100">
+		<circle cx="50" cy="50" r="45" fill="none" stroke="red" stroke-width="5" />
+		<circle cx="50" cy="50" r="30" fill="white" />
+		<!-- Lifebuoy lines -->
+		<line x1="50" y1="5" x2="50" y2="20" stroke="white" stroke-width="5" />
+		<line x1="50" y1="80" x2="50" y2="95" stroke="white" stroke-width="5" />
+		<line x1="5" y1="50" x2="20" y2="50" stroke="white" stroke-width="5" />
+		<line x1="80" y1="50" x2="95" y2="50" stroke="white" stroke-width="5" />
+		<!-- Bigger Beach Flag -->
+		<rect x="48" y="0" width="4" height="25" fill="white"/>
+		<polygon points="52,0 78,12.5 52,25" fill="red"/>
+	</svg>
+
+	<!-- Cursor Ripple Effect -->
+	<div id="cursor-ripple"></div>
+
+	<!-- Background Video -->
+	<video class="video-background" loop muted>
+		<source src="8621680-uhd_3840_2160_25fps.mp4" type="video/mp4">
+		Your browser does not support the video tag.
+	</video>
+
+	<!-- Loading Animation -->
+	<div class="loading-screen">
+		<svg class="lifebuoy-logo" viewBox="0 0 100 100">
+			<circle cx="50" cy="50" r="45" fill="#ff3e3e" />
+			<circle cx="50" cy="50" r="30" fill="white" />
+			<line x1="50" y1="5" x2="50" y2="20" stroke="white" stroke-width="5" />
+			<line x1="50" y1="80" x2="50" y2="95" stroke="white" stroke-width="5" />
+			<line x1="5" y1="50" x2="20" y2="50" stroke="white" stroke-width="5" />
+			<line x1="80" y1="50" x2="95" y2="50" stroke="white" stroke-width="5" />
+		</svg>
+	</div>
+
+	<!-- Main Content -->
+	<div class="content-wrapper">
+		<!-- Hamburger Menu -->
+		<nav class="menu-container">
+			<div class="hamburger">
+				<span></span>
+			</div>
+			<div class="menu-panel">
+				<div class="menu-title">Menu</div>
+				<div class="menu-items">
+					<a href="drowning_danger.html" class="menu-item" style="--delay: 1">Drowning Danger</a>
+					<a href="beach_rescue.html" class="menu-item" style="--delay: 2">Beach Safety</a>
+					<a href="#" class="menu-item" style="--delay: 3">Pool Safety</a>
+					<a href="#" class="menu-item" style="--delay: 4">River Safety</a>
+				</div>
+				<div class="menu-wave"></div>
+			</div>
+		</nav>
+
+		<!-- Mission Statement - now inserted before beach search section -->
+		<div class="mission-statement" id="mission-statement">
+			<p class="mission-text"><span class="highlight">Drowning is silent</span> — your action could save a child's life.</p>
+		</div>
+
+		<!-- Add the site name element with colored text -->
+		<div class="site-name"><span class="blue-text">Water</span> Wise Family</div>
+
+		<!-- Beach Search Section - Adjust initial styles -->
+		<div class="beach-search-container" id="beach-search-container">
+			<h2 class="search-container-title">Understand Your Beach Conditions</h2> <!-- Added Title -->
+			<div class="search-tabs">
+				<button class="search-tab active" data-tab="search">🔍 Search Beach</button>
+				<button class="search-tab" data-tab="compare">🔄 Compare Beaches</button>
+			</div>
+
+			<div class="search-content active" id="search-tab">
+				<div class="search-input-container">
+					<input
+						type="text"
+						id="beach-search"
+						placeholder="🌊 Search for a beach (e.g. Bondi Beach)"
+						class="search-input"
+					/>
+					<ul id="search-suggestions" class="search-suggestions" style="display: none;"></ul>
+				</div>
+
+				<div id="loading-indicator" class="loading-indicator">
+					<span class="loading-emoji">⏳</span> Loading weather & marine data...
+				</div>
+				<div id="error-message" class="error-message">
+					<span class="error-emoji">❌</span> <span class="error-text"></span>
+				</div>
+
+				<!-- Add Suitability Summary section -->
+				<div id="suitability-summary">
+					<div class="suitability-icon"></div>
+					<div class="suitability-text">
+						<div class="suitability-title"></div>
+						<div class="suitability-description"></div>
+					</div>
+				</div>
+
+				<div id="beach-data" class="beach-data-grid">
+					<div class="data-card">
+						<h3>🌤️ Weather Data</h3>
+						<div id="weather-data"></div>
+					</div>
+					<div class="data-card">
+						<h3>🌊 Marine Data</h3>
+						<div id="marine-data"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="search-content" id="compare-tab">
+				<div class="compare-inputs">
+					<div class="compare-input-container">
+						<label class="compare-input-label">🏠 Your Home Beach</label>
+						<div class="compare-input-description">Enter a beach you're familiar with or visit regularly. This will be your reference point for comparison.</div>
+						<div class="search-input-container">
+							<input
+								type="text"
+								id="compare-beach1"
+								placeholder="🏖️ Enter your familiar beach (e.g. Bondi Beach)"
+								class="search-input"
+							/>
+							<ul id="compare-suggestions1" class="search-suggestions" style="display: none;"></ul>
+						</div>
+					</div>
+					<div class="compare-input-container">
+						<label class="compare-input-label">🌅 New Beach to Explore</label>
+						<div class="compare-input-description">Enter a beach you'd like to visit or are less familiar with. We'll help you understand how it compares to your home beach.</div>
+						<div class="search-input-container">
+							<input
+								type="text"
+								id="compare-beach2"
+								placeholder="🏝️ Enter the beach you want to explore"
+								class="search-input"
+							/>
+							<ul id="compare-suggestions2" class="search-suggestions" style="display: none;"></ul>
+						</div>
+					</div>
+				</div>
+				<button id="compare-button" class="compare-button" disabled>🔄 Compare</button>
+				
+				<!-- Comparison Results Section - Will be shown after comparison -->
+				<div id="comparison-results" class="comparison-results">
+					<div class="comparison-tabs">
+						<button class="comparison-tab active" data-tab="recommendation">🛟 Recommendation</button>
+						<button class="comparison-tab" data-tab="comparison">📊 Comparison</button>
+					</div>
+					
+					<!-- Recommendation Tab Content -->
+					<div class="comparison-tab-content active" id="recommendation-tab-content">
+						<div class="recommendation-banner">
+							<div class="recommendation-header">
+								<div class="recommendation-icon">🛟</div>
+								<h3 class="recommendation-title">Family-Friendly Beach Recommendation</h3>
+							</div>
+							<div class="recommendation-beach" id="recommended-beach"></div>
+							<div class="recommendation-reasons" id="recommendation-reasons"></div>
+							<div class="safety-tips">
+								<h4 class="safety-tips-title">Important Safety Tips</h4>
+								<div class="safety-tips-grid" id="safety-tips"></div>
+							</div>
+						</div>
+					</div>
+					
+					<!-- Comparison Tab Content -->
+					<div class="comparison-tab-content" id="comparison-tab-content">
+						<div class="beach-comparison">
+							<div class="beach-names">
+								<div class="beach-name" id="beach1-name">Beach 1 Name</div>
+								<div class="vs-badge">VS</div>
+								<div class="beach-name" id="beach2-name">Beach 2 Name</div>
+							</div>
+							
+							<!-- Wave Height Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #e74c3c;">🌊</div>
+									<div class="metric-name">Wave Height</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-wave">--</div>
+										<div class="value-description" id="beach1-wave-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-wave">--</div>
+										<div class="value-description" id="beach2-wave-desc">--</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Wind Speed Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #2ecc71;">💨</div>
+									<div class="metric-name">Wind Speed</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-wind">--</div>
+										<div class="value-description" id="beach1-wind-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-wind">--</div>
+										<div class="value-description" id="beach2-wind-desc">--</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- UV Index Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #e74c3c;">☀️</div>
+									<div class="metric-name">UV Index</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-uv">--</div>
+										<div class="value-description" id="beach1-uv-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-uv">--</div>
+										<div class="value-description" id="beach2-uv-desc">--</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Temperature Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #3498db;">🌡️</div>
+									<div class="metric-name">Temperature</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-temp">--</div>
+										<div class="value-description" id="beach1-temp-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-temp">--</div>
+										<div class="value-description" id="beach2-temp-desc">--</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Swell Height Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #9b59b6;">🌊</div>
+									<div class="metric-name">Swell Height</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-swell">--</div>
+										<div class="value-description" id="beach1-swell-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-swell">--</div>
+										<div class="value-description" id="beach2-swell-desc">--</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Current Speed Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #f39c12;">⚡</div>
+									<div class="metric-name">Current Speed</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-current">--</div>
+										<div class="value-description" id="beach1-current-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-current">--</div>
+										<div class="value-description" id="beach2-current-desc">--</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- Water Temperature Comparison -->
+							<div class="comparison-row">
+								<div class="metric-header">
+									<div class="metric-icon" style="background: #1abc9c;">🌡️</div>
+									<div class="metric-name">Water Temperature</div>
+								</div>
+								<div class="comparison-values">
+									<div class="beach-value">
+										<div class="value-number" id="beach1-water-temp">--</div>
+										<div class="value-description" id="beach1-water-temp-desc">--</div>
+									</div>
+									<div class="beach-value">
+										<div class="value-number" id="beach2-water-temp">--</div>
+										<div class="value-description" id="beach2-water-temp-desc">--</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div id="compare-chart" class="compare-chart">
+					<canvas id="comparison-canvas"></canvas>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<script>
+		const cursor = document.getElementById('custom-cursor');
+		const ripple = document.getElementById('cursor-ripple');
+		const backgroundVideo = document.querySelector('.video-background');
+		const contentWrapper = document.querySelector('.content-wrapper');
+		const missionStatement = document.getElementById('mission-statement');
+		const beachSearchContainer = document.getElementById('beach-search-container'); // Get the search container
+		const comparisonResults = document.getElementById('comparison-results');
+
+		// Aggressive preloading
+		backgroundVideo.preload = "auto";
+		backgroundVideo.load();
+		
+		// Create a promise to know when video is ready
+		const videoReadyPromise = new Promise((resolve) => {
+			if (backgroundVideo.readyState >= 2) {
+				resolve();
+			} else {
+				backgroundVideo.addEventListener('loadeddata', resolve);
+				backgroundVideo.addEventListener('canplay', resolve);
+			}
+		});
+		
+		// Start video silently in background
+		videoReadyPromise.then(() => {
+			try {
+				// Set initial time but don't play yet
+				backgroundVideo.currentTime = 0.05;
+				backgroundVideo.muted = true;
+			} catch (e) {
+				console.log("Video setup error:", e);
+			}
+		});
+		
+		// Enhanced animation sequence
+		window.addEventListener('load', () => {
+			// Start the transition sequence
+			setTimeout(() => {
+				// Begin video fade-in slightly before loading screen fades out
+				setTimeout(() => {
+					try {
+						// Ensure video starts from beginning when becoming visible
+						backgroundVideo.currentTime = 0.05;
+						backgroundVideo.play().catch(e => {
+							console.log("Play error:", e);
+						});
+						backgroundVideo.classList.add('visible');
+						
+						// Start content fade-in
+						setTimeout(() => {
+							contentWrapper.style.opacity = '1';
+                            
+                            // 1. Mission statement appears first (handled by CSS animation delay: 3s)
+                            
+                            // 2. Start moving the mission statement after it has appeared for a bit
+                            setTimeout(() => {
+                                missionStatement.classList.add('moved');
+                                
+                                // Show site name when mission statement moves up
+                                setTimeout(() => {
+                                    document.querySelector('.site-name').classList.add('visible');
+                                }, 500);
+                                
+                                // 3. Start sliding up the beach search container AFTER the mission statement starts moving
+                                setTimeout(() => {
+                                    beachSearchContainer.classList.add('visible');
+                                }, 500); // Delay search container appearance slightly (0.5s after mission moves)
+
+                            }, 5000); // Move mission statement 5 seconds after content appears (giving it 2s in center)
+
+						}, 500); // Content fades in 0.5s after video starts transitioning
+					} catch(e) {
+						console.log("Video transition error:", e);
+					}
+				}, 2000); // Video transition starts 2s after loading screen starts fading
+			}, 500); // Loading screen starts fading 0.5s after page load
+		});
+
+		// Handle clicks to ensure video plays if autoplay was blocked
+		document.addEventListener('click', (e) => {
+			if (backgroundVideo.paused) {
+				backgroundVideo.currentTime = 0.05;
+				backgroundVideo.play();
+			}
+			
+			// Update ripple position to click location
+			const x = e.clientX;
+			const y = e.clientY;
+			ripple.style.left = `${x - 25}px`;
+			ripple.style.top = `${y - 25}px`;
+			
+			// Ripple effect
+			ripple.style.animation = 'none';
+			ripple.offsetHeight; // force reflow
+			ripple.style.opacity = '1';
+			ripple.style.animation = 'rippleEffect 0.5s ease-out';
+		});
+		
+		// Improved mouse movement handler for stable cursor
+		document.addEventListener('mousemove', (e) => {
+			// Use requestAnimationFrame for smoother cursor movement
+			requestAnimationFrame(() => {
+				const x = e.clientX;
+				const y = e.clientY;
+				
+				// Check if hovering over elements that should have default cursor
+				const target = e.target;
+				const computedStyle = window.getComputedStyle(target);
+				
+				// Special check for recommendation and comparison tabs - always show custom cursor
+				const isRecommendationOrComparisonTab = 
+					target.closest('.search-tab[data-tab="recommendation"]') !== null || 
+					target.closest('.search-tab[data-tab="compare"]') !== null;
+				
+				const shouldHideCustomCursor = 
+					!isRecommendationOrComparisonTab && (
+						computedStyle.cursor === 'pointer' ||
+						target.classList.contains('search-input') ||
+						target.classList.contains('search-suggestions') ||
+						target.classList.contains('data-card') ||
+						target.closest('.data-card') !== null ||
+						target.tagName === 'LI' ||
+						target.classList.contains('compare-button') ||
+						target.classList.contains('search-tab') ||
+						target.classList.contains('clear-button') ||
+						target.closest('.beaches-comparison') !== null ||
+						target.classList.contains('comparison-tab') ||
+						target.classList.contains('comparison-row') ||
+						target.closest('.comparison-row') !== null ||
+						target.classList.contains('recommendation-reason') ||
+						target.closest('.recommendation-reason') !== null ||
+						target.classList.contains('safety-tip') ||
+						target.closest('.safety-tip') !== null ||
+						target.tagName === 'BUTTON'
+					);
+				
+				if (shouldHideCustomCursor) {
+					cursor.style.opacity = '0';
+					ripple.style.opacity = '0';
+				} else {
+					cursor.style.opacity = '1';
+					ripple.style.opacity = '1';
+					cursor.style.left = `${x - 25}px`;
+					cursor.style.top = `${y - 25}px`;
+					ripple.style.left = `${x - 25}px`;
+					ripple.style.top = `${y - 25}px`;
+				}
+			});
+		});
+
+		// Hamburger menu functionality
+		const hamburger = document.querySelector('.hamburger');
+		const menuPanel = document.querySelector('.menu-panel');
+
+		hamburger.addEventListener('click', () => {
+			hamburger.classList.toggle('active');
+			menuPanel.classList.toggle('active');
+		});
+
+		// Close menu when clicking outside
+		document.addEventListener('click', (e) => {
+			if (!menuPanel.contains(e.target) && !hamburger.contains(e.target)) {
+				hamburger.classList.remove('active');
+				menuPanel.classList.remove('active');
+			}
+		});
+
+		// Beach Search Functionality
+		const weatherCodeMap = {
+			0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+			45: 'Fog', 51: 'Light drizzle', 61: 'Light rain', 71: 'Light snow',
+			80: 'Rain showers', 95: 'Thunderstorm'
+		};
+
+		// Register Chart.js plugins
+		Chart.register(ChartDataLabels);
+
+		// Initialize chart canvas
+		const compareCanvas = document.getElementById('comparison-canvas');
+		const compareCtx = compareCanvas.getContext('2d');
+
+		// Tab switching
+		const tabs = document.querySelectorAll('.search-tab');
+		const tabContents = document.querySelectorAll('.search-content');
+
+		tabs.forEach(tab => {
+			tab.addEventListener('click', () => {
+				const targetTab = tab.dataset.tab;
+				
+				// Remove active class from all tabs and contents
+				tabs.forEach(t => t.classList.remove('active'));
+				tabContents.forEach(content => content.classList.remove('active'));
+				
+				// Add active class to clicked tab and corresponding content
+				tab.classList.add('active');
+				document.getElementById(`${targetTab}-tab`).classList.add('active');
+
+				// Clear/Reset state when switching tabs
+				if (targetTab === 'search') {
+					beachSearch.value = '';
+					weatherData.innerHTML = '';
+					marineData.innerHTML = '';
+					searchSuggestions.style.display = 'none';
+					beachData.style.display = 'none'; // Explicitly hide data grid
+					document.querySelectorAll('#beach-data .data-card').forEach(card => card.style.display = 'none'); // Explicitly hide cards
+					hideSuitabilityDisplay(); // Hide suitability summary
+					errorMessage.style.display = 'none'; // Hide errors
+					loadingIndicator.style.display = 'none'; // Hide loading
+				} else {
+					compareBeach1.value = '';
+					compareBeach2.value = '';
+					compareSuggestions1.style.display = 'none';
+					compareSuggestions2.style.display = 'none';
+					selectedBeach1 = null; // Reset selected beach
+					selectedBeach2 = null; // Reset selected beach
+					compareButton.disabled = true; // Disable compare button
+					comparisonResults.style.display = 'none'; // Hide comparison results
+					if (window.beachComparisonChart) {
+						window.beachComparisonChart.destroy();
+					}
+					compareChart.style.display = 'none';
+				}
+			});
+		});
+
+		// Comparison tab switching
+		const comparisonTabs = document.querySelectorAll('.comparison-tab');
+		const comparisonTabContents = document.querySelectorAll('.comparison-tab-content');
+
+		comparisonTabs.forEach(tab => {
+			tab.addEventListener('click', () => {
+				const targetTab = tab.dataset.tab;
+				
+				// Remove active class from all tabs and contents
+				comparisonTabs.forEach(t => t.classList.remove('active'));
+				comparisonTabContents.forEach(content => content.classList.remove('active'));
+				
+				// Add active class to clicked tab and corresponding content
+				tab.classList.add('active');
+				document.getElementById(`${targetTab}-tab-content`).classList.add('active');
+			});
+		});
+
+		// Initialize the first tab as active
+		document.querySelector('.search-tab[data-tab="search"]').classList.add('active');
+		document.getElementById('search-tab').classList.add('active');
+
+		// Debounce function
+		function debounce(func, wait) {
+			let timeout;
+			return function executedFunction(...args) {
+				const later = () => {
+					clearTimeout(timeout);
+					func(...args);
+				};
+				clearTimeout(timeout);
+				timeout = setTimeout(later, wait);
+			};
+		}
+
+		// Fetch suggestions
+		async function fetchSuggestions(query, targetElement) {
+			if (query.length < 2) {
+				targetElement.innerHTML = '';
+				targetElement.style.display = 'none';
+				return;
+			}
+			try {
+				const response = await fetch(
+					`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=au`,
+					{ headers: { 'User-Agent': 'BeachApp/1.0' } }
+				);
+				const data = await response.json();
+				
+				// Only show if there are actual results
+				if (data && data.length > 0) {
+					targetElement.innerHTML = data.map(item => 
+						`<li data-lat="${item.lat}" data-lon="${item.lon}">${item.display_name}</li>`
+					).join('');
+					targetElement.style.display = 'block';
+				} else {
+					targetElement.innerHTML = '';
+					targetElement.style.display = 'none';
+				}
+			} catch (error) {
+				console.error('Error fetching suggestions:', error);
+				targetElement.innerHTML = '';
+				targetElement.style.display = 'none';
+			}
+		}
+
+		// Fetch beach data
+		async function fetchBeachData(lat, lon) {
+			const [weatherRes, marineRes] = await Promise.all([
+				fetch(`https://fit5120ta19.onrender.com/weather?latitude=${lat}&longitude=${lon}`),
+				fetch(`https://fit5120ta19.onrender.com/marine?latitude=${lat}&longitude=${lon}`)
+			]);
+			return {
+				weather: await weatherRes.json(),
+				marine: await marineRes.json()
+			};
+		}
+
+		// Update weather data display
+		function updateWeatherData(weather, element) {
+			const weatherCode = weather.current.weather_code;
+			const weatherName = weatherCodeMap[weatherCode] || 'Unknown';
+			const uvIndex = Math.round(weather.daily_uv_index_max?.[0]?.uv_index_max ?? 'N/A');
+			const temperature = Math.round(weather.current.temperature_2m);
+			const windSpeed = Math.round(weather.current.wind_speed_10m);
+
+			const getTemperatureDescription = (temp) => {
+				if (temp < 15) return 'Cool';
+				if (temp < 22) return 'Mild';
+				if (temp < 27) return 'Warm';
+				return 'Hot';
+			};
+
+			const getWindDescription = (speed) => {
+				if (speed < 10) return 'Light breeze';
+				if (speed < 20) return 'Moderate';
+				if (speed < 30) return 'Strong';
+				return 'Very strong';
+			};
+
+			const getUVDescription = (uv) => {
+				if (uv < 3) return 'Low - Safe';
+				if (uv < 6) return 'Moderate - Take care';
+				if (uv < 8) return 'High - Protection needed';
+				if (uv < 11) return 'Very high - Extra precaution';
+				return 'Extreme - Avoid sun';
+			};
+
+			const getUVColor = (uv) => {
+				if (uv < 3) return '#10B981'; // green
+				if (uv < 6) return '#F59E0B'; // yellow
+				if (uv < 8) return '#F97316'; // orange
+				return '#EF4444'; // red
+			};
+
+			element.innerHTML = `
+				<div class="weather-card">
+					<div class="weather-item">
+						<span class="weather-icon">🌡️</span>
+						<div class="weather-content">
+							<span class="weather-label">Temperature:</span>
+							<span class="weather-value">${temperature}°C</span>
+							<span class="weather-description">${getTemperatureDescription(temperature)}</span>
+						</div>
+					</div>
+					<div class="weather-item">
+						<span class="weather-icon">💨</span>
+						<div class="weather-content">
+							<span class="weather-label">Wind Speed:</span>
+							<span class="weather-value">${windSpeed} km/h</span>
+							<span class="weather-description">${getWindDescription(windSpeed)}</span>
+						</div>
+					</div>
+					<div class="weather-item">
+						<span class="weather-icon">☁️</span>
+						<div class="weather-content">
+							<span class="weather-label">Weather:</span>
+							<span class="weather-value">${weatherName}</span>
+						</div>
+					</div>
+					<div class="weather-item">
+						<span class="weather-icon">☀️</span>
+						<div class="weather-content">
+							<span class="weather-label">UV Index:</span>
+							<span class="weather-value">${uvIndex}</span>
+							<span class="weather-description" style="color: ${getUVColor(uvIndex)}">${getUVDescription(uvIndex)}</span>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		// Update marine data display
+		function updateMarineData(marine, element) {
+			const getWaveDescription = (height) => {
+				if (height < 0.5) return 'Calm - Perfect for beginners';
+				if (height < 1.0) return 'Gentle - Good for swimming';
+				if (height < 1.5) return 'Moderate - For experienced';
+				return 'High - Exercise caution';
+			};
+
+			const getCurrentDescription = (velocity) => {
+				const speedKmh = velocity * 3.6;
+				if (speedKmh < 2) return 'Weak current';
+				if (speedKmh < 4) return 'Moderate current';
+				return 'Strong current';
+			};
+
+			const getWaterTempDescription = (temp) => {
+				if (temp < 18) return 'Cold';
+				if (temp < 22) return 'Cool';
+				if (temp < 26) return 'Pleasant';
+				return 'Warm';
+			};
+
+			const currentSpeedKmh = (marine.ocean_current_velocity * 3.6).toFixed(1);
+			const waterTemp = Math.round(marine.sea_surface_temperature);
+
+			element.innerHTML = `
+				<div class="marine-card">
+					<div class="marine-item">
+						<span class="marine-icon">🏄‍♂️</span>
+						<div class="marine-content">
+							<span class="marine-label">Wave Height:</span>
+							<span class="marine-value">${marine.wave_height?.toFixed(1)} m</span>
+							<span class="marine-description">${getWaveDescription(marine.wave_height)}</span>
+						</div>
+					</div>
+					<div class="marine-item">
+						<span class="marine-icon">🌊</span>
+						<div class="marine-content">
+							<span class="marine-label">Swell Height:</span>
+							<span class="marine-value">${marine.swell_wave_height?.toFixed(1)} m</span>
+						</div>
+					</div>
+					<div class="marine-item">
+						<span class="marine-icon">⚡</span>
+						<div class="marine-content">
+							<span class="marine-label">Current Speed:</span>
+							<span class="marine-value">${currentSpeedKmh} km/h</span>
+							<span class="marine-description">${getCurrentDescription(marine.ocean_current_velocity)}</span>
+						</div>
+					</div>
+					<div class="marine-item">
+						<span class="marine-icon">🌡️</span>
+						<div class="marine-content">
+							<span class="marine-label">Water Temperature:</span>
+							<span class="marine-value">${waterTemp}°C</span>
+							<span class="marine-description">${getWaterTempDescription(waterTemp)}</span>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		// Initialize search functionality
+		const beachSearch = document.getElementById('beach-search');
+		const searchSuggestions = document.getElementById('search-suggestions');
+		const loadingIndicator = document.getElementById('loading-indicator');
+		const errorMessage = document.getElementById('error-message');
+		const weatherData = document.getElementById('weather-data');
+		const marineData = document.getElementById('marine-data');
+		const beachData = document.getElementById('beach-data');
+
+		// Search input event listeners
+		beachSearch.addEventListener('input', debounce(() => {
+			if (beachSearch.value.trim() === '') {
+				searchSuggestions.innerHTML = '';
+				searchSuggestions.style.display = 'none';
+				return;
+			}
+			fetchSuggestions(beachSearch.value, searchSuggestions);
+		}, 300));
+
+		searchSuggestions.addEventListener('click', async (e) => {
+			if (e.target.tagName === 'LI') {
+				const lat = e.target.dataset.lat;
+				const lon = e.target.dataset.lon;
+				beachSearch.value = e.target.textContent;
+				searchSuggestions.style.display = 'none';
+
+				loadingIndicator.style.display = 'block';
+				errorMessage.style.display = 'none';
+				beachData.style.display = 'none'; // Keep grid hidden initially
+				// Also hide individual cards explicitly before showing
+				document.querySelectorAll('#beach-data .data-card').forEach(card => card.style.display = 'none');
+				hideSuitabilityDisplay(); // Hide summary initially
+
+				try {
+					const { weather, marine } = await fetchBeachData(lat, lon);
+
+					// Generate and display suitability summary
+					const summary = generateSuitabilitySummary(weather, marine);
+					updateSuitabilityDisplay(summary); // This will set display: flex for summary
+
+					updateWeatherData(weather, weatherData);
+					updateMarineData(marine, marineData);
+
+					// Now show the grid and the cards within it
+					beachData.style.display = 'grid';
+					document.querySelectorAll('#beach-data .data-card').forEach(card => card.style.display = 'block'); // Show cards
+
+					// Scroll to the results
+					setTimeout(() => { // Add a small delay for rendering
+						document.getElementById('suitability-summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
+					}, 100); 
+
+				} catch (error) {
+					errorMessage.textContent = 'Error fetching beach data. Please try again.';
+					errorMessage.style.display = 'block';
+					hideSuitabilityDisplay(); // Ensure summary is hidden on error
+				} finally {
+					loadingIndicator.style.display = 'none';
+				}
+			}
+		});
+
+		// Compare functionality
+		const compareBeach1 = document.getElementById('compare-beach1');
+		const compareBeach2 = document.getElementById('compare-beach2');
+		const compareSuggestions1 = document.getElementById('compare-suggestions1');
+		const compareSuggestions2 = document.getElementById('compare-suggestions2');
+		const compareButton = document.getElementById('compare-button');
+		const compareChart = document.getElementById('compare-chart');
+
+		let selectedBeach1 = null;
+		let selectedBeach2 = null;
+
+		// Compare input event listeners
+		compareBeach1.addEventListener('input', debounce(() => {
+			if (compareBeach1.value.trim() === '') {
+				compareSuggestions1.innerHTML = '';
+				compareSuggestions1.style.display = 'none';
+				return;
+			}
+			fetchSuggestions(compareBeach1.value, compareSuggestions1);
+		}, 300));
+
+		compareBeach2.addEventListener('input', debounce(() => {
+			if (compareBeach2.value.trim() === '') {
+				compareSuggestions2.innerHTML = '';
+				compareSuggestions2.style.display = 'none';
+				return;
+			}
+			fetchSuggestions(compareBeach2.value, compareSuggestions2);
+		}, 300));
+
+		compareSuggestions1.addEventListener('click', (e) => {
+			if (e.target.tagName === 'LI') {
+				selectedBeach1 = {
+					name: extractBeachName(e.target.textContent),
+					fullName: e.target.textContent,
+					lat: e.target.dataset.lat,
+					lon: e.target.dataset.lon
+				};
+				compareBeach1.value = e.target.textContent;
+				compareSuggestions1.style.display = 'none';
+				updateCompareButton();
+			}
+		});
+
+		compareSuggestions2.addEventListener('click', (e) => {
+			if (e.target.tagName === 'LI') {
+				selectedBeach2 = {
+					name: extractBeachName(e.target.textContent),
+					fullName: e.target.textContent,
+					lat: e.target.dataset.lat,
+					lon: e.target.dataset.lon
+				};
+				compareBeach2.value = e.target.textContent;
+				compareSuggestions2.style.display = 'none';
+				updateCompareButton();
+			}
+		});
+
+		function updateCompareButton() {
+			compareButton.disabled = !selectedBeach1 || !selectedBeach2;
+		}
+
+		compareButton.addEventListener('click', async () => {
+            if (!selectedBeach1 || !selectedBeach2) return;
+
+            loadingIndicator.style.display = 'block';
+            errorMessage.style.display = 'none';
+
+            try {
+                const [data1, data2] = await Promise.all([
+                    fetchBeachData(selectedBeach1.lat, selectedBeach1.lon),
+                    fetchBeachData(selectedBeach2.lat, selectedBeach2.lon)
+                ]);
+
+                // Update comparison results with data
+                document.getElementById('beach1-name').textContent = selectedBeach1.name;
+                document.getElementById('beach2-name').textContent = selectedBeach2.name;
+
+                // Update wave height
+                document.getElementById('beach1-wave').textContent = data1.marine.wave_height.toFixed(1) + 'm';
+                document.getElementById('beach2-wave').textContent = data2.marine.wave_height.toFixed(1) + 'm';
+                document.getElementById('beach1-wave-desc').textContent = getWaveDescription(data1.marine.wave_height);
+                document.getElementById('beach2-wave-desc').textContent = getWaveDescription(data2.marine.wave_height);
+
+                // Update wind speed
+                document.getElementById('beach1-wind').textContent = data1.weather.current.wind_speed_10m.toFixed(1) + ' km/h';
+                document.getElementById('beach2-wind').textContent = data2.weather.current.wind_speed_10m.toFixed(1) + ' km/h';
+                document.getElementById('beach1-wind-desc').textContent = getWindDescription(data1.weather.current.wind_speed_10m);
+                document.getElementById('beach2-wind-desc').textContent = getWindDescription(data2.weather.current.wind_speed_10m);
+
+                // Update UV index
+                document.getElementById('beach1-uv').textContent = data1.weather.daily_uv_index_max[0].uv_index_max.toFixed(1);
+                document.getElementById('beach2-uv').textContent = data2.weather.daily_uv_index_max[0].uv_index_max.toFixed(1);
+                document.getElementById('beach1-uv-desc').textContent = getUVDescription(data1.weather.daily_uv_index_max[0].uv_index_max);
+                document.getElementById('beach2-uv-desc').textContent = getUVDescription(data2.weather.daily_uv_index_max[0].uv_index_max);
+
+                // Update temperature
+                document.getElementById('beach1-temp').textContent = Math.round(data1.weather.current.temperature_2m) + '°C';
+                document.getElementById('beach2-temp').textContent = Math.round(data2.weather.current.temperature_2m) + '°C';
+                document.getElementById('beach1-temp-desc').textContent = getTemperatureDescription(data1.weather.current.temperature_2m);
+                document.getElementById('beach2-temp-desc').textContent = getTemperatureDescription(data2.weather.current.temperature_2m);
+
+                // Update swell height
+                document.getElementById('beach1-swell').textContent = data1.marine.swell_wave_height.toFixed(1) + 'm';
+                document.getElementById('beach2-swell').textContent = data2.marine.swell_wave_height.toFixed(1) + 'm';
+                document.getElementById('beach1-swell-desc').textContent = getSwellDescription(data1.marine.swell_wave_height);
+                document.getElementById('beach2-swell-desc').textContent = getSwellDescription(data2.marine.swell_wave_height);
+
+                // Update current speed
+                const currentSpeed1 = (data1.marine.ocean_current_velocity * 3.6).toFixed(1);
+                const currentSpeed2 = (data2.marine.ocean_current_velocity * 3.6).toFixed(1);
+                document.getElementById('beach1-current').textContent = currentSpeed1 + ' km/h';
+                document.getElementById('beach2-current').textContent = currentSpeed2 + ' km/h';
+                document.getElementById('beach1-current-desc').textContent = getCurrentDescription(data1.marine.ocean_current_velocity);
+                document.getElementById('beach2-current-desc').textContent = getCurrentDescription(data2.marine.ocean_current_velocity);
+
+                // Update water temperature
+                const waterTemp1 = Math.round(data1.marine.sea_surface_temperature);
+                const waterTemp2 = Math.round(data2.marine.sea_surface_temperature);
+                document.getElementById('beach1-water-temp').textContent = waterTemp1 + '°C';
+                document.getElementById('beach2-water-temp').textContent = waterTemp2 + '°C';
+                document.getElementById('beach1-water-temp-desc').textContent = getWaterTempDescription(data1.marine.sea_surface_temperature);
+                document.getElementById('beach2-water-temp-desc').textContent = getWaterTempDescription(data2.marine.sea_surface_temperature);
+
+                // Update recommendation section
+                generateRecommendation(data1, data2, selectedBeach1.name, selectedBeach2.name);
+
+                // Show the comparison results
+                comparisonResults.style.display = 'block';
+                
+                // Scroll to the results
+                setTimeout(() => {
+                    comparisonResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+
+            } catch (error) {
+                console.error('Error comparing beaches:', error);
+                errorMessage.textContent = 'Error comparing beaches. Please try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+
+        // Helper functions for the comparison
+        function getWaveColor(height) {
+            if (height < 0.5) return '#2ecc71';
+            if (height < 1.5) return '#f1c40f';
+            return '#e74c3c';
+        }
+
+        function getWindColor(speed) {
+            if (speed < 15) return '#2ecc71';
+            if (speed < 30) return '#f1c40f';
+            return '#e74c3c';
+        }
+
+        function getUVColor(index) {
+            if (index < 3) return '#2ecc71';
+            if (index < 6) return '#f1c40f';
+            return '#e74c3c';
+        }
+
+        function getSafetyColor(score) {
+            if (score >= 7) return '#2ecc71';
+            if (score >= 4) return '#f1c40f';
+            return '#e74c3c';
+        }
+
+        function calculateSafetyScore(data) {
+            let score = 10;
+        
+            // Wave height impact (0-4 points)
+            const waveHeight = data.marine.wave_height;
+            if (waveHeight > 2) score -= 4;
+            else if (waveHeight > 1.5) score -= 3;
+            else if (waveHeight > 1) score -= 2;
+            else if (waveHeight > 0.5) score -= 1;
+
+            // Wind speed impact (0-3 points)
+            const windSpeed = data.weather.current.wind_speed_10m;
+            if (windSpeed > 40) score -= 3;
+            else if (windSpeed > 30) score -= 2;
+            else if (windSpeed > 20) score -= 1;
+
+            // UV index impact (0-3 points)
+            const uvIndex = data.weather.daily_uv_index_max[0].uv_index_max;
+            if (uvIndex > 8) score -= 3;
+            else if (uvIndex > 6) score -= 2;
+            else if (uvIndex > 4) score -= 1;
+
+            return Math.max(0, Math.min(10, score));
+        }
+
+        function generateRecommendation(data1, data2, beach1Name, beach2Name) {
+            const score1 = calculateSafetyScore(data1);
+            const score2 = calculateSafetyScore(data2);
+            
+            // Determine which beach is safer
+            const saferBeach = score1 > score2 ? {
+                name: beach1Name,
+                data: data1
+            } : {
+                name: beach2Name,
+                data: data2
+            };
+            
+            const otherBeach = score1 > score2 ? {
+                name: beach2Name,
+                data: data2
+            } : {
+                name: beach1Name,
+                data: data1
+            };
+            
+            // Update recommended beach name
+            document.getElementById('recommended-beach').textContent = saferBeach.name;
+            
+            // Build recommendation reasons
+            const recommendationReasons = document.getElementById('recommendation-reasons');
+            recommendationReasons.innerHTML = '';
+            
+            // Wave conditions
+            if (saferBeach.data.marine.wave_height < otherBeach.data.marine.wave_height) {
+                let waveDesc = '';
+                if (saferBeach.data.marine.wave_height > 0.05) { // Avoid division by zero/tiny numbers
+                    const waveRatio = (otherBeach.data.marine.wave_height / saferBeach.data.marine.wave_height).toFixed(1);
+                    waveDesc = `Waves ≈ ${waveRatio}x calmer than ${otherBeach.name}. Better for children playing and learning to swim.`;
+                } else {
+                    const waveDiff = (otherBeach.data.marine.wave_height - saferBeach.data.marine.wave_height).toFixed(1);
+                    waveDesc = `Waves significantly calmer (${waveDiff}m lower) than ${otherBeach.name}. Better for children playing and learning to swim.`; // Fallback wording
+                }
+                recommendationReasons.innerHTML += `
+                    <div class="recommendation-reason">
+                        <div class="reason-icon">🌊</div>
+                        <div class="reason-content">
+                            <div class="reason-title">Family-Friendly Waves</div>
+                            <div class="reason-description">${waveDesc}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Current conditions
+            if (saferBeach.data.marine.ocean_current_velocity < otherBeach.data.marine.ocean_current_velocity) {
+                let currentDesc = '';
+                if (saferBeach.data.marine.ocean_current_velocity > 0.01) { // Avoid division by zero/tiny numbers
+                    const currentRatio = (otherBeach.data.marine.ocean_current_velocity / saferBeach.data.marine.ocean_current_velocity).toFixed(1);
+                    currentDesc = `Current ≈ ${currentRatio}x weaker. Safer for children in the water.`;
+                } else {
+                    const currentDiff = ((otherBeach.data.marine.ocean_current_velocity - saferBeach.data.marine.ocean_current_velocity) * 3.6).toFixed(1);
+                    currentDesc = `Current significantly weaker (${currentDiff} km/h less). Safer for children in the water.`; // Fallback wording
+                }
+                recommendationReasons.innerHTML += `
+                    <div class="recommendation-reason">
+                        <div class="reason-icon">⚡</div>
+                        <div class="reason-content">
+                            <div class="reason-title">Safer for Young Swimmers</div>
+                            <div class="reason-description">${currentDesc}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Wind conditions
+            if (saferBeach.data.weather.current.wind_speed_10m < otherBeach.data.weather.current.wind_speed_10m) {
+                let windDesc = '';
+                if (saferBeach.data.weather.current.wind_speed_10m > 0.5) { // Avoid division by zero/tiny numbers
+                    const windRatio = (otherBeach.data.weather.current.wind_speed_10m / saferBeach.data.weather.current.wind_speed_10m).toFixed(1);
+                    windDesc = `Wind ≈ ${windRatio}x calmer. More comfortable for families.`;
+                } else {
+                    const windDiff = (otherBeach.data.weather.current.wind_speed_10m - saferBeach.data.weather.current.wind_speed_10m).toFixed(1);
+                    windDesc = `Wind significantly calmer (${windDiff} km/h less). More comfortable for families.`; // Fallback wording
+                }
+                recommendationReasons.innerHTML += `
+                    <div class="recommendation-reason">
+                        <div class="reason-icon">💨</div>
+                        <div class="reason-content">
+                            <div class="reason-title">Comfortable for Families</div>
+                            <div class="reason-description">${windDesc}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // UV protection advice
+            if (saferBeach.data.weather.daily_uv_index_max[0].uv_index_max < otherBeach.data.weather.daily_uv_index_max[0].uv_index_max) {
+                recommendationReasons.innerHTML += `
+                    <div class="recommendation-reason">
+                        <div class="reason-icon">☀️</div>
+                        <div class="reason-content">
+                            <div class="reason-title">Better Sun Protection</div>
+                            <div class="reason-description">Lower UV index. Safer for children's sensitive skin.</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Update safety tips
+            const safetyTips = document.getElementById('safety-tips');
+            safetyTips.innerHTML = `
+                <div class="safety-tip">
+                    <div class="tip-icon">🚩</div>
+                    <div class="tip-text">Keep children between the flags.</div>
+                </div>
+                <div class="safety-tip">
+                    <div class="tip-icon">👨‍👩‍👧‍👦</div>
+                    <div class="tip-text">Stay within arm's reach of young children.</div>
+                </div>
+                <div class="safety-tip">
+                    <div class="tip-icon">☀️</div>
+                    <div class="tip-text">Use SPF 50+ sunscreen; reapply every 2 hours.</div>
+                </div>
+                <div class="safety-tip">
+                    <div class="tip-icon">👕</div>
+                    <div class="tip-text">Use UV-protective swimwear and hats.</div>
+                </div>
+                <div class="safety-tip">
+                    <div class="tip-icon">🏊</div>
+                    <div class="tip-text">Choose shallow areas for children.</div>
+                </div>
+            `;
+        }
+
+        function getWaveDescription(height) {
+            if (height < 0.5) return 'Very calm waves - Perfect for beginners and children';
+            if (height < 1.0) return 'Gentle waves - Good for swimming and learning';
+            if (height < 1.5) return 'Moderate waves - Better for experienced swimmers';
+            return 'High waves - Caution advised, suitable for experts only';
+        }
+
+        function getWindDescription(speed) {
+            if (speed < 15) return 'Light breeze - Comfortable conditions';
+            if (speed < 30) return 'Moderate wind - Be careful of floating objects';
+            return 'Strong wind - May create dangerous conditions';
+        }
+
+        function getUVDescription(index) {
+            if (index < 3) return 'Low UV - Safe for outdoor activities';
+            if (index < 6) return 'Moderate UV - Use sunscreen and seek shade';
+            if (index < 8) return 'High UV - Limit sun exposure';
+            return 'Very high UV - Avoid sun during peak hours';
+        }
+
+        function getTemperatureDescription(temp) {
+            if (temp < 15) return 'Cool';
+            if (temp < 22) return 'Mild';
+            if (temp < 27) return 'Warm';
+            return 'Hot';
+        }
+
+        function getCurrentDescription(velocity) {
+            const speedKmh = velocity * 3.6;
+            if (speedKmh < 2) return 'Weak current';
+            if (speedKmh < 4) return 'Moderate current';
+            return 'Strong current';
+        }
+
+        function getWaterTempDescription(temp) {
+            if (temp < 18) return 'Cold';
+            if (temp < 22) return 'Cool';
+            if (temp < 26) return 'Pleasant';
+            return 'Warm';
+        }
+
+        function getSwellDescription(height) {
+            if (height < 0.5) return 'Minimal swell';
+            if (height < 1.0) return 'Low swell';
+            if (height < 1.5) return 'Moderate swell';
+            if (height < 2.0) return 'Significant swell';
+            return 'High swell - Caution advised';
+        }
+        
+        // Function to extract beach name from complete address
+        function extractBeachName(fullAddress) {
+            // Example: "Bondi Beach, Eastern Suburbs, Sydney, Waverley Council, New South Wales, 2026, Australia" → "Bondi Beach"
+            if (!fullAddress) return '';
+            
+            // Split by comma and take first part which is typically the beach name
+            const parts = fullAddress.split(',');
+            if (parts.length > 0) {
+                let beachName = parts[0].trim();
+                
+                // If the name doesn't contain "Beach", look for it in other parts
+                if (!beachName.toLowerCase().includes('beach')) {
+                    // Check if the second part has "Beach" - often addresses have "Street, Beach" format
+                    if (parts.length > 1 && parts[1].trim().toLowerCase().includes('beach')) {
+                        beachName = parts[1].trim();
+                    } else {
+                        // If no "Beach" found, add it to the end
+                        beachName += " Beach";
+                    }
+                }
+                
+                return beachName;
+            }
+            return fullAddress;
+        }
+
+		// --- Helper Functions for Search Tab ---
+
+		function generateSuitabilitySummary(weather, marine) {
+			const waveHeight = marine.wave_height;
+			const currentSpeed = marine.ocean_current_velocity * 3.6; // km/h
+			const windSpeed = weather.current.wind_speed_10m;
+
+			let level = 'good'; // 'good', 'caution', 'experienced'
+			let title = 'Ideal for Families & Children';
+			let description = 'Conditions appear calm and suitable for most swimmers, including children, families, and beginners.';
+			let icon = '✅';
+
+			if (waveHeight > 1.5 || currentSpeed > 3 || windSpeed > 30) {
+				level = 'experienced';
+				title = 'Experienced Swimmers Only';
+				description = 'High waves, strong currents, or high winds. Conditions are potentially hazardous and unsuitable for children and inexperienced swimmers. Only very experienced swimmers should enter the water.';
+				icon = '⚠️'; // Warning icon
+			} else if (waveHeight > 1.0 || currentSpeed > 2 || windSpeed > 20) {
+				level = 'caution';
+				title = 'Caution Advised';
+				description = 'Moderate waves, currents, or winds. Swimmers should exercise caution, especially beginners and children.';
+				icon = '🟡'; // Yellow circle/caution icon
+			}
+
+			return { level, title, description, icon };
+		}
+
+		function updateSuitabilityDisplay(summary) {
+			const summaryElement = document.getElementById('suitability-summary');
+			const iconElement = summaryElement.querySelector('.suitability-icon');
+			const titleElement = summaryElement.querySelector('.suitability-title');
+			const descriptionElement = summaryElement.querySelector('.suitability-description');
+
+			iconElement.textContent = summary.icon;
+			titleElement.textContent = summary.title;
+			descriptionElement.textContent = summary.description;
+
+			// Reset classes but keep the ID
+			summaryElement.className = '';
+			
+			// Add appropriate level class based on conditions
+			summaryElement.classList.add(summary.level); 
+			
+			// Show the warning by setting display to flex
+			summaryElement.style.display = 'flex';
+		}
+
+		function hideSuitabilityDisplay() {
+			const summaryElement = document.getElementById('suitability-summary');
+			summaryElement.style.display = 'none';
+		}
+
+		// --- End Helper Functions ---
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const searchSuggestions = document.getElementById('search-suggestions');
+			const compareSuggestions1 = document.getElementById('compare-suggestions1');
+			const compareSuggestions2 = document.getElementById('compare-suggestions2');
+			const suitabilitySummary = document.getElementById('suitability-summary');
+			
+			// Hide all suggestion boxes and suitability summary initially
+			searchSuggestions.style.display = 'none';
+			compareSuggestions1.style.display = 'none';
+			compareSuggestions2.style.display = 'none';
+			
+			// Make sure the suitability summary is hidden on page load
+			suitabilitySummary.style.display = 'none';
+			
+			// Hide search suggestions when clicking outside
+			document.addEventListener('click', function(e) {
+				if (!e.target.closest('.search-input-container')) {
+					searchSuggestions.style.display = 'none';
+					compareSuggestions1.style.display = 'none';
+					compareSuggestions2.style.display = 'none';
+				}
+			});
+		});
+	</script>
+</body>
+</html>

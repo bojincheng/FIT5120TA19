@@ -5,7 +5,7 @@
       <ul>
         <li>
           <router-link to="/">Drowning Search</router-link>
-          <router-link to="/Beachdata">Beachdata</router-link>
+          <router-link to="/BeachData">BeachData</router-link>
         </li>
       </ul>
     </nav>

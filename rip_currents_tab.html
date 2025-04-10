@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rip Current Safety Guide</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+        }
+        
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .story-title {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            text-align: center;
+            border-bottom: 3px solid #22d3ee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            max-width: 500px;
+            z-index: 10;
+        }
+        
+        .story-title h2 {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        
+        .message {
+            position: absolute;
+            bottom: 96px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 8px;
+            text-align: center;
+            max-width: 500px;
+            border: none;
+            border-left: 3px solid #22d3ee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .message p {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+        
+        .message .indicator {
+            height: 4px;
+            width: 96px;
+            background-color: #22d3ee;
+            margin: 8px auto 0;
+            border-radius: 9999px;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 9999px;
+            z-index: 10;
+        }
+        
+        .button {
+            background-color: transparent;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .hotspot-info {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 16px;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            border-radius: 8px;
+            max-width: 384px;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+        
+        .hotspot-info .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .hotspot-info .close:hover {
+            color: white;
+            background-color: #374151;
+        }
+        
+        .hotspot-info p {
+            font-size: 18px;
+            margin: 0;
+        }
+        
+        .info-panel {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 30;
+        }
+        
+        .info-content {
+            background-color: #111827;
+            border-radius: 8px;
+            max-width: 512px;
+            padding: 24px;
+            position: relative;
+        }
+        
+        .info-content .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .info-content .close:hover {
+            color: white;
+            background-color: #374151;
+        }
+        
+        .info-content h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #22d3ee;
+            margin-bottom: 16px;
+        }
+        
+        .info-content ol {
+            list-style-type: decimal;
+            padding-left: 20px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        
+        .info-content li {
+            margin-bottom: 12px;
+            color: white;
+        }
+        
+        .info-content .highlight {
+            font-weight: 600;
+        }
+        
+        .info-content .callout {
+            margin-top: 24px;
+            padding: 12px;
+            background-color: rgba(30, 64, 175, 0.5);
+            border-radius: 6px;
+        }
+        
+        .info-content .callout p {
+            color: #bfdbfe;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .info-content .footer {
+            margin-top: 16px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .rip-type-selector {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .rip-type-selector h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .rip-type-button {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .rip-type-button:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .rip-type-button.active {
+            background-color: #2563eb;
+        }
+        
+        .rip-type-button:last-child {
+            margin-bottom: 0;
+        }
+        
+        .wave-controls {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .wave-controls h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .wave-control-group {
+            margin-bottom: 12px;
+        }
+        
+        .wave-control-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #e5e7eb;
+        }
+        
+        .wave-control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        .wave-control-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .toggle-group label {
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #374151;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #2563eb;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .wave-area {
+            position: absolute;
+            border: 2px dashed transparent;
+            z-index: 5;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .wave-area:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .wave-area.highlighted {
+            border-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .safe-zone-indicator {
+            position: absolute;
+            border: 2px dashed rgba(76, 175, 80, 0.7);
+            background-color: rgba(76, 175, 80, 0.1);
+            z-index: 4;
+            pointer-events: none;
+        }
+        
+        .danger-zone-indicator {
+            position: absolute;
+            border: 2px dashed rgba(244, 67, 54, 0.7);
+            background-color: rgba(244, 67, 54, 0.1);
+            z-index: 4;
+            pointer-events: none;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 160px;
+            right: 16px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 10;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: white;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .legend-color.safe {
+            background-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .legend-color.danger {
+            background-color: rgba(244, 67, 54, 0.5);
+        }
+        
+        .legend-text {
+            font-size: 14px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="simulation"></canvas>
+        
+        <div id="storyTitle" class="story-title">
+            <h2 id="titleText">Rip Current Safety Guide</h2>
+        </div>
+        
+        <div id="message" class="message">
+            <p>Identifying safe and dangerous swimming areas</p>
+            <div class="indicator"></div>
+        </div>
+        
+        <div class="rip-type-selector">
+            <h3>Rip Current Types</h3>
+            <button id="channelRip" class="rip-type-button active">Channel Rip</button>
+            <button id="flashRip" class="rip-type-button">Flash Rip</button>
+            <button id="permanentRip" class="rip-type-button">Permanent Rip</button>
+        </div>
+        
+        <div class="wave-controls">
+            <h3>Wave Controls</h3>
+            <div class="wave-control-group">
+                <label for="waveHeight">Wave Height</label>
+                <input type="range" id="waveHeight" min="0" max="100" value="50">
+            </div>
+            <div class="wave-control-group">
+                <label for="waveSpeed">Wave Speed</label>
+                <input type="range" id="waveSpeed" min="0" max="100" value="50">
+            </div>
+            <div class="wave-control-group">
+                <div class="toggle-group">
+                    <label for="showIndicators">Show Indicators</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showIndicators" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-group">
+                    <label for="showLabels">Show Labels</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showLabels" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-group">
+                    <label for="showSafeZones">Show Safe/Danger Zones</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showSafeZones" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <h3>Legend</h3>
+            <div class="legend-item">
+                <div class="legend-color safe"></div>
+                <div class="legend-text">Safe Swimming Area</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color danger"></div>
+                <div class="legend-text">Dangerous Area - Avoid</div>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <button id="resetBtn" class="button" title="Reset">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+            </button>
+            
+            <button id="playBtn" class="button" title="Play/Pause">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </button>
+            
+            <button id="infoBtn" class="button" title="Information">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            
+            <button id="fullscreenBtn" class="button" title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="hotspotInfo" class="hotspot-info hidden">
+            <button class="close">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <p id="hotspotText"></p>
+        </div>
+        
+        <div id="infoPanel" class="info-panel hidden">
+            <div class="info-content">
+                <button class="close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <h2>How to Identify Rip Currents</h2>
+                
+                <ol>
+                    <li>
+                        <span class="highlight">Look for a gap in breaking waves</span> - A calm area between breaking waves often indicates a rip current.
+                    </li>
+                    <li>
+                        <span class="highlight">Check for discolored water</span> - Rip currents may appear darker because they carry sand and sediment.
+                    </li>
+                    <li>
+                        <span class="highlight">Watch for foam or debris moving seaward</span> - If objects are moving away from shore, a rip current may be present.
+                    </li>
+                    <li>
+                        <span class="highlight">Notice a rippled surface</span> - Rip currents can create a rippled or choppy surface that looks different from surrounding water.
+                    </li>
+                    <li>
+                        <span class="highlight">Observe a different water color</span> - Sometimes rip currents appear as a different color than surrounding water.
+                    </li>
+                </ol>
+                
+                <div class="callout">
+                    <p>
+                        When in doubt, ask a lifeguard! Always swim at beaches with lifeguards and follow posted warnings.
+                    </p>
+                </div>
+                
+                <div class="footer">
+                    <p>
+                        Click on the highlighted areas in the simulation to learn more about safe and dangerous swimming zones.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    class WaveSimulation {
+        constructor(canvas) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.isPlaying = true;
+            this.waveHeight = 0.5;
+            this.waveSpeed = 0.5;
+            this.time = 0;
+            this.ripType = 'channel';
+            this.showIndicators = true;
+            this.showLabels = true;
+            this.showSafeZones = true;
+            
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            
+            this.safeZones = [
+                { x: 0.1, y: 0.3, width: 0.2, height: 0.4 },
+                { x: 0.7, y: 0.3, width: 0.2, height: 0.4 }
+            ];
+            
+            this.dangerZones = [
+                { x: 0.4, y: 0.3, width: 0.2, height: 0.4 }
+            ];
+            
+            this.animate();
+        }
+        
+        resize() {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+        }
+        
+        drawWave(x, y, amplitude, frequency, phase) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y);
+            
+            for (let i = 0; i <= this.canvas.width; i += 2) {
+                const waveY = y + Math.sin((i * frequency + phase) * Math.PI * 2) * amplitude;
+                this.ctx.lineTo(x + i, waveY);
+            }
+            
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            this.ctx.stroke();
+        }
+        
+        drawRipCurrent() {
+            const centerX = this.canvas.width * 0.5;
+            const centerY = this.canvas.height * 0.5;
+            const width = this.canvas.width * 0.2;
+            const height = this.canvas.height * 0.4;
+            
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX - width/2, centerY - height/2);
+            this.ctx.lineTo(centerX + width/2, centerY - height/2);
+            this.ctx.lineTo(centerX, centerY + height/2);
+            this.ctx.closePath();
+            
+            const gradient = this.ctx.createLinearGradient(
+                centerX,
+                centerY - height/2,
+                centerX,
+                centerY + height/2
+            );
+            
+            gradient.addColorStop(0, 'rgba(244, 67, 54, 0.1)');
+            gradient.addColorStop(1, 'rgba(244, 67, 54, 0.4)');
+            
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+            
+            if (this.showIndicators) {
+                this.ctx.strokeStyle = 'rgba(244, 67, 54, 0.7)';
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.stroke();
+            }
+            
+            this.ctx.restore();
+        }
+        
+        drawSafeZones() {
+            if (!this.showSafeZones) return;
+            
+            this.safeZones.forEach(zone => {
+                const x = this.canvas.width * zone.x;
+                const y = this.canvas.height * zone.y;
+                const width = this.canvas.width * zone.width;
+                const height = this.canvas.height * zone.height;
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.rect(x, y, width, height);
+                this.ctx.fillStyle = 'rgba(76, 175, 80, 0.1)';
+                this.ctx.fill();
+                
+                if (this.showIndicators) {
+                    this.ctx.strokeStyle = 'rgba(76, 175, 80, 0.7)';
+                    this.ctx.setLineDash([5, 5]);
+                    this.ctx.stroke();
+                }
+                
+                if (this.showLabels) {
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    this.ctx.font = '16px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('Safe Swimming Area', x + width/2, y + height + 24);
+                }
+                
+                this.ctx.restore();
+            });
+        }
+        
+        drawDangerZones() {
+            if (!this.showSafeZones) return;
+            
+            this.dangerZones.forEach(zone => {
+                const x = this.canvas.width * zone.x;
+                const y = this.canvas.height * zone.y;
+                const width = this.canvas.width * zone.width;
+                const height = this.canvas.height * zone.height;
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.rect(x, y, width, height);
+                this.ctx.fillStyle = 'rgba(244, 67, 54, 0.1)';
+                this.ctx.fill();
+                
+                if (this.showIndicators) {
+                    this.ctx.strokeStyle = 'rgba(244, 67, 54, 0.7)';
+                    this.ctx.setLineDash([5, 5]);
+                    this.ctx.stroke();
+                }
+                
+                if (this.showLabels) {
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    this.ctx.font = '16px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('Dangerous Area - Rip Current', x + width/2, y + height + 24);
+                }
+                
+                this.ctx.restore();
+            });
+        }
+        
+        draw() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw background
+            const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+            gradient.addColorStop(0, '#1e3a8a');
+            gradient.addColorStop(1, '#0ea5e9');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw waves
+            const waveCount = 5;
+            const baseAmplitude = 20 * this.waveHeight;
+            const baseFrequency = 0.005 * this.waveSpeed;
+            
+            for (let i = 0; i < waveCount; i++) {
+                const y = this.canvas.height * (0.3 + i * 0.1);
+                const amplitude = baseAmplitude * (1 - i/waveCount);
+                const frequency = baseFrequency * (1 + i/waveCount);
+                this.drawWave(0, y, amplitude, frequency, this.time);
+            }
+            
+            // Draw rip current
+            if (this.ripType === 'channel') {
+                this.drawRipCurrent();
+            }
+            
+            // Draw safe and danger zones
+            this.drawSafeZones();
+            this.drawDangerZones();
+        }
+        
+        animate() {
+            if (this.isPlaying) {
+                this.time += 0.02;
+                this.draw();
+            }
+            requestAnimationFrame(() => this.animate());
+        }
+        
+        setWaveHeight(value) {
+            this.waveHeight = value / 100;
+        }
+        
+        setWaveSpeed(value) {
+            this.waveSpeed = value / 100;
+        }
+        
+        setRipType(type) {
+            this.ripType = type;
+        }
+        
+        togglePlay() {
+            this.isPlaying = !this.isPlaying;
+        }
+        
+        reset() {
+            this.time = 0;
+            this.waveHeight = 0.5;
+            this.waveSpeed = 0.5;
+            document.getElementById('waveHeight').value = 50;
+            document.getElementById('waveSpeed').value = 50;
+        }
+    }
+
+    // Initialize simulation when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('simulation');
+        const sim = new WaveSimulation(canvas);
+        
+        // Control panel buttons
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        
+        // Wave controls
+        const waveHeightInput = document.getElementById('waveHeight');
+        const waveSpeedInput = document.getElementById('waveSpeed');
+        const showIndicatorsInput = document.getElementById('showIndicators');
+        const showLabelsInput = document.getElementById('showLabels');
+        const showSafeZonesInput = document.getElementById('showSafeZones');
+        
+        // Rip type buttons
+        const channelRipBtn = document.getElementById('channelRip');
+        const flashRipBtn = document.getElementById('flashRip');
+        const permanentRipBtn = document.getElementById('permanentRip');
+        
+        // Info panels
+        const infoPanel = document.getElementById('infoPanel');
+        const hotspotInfo = document.getElementById('hotspotInfo');
+        
+        // Play/Pause button
+        playBtn.addEventListener('click', () => {
+            sim.togglePlay();
+            const icon = playBtn.querySelector('svg');
+            if (sim.isPlaying) {
+                icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+            } else {
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+            }
+        });
+        
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            sim.reset();
+        });
+        
+        // Info button
+        infoBtn.addEventListener('click', () => {
+            infoPanel.classList.toggle('hidden');
+        });
+        
+        // Close info panel
+        infoPanel.querySelector('.close').addEventListener('click', () => {
+            infoPanel.classList.add('hidden');
+        });
+        
+        // Close hotspot info
+        hotspotInfo.querySelector('.close').addEventListener('click', () => {
+            hotspotInfo.classList.add('hidden');
+        });
+        
+        // Fullscreen button
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+        
+        // Wave height control
+        waveHeightInput.addEventListener('input', (e) => {
+            sim.setWaveHeight(e.target.value);
+        });
+        
+        // Wave speed control
+        waveSpeedInput.addEventListener('input', (e) => {
+            sim.setWaveSpeed(e.target.value);
+        });
+        
+        // Show indicators toggle
+        showIndicatorsInput.addEventListener('change', (e) => {
+            sim.showIndicators = e.target.checked;
+        });
+        
+        // Show labels toggle
+        showLabelsInput.addEventListener('change', (e) => {
+            sim.showLabels = e.target.checked;
+        });
+        
+        // Show safe zones toggle
+        showSafeZonesInput.addEventListener('change', (e) => {
+            sim.showSafeZones = e.target.checked;
+        });
+        
+        // Rip type buttons
+        channelRipBtn.addEventListener('click', () => {
+            sim.setRipType('channel');
+            channelRipBtn.classList.add('active');
+            flashRipBtn.classList.remove('active');
+            permanentRipBtn.classList.remove('active');
+        });
+        
+        flashRipBtn.addEventListener('click', () => {
+            sim.setRipType('flash');
+            channelRipBtn.classList.remove('active');
+            flashRipBtn.classList.add('active');
+            permanentRipBtn.classList.remove('active');
+        });
+        
+        permanentRipBtn.addEventListener('click', () => {
+            sim.setRipType('permanent');
+            channelRipBtn.classList.remove('active');
+            flashRipBtn.classList.remove('active');
+            permanentRipBtn.classList.add('active');
+        });
+        
+        // Handle clicks on safe/danger zones
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / canvas.width;
+            const y = (e.clientY - rect.top) / canvas.height;
+            
+            let clickedZone = null;
+            
+            // Check safe zones
+            for (const zone of sim.safeZones) {
+                if (x >= zone.x && x <= zone.x + zone.width &&
+                    y >= zone.y && y <= zone.y + zone.height) {
+                    clickedZone = {
+                        type: 'safe',
+                        text: 'This is a safe swimming area. The waves are regular and there are no visible rip currents.'
+                    };
+                    break;
+                }
+            }
+            
+            // Check danger zones
+            for (const zone of sim.dangerZones) {
+                if (x >= zone.x && x <= zone.x + zone.width &&
+                    y >= zone.y && y <= zone.y + zone.height) {
+                    clickedZone = {
+                        type: 'danger',
+                        text: 'This is a dangerous area with a rip current. Avoid swimming here.'
+                    };
+                    break;
+                }
+            }
+            
+            if (clickedZone) {
+                const hotspotText = document.getElementById('hotspotText');
+                hotspotText.textContent = clickedZone.text;
+                hotspotInfo.classList.remove('hidden');
+                
+                // Position the info box near the click
+                const infoBox = hotspotInfo.getBoundingClientRect();
+                let left = e.clientX - infoBox.width / 2;
+                let top = e.clientY - infoBox.height - 20;
+                
+                // Keep the box within the viewport
+                if (left < 10) left = 10;
+                if (left + infoBox.width > window.innerWidth - 10) {
+                    left = window.innerWidth - infoBox.width - 10;
+                }
+                if (top < 10) top = e.clientY + 20;
+                
+                hotspotInfo.style.left = `${left}px`;
+                hotspotInfo.style.top = `${top}px`;
+            } else {
+                hotspotInfo.classList.add('hidden');
+            }
+        });
+    });
+    </script>
+</body>
+</html> 

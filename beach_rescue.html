@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Australian Beach Safety</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Quicksand:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: none;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Cursor */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: cursorRotate 2s linear infinite;
+            transform-origin: center;
+        }
+
+        #cursor-ripple {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        @keyframes cursorRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rippleEffect {
+            0% {
+                transform: scale(0);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(2.5);
+                opacity: 0.4;
+            }
+            100% {
+                transform: scale(3.5);
+                opacity: 0;
+            }
+        }
+
+        /* Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.85) saturate(1.1);
+            animation: fadeInVideo 0.5s ease-out;
+        }
+
+        @keyframes fadeInVideo {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Loading Indicator */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            font-family: 'Quicksand', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            opacity: 1;
+            animation: fadeOut 0.5s ease-out 1s forwards;
+            z-index: 1000;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Content Overlay */
+        .content-wrapper {
+            position: relative;
+            min-height: 100vh;
+            background: linear-gradient(
+                135deg,
+                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.2) 100%
+            );
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 1.2s forwards;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .header {
+            padding: 6rem 2rem 4rem;
+            text-align: center;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.4) 0%,
+                transparent 100%
+            );
+            opacity: 0;
+            animation: fadeInHeader 0.8s ease-out 0.2s forwards;
+        }
+
+        @keyframes fadeInHeader {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .page-title {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.6);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            letter-spacing: -1px;
+            transform: translateY(0);
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.4s forwards;
+        }
+
+        .page-subtitle {
+            font-size: 1.8rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.6);
+            line-height: 1.4;
+            font-weight: 300;
+            transform: translateY(0);
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            padding: 2.5rem;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .section:nth-child(1) {
+            animation: none;
+        }
+
+        .section:nth-child(2) {
+            animation: none;
+        }
+
+        .emergency {
+            background: linear-gradient(
+                135deg,
+                rgba(255, 59, 59, 0.25) 0%,
+                rgba(255, 59, 59, 0.15) 100%
+            );
+            padding: 3rem;
+            text-align: center;
+            border-radius: 30px;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 59, 59, 0.3);
+            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.15);
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Content Sections */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #FFE999;
+            font-size: 2.4rem;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .section-title span {
+            font-size: 2.8rem;
+            margin-right: 15px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(0);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 233, 153, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 233, 153, 0.2);
+        }
+
+        .card:active {
+            transform: translateY(-2px) scale(0.98);
+            box-shadow: 0 4px 15px rgba(255, 233, 153, 0.1);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #FFE999;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .card-title span {
+            font-size: 2.2rem;
+            margin-right: 15px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card:hover .card-title span {
+            transform: scale(1.2) rotate(10deg);
+            animation: bounce 1s infinite;
+        }
+
+        .card-text {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            position: relative;
+            z-index: 1;
+        }
+
+        .simple-list {
+            list-style-type: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .simple-list li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease;
+        }
+
+        .simple-list li:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .simple-list li span {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .simple-list li:hover span {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .simple-list li:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Emergency Section */
+        .emergency-title {
+            font-size: 2.4rem;
+            margin-bottom: 1.5rem;
+            color: #FFE999;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .emergency-number {
+            font-size: 4.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 59, 59, 0.5);
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.8rem;
+            }
+            
+            .page-subtitle {
+                font-size: 1.4rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .section {
+                padding: 1.8rem;
+            }
+
+            .emergency {
+                padding: 2rem;
+            }
+
+            .emergency-number {
+                font-size: 3.5rem;
+            }
+        }
+
+        /* Remove tab styles and add hamburger menu styles */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-toggle .hamburger {
+            width: 20px;
+            height: 2px;
+            background: white;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle .hamburger:before,
+        .menu-toggle .hamburger:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle .hamburger:before {
+            top: -6px;
+        }
+
+        .menu-toggle .hamburger:after {
+            bottom: -6px;
+        }
+
+        .menu-toggle.active .hamburger {
+            background: transparent;
+        }
+
+        .menu-toggle.active .hamburger:before {
+            transform: rotate(45deg);
+            top: 0;
+        }
+
+        .menu-toggle.active .hamburger:after {
+            transform: rotate(-45deg);
+            bottom: 0;
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 80px 20px 20px;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .side-menu.active {
+            left: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle at center,
+                rgba(255, 255, 255, 0.1) 0%,
+                transparent 70%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-item:hover::before {
+            left: 100%;
+        }
+
+        .menu-item:hover::after {
+            opacity: 1;
+        }
+
+        .menu-item:active {
+            transform: translateX(3px) scale(0.98);
+        }
+
+        .menu-item svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .menu-item:hover svg {
+            transform: scale(1.2) rotate(5deg);
+            animation: bounce 0.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .menu-item.active {
+            background: rgba(255, 233, 153, 0.2);
+            border: 1px solid #FFE999;
+            box-shadow: 0 0 15px rgba(255, 233, 153, 0.2);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 15px rgba(255, 233, 153, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(255, 233, 153, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(255, 233, 153, 0.2);
+            }
+        }
+
+        .menu-item.active::after {
+            content: '';
+            position: absolute;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            background: #FFE999;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(255, 233, 153, 0.7);
+            }
+            70% {
+                transform: scale(1.5);
+                opacity: 0.5;
+                box-shadow: 0 0 0 10px rgba(255, 233, 153, 0);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(255, 233, 153, 0);
+            }
+        }
+
+        /* Adjust content wrapper for menu */
+        .content-wrapper.shifted {
+            transform: translateX(300px);
+        }
+
+        @media (max-width: 768px) {
+            .side-menu {
+                width: 250px;
+            }
+            .content-wrapper.shifted {
+                transform: translateX(250px);
+            }
+        }
+
+        .emergency-card {
+            background: linear-gradient(135deg, rgba(255, 59, 59, 0.2) 0%, rgba(255, 59, 59, 0.1) 100%);
+            border: 1px solid rgba(255, 59, 59, 0.3);
+        }
+
+        .emergency-card .emergency-number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: #fff;
+            margin: 1rem 0;
+            text-shadow: 0 0 20px rgba(255, 59, 59, 0.5);
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.2s; }
+        .card:nth-child(2) { animation-delay: 0.4s; }
+        .card:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Escape Steps Styles */
+        .escape-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 233, 153, 0.3);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 233, 153, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-family: 'Quicksand', sans-serif;
+            color: #FFE999;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover .step-number {
+            transform: scale(1.1) rotate(10deg);
+            opacity: 0.8;
+        }
+
+        .step-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #FFE999;
+            font-family: 'Quicksand', sans-serif;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .step-content {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .key-points {
+            list-style: none;
+        }
+
+        .key-points li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .key-points li:last-child {
+            border-bottom: none;
+        }
+
+        .key-points li:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .key-points li span {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .key-points li:hover span {
+            transform: scale(1.2);
+        }
+
+        .interactive-diagram {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .diagram-title {
+            font-size: 2rem;
+            color: #FFE999;
+            margin-bottom: 2rem;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .diagram-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .emergency-banner {
+            background: linear-gradient(135deg, rgba(255, 59, 59, 0.2) 0%, rgba(255, 59, 59, 0.1) 100%);
+            border: 1px solid rgba(255, 59, 59, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin: 3rem 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .emergency-banner .emergency-number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: white;
+            margin: 1rem 0;
+            text-shadow: 0 0 20px rgba(255, 59, 59, 0.5);
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .step-card {
+                padding: 1.5rem;
+            }
+
+            .step-number {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+        }
+
+        .sim-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 233, 153, 0.2);
+            border: 2px solid #FFE999;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transform: translateY(0);
+        }
+
+        .sim-button:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(255, 233, 153, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 233, 153, 0.2);
+        }
+
+        .sim-button:active {
+            transform: translateY(-2px) scale(0.98);
+            box-shadow: 0 4px 15px rgba(255, 233, 153, 0.1);
+        }
+
+        .sim-button .wave-icon {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-block;
+        }
+
+        .sim-button:hover .wave-icon {
+            transform: scale(1.2) rotate(10deg);
+            animation: wave 1s infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sim-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Add styles for the site name */
+        .site-name {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+            padding: 0.5rem 2rem;
+            border-radius: 5px;
+            letter-spacing: 0.1em;
+            border-bottom: 2px solid rgba(121, 192, 224, 0.7);
+        }
+
+        .site-name .blue-text {
+            color: #79C0E0; /* Blue color to match the site theme */
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .site-name::after {
+            content: "🌊";
+            margin-left: 0.5rem;
+            font-size: 1.8rem;
+            vertical-align: middle;
+            display: inline-block;
+            animation: waveMotion 2s ease-in-out infinite;
+        }
+
+        @keyframes waveMotion {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <svg id="custom-cursor" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="red" stroke-width="5" />
+        <circle cx="50" cy="50" r="30" fill="white" />
+        <!-- Lifebuoy lines -->
+        <line x1="50" y1="5" x2="50" y2="20" stroke="white" stroke-width="5" />
+        <line x1="50" y1="80" x2="50" y2="95" stroke="white" stroke-width="5" />
+        <line x1="5" y1="50" x2="20" y2="50" stroke="white" stroke-width="5" />
+        <line x1="80" y1="50" x2="95" y2="50" stroke="white" stroke-width="5" />
+        <!-- Bigger Beach Flag -->
+        <rect x="48" y="0" width="4" height="25" fill="white"/>
+        <polygon points="52,0 78,12.5 52,25" fill="red"/>
+    </svg>
+
+    <!-- Cursor Ripple Effect -->
+    <div id="cursor-ripple"></div>
+
+    <!-- Add the site name element with colored text -->
+    <div class="site-name"><span class="blue-text">Water</span> Wise Family</div>
+
+    <!-- Video Background -->
+    <video class="video-background" autoplay loop muted playsinline>
+        <source src="Beach_safety.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="loading">Loading Beach Safety Information...</div>
+
+    <!-- Add Hamburger Menu Button -->
+    <div class="menu-toggle">
+        <div class="hamburger"></div>
+    </div>
+
+    <!-- Add Side Menu -->
+    <nav class="side-menu">
+        <a href="HomePage.html" class="menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Home
+        </a>
+        <a href="#" class="menu-item" data-tab="general">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            General Safety
+        </a>
+        <a href="#" class="menu-item" data-tab="rescue">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+            Beach Rescue
+        </a>
+        <a href="#" class="menu-item" data-tab="rips">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Rip Currents
+        </a>
+        <a href="#" class="menu-item" data-tab="escape">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Escaping Rips
+        </a>
+    </nav>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <header class="header">
+            <h1 class="page-title">Preventing Drowning at the Beach 🏖️</h1>
+            <p class="page-subtitle">Giving immigrant families the tools and knowledge to keep children safe from drowning on Australian beaches</p>
+        </header>
+
+        <div class="container">
+            <div id="general" class="tab-content active">
+                <section class="section">
+                    <h2 class="section-title"><span>👨‍👩‍👧</span> Beach Safety Starts with You</h2>
+                    
+                    <div class="cards">
+                        <div class="card">
+                            <h3 class="card-title"><span>🌏</span> Understand the Risk</h3>
+                            <p class="card-text">Australian beaches have unique dangers you may not have seen before.</p>
+                            <ul class="simple-list">
+                                <li><span>⚠️</span> Waves here are often stronger than other countries</li>
+                                <li><span>⚠️</span> Dangerous currents can be invisible</li>
+                                <li><span>⚠️</span> Children need closer watching than at home</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title"><span>��</span> Supervision Saves Lives</h3>
+                            <p class="card-text">Your watchful eye is your child's best protection.</p>
+                            <ul class="simple-list">
+                                <li><span>⚠️</span> Stay within arm's reach of young children</li>
+                                <li><span>⚠️</span> Don't rely only on lifeguards - they can't watch everyone</li>
+                                <li><span>⚠️</span> Take turns watching with other adults if tired</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title"><span>📚</span> Learn and Share the Rules</h3>
+                            <p class="card-text">Understanding beach flags can save your family's life.</p>
+                            <ul class="simple-list">
+                                <li><span>⚠️</span> Red & Yellow flags = Only safe swimming area</li>
+                                <li><span>⚠️</span> Teach children "No flags = No swimming"</li>
+                                <li><span>⚠️</span> Show children how to spot the lifeguard tower</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title"><span>🌊</span> Unpredictable Waves</h2>
+                    
+                    <div class="cards">
+                        <div class="card">
+                            <h3 class="card-title"><span>🌡️</span> Heat & Marine Hazards</h3>
+                            <p class="card-text">Tiredness and panic increase drowning risk.</p>
+                            <ul class="simple-list">
+                                <li><span>⚠️</span> Rest often in shade to prevent exhaustion</li>
+                                <li><span>⚠️</span> Stay calm if you see marine life - most won't hurt you</li>
+                                <li><span>⚠️</span> Leave the water if feeling tired or cold</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="emergency">
+                    <h2 class="emergency-title">In an Emergency Call</h2>
+                    <p class="emergency-number">000</p>
+                    <p>Ask for an interpreter if needed - Help is available in your language</p>
+                </div>
+            </div>
+
+            <div id="rips" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title"><span>🌊</span> UNDERSTANDING RIP CURRENTS</h2>
+                    
+                    <div class="simulation-link">
+                        <a href="Final_rip_current_sim.html" class="sim-button">
+                            <span class="wave-icon">🌊</span>
+                            Rip Current Simulation
+                        </a>
+                    </div>
+
+                    <div class="cards rip-cards">
+                        <div class="card">
+                            <h3 class="card-title"><span>👁️</span> Visual Signs</h3>
+                            <p class="card-text">Learn to identify these key indicators of rip currents:</p>
+                            <ul class="simple-list warning-list">
+                                <li><span>⚠️</span> Deeper, darker water</li>
+                                <li><span>⚠️</span> Fewer breaking waves</li>
+                                <li><span>⚠️</span> Sandy colored water extending beyond the surf</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title"><span>❌</span> Danger Zones</h3>
+                            <p class="card-text">Stay away from these high-risk areas:</p>
+                            <ul class="simple-list warning-list">
+                                <li><span>⚠️</span> Areas near rocks and piers</li>
+                                <li><span>⚠️</span> Deep channels between sand banks</li>
+                                <li><span>⚠️</span> Where waves aren't breaking</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="cards rip-cards">
+                        <div class="card survival-card">
+                            <h3 class="card-title"><span>🏊</span> If Caught in a Rip</h3>
+                            <p class="card-text">Follow these steps to stay safe:</p>
+                            <ul class="simple-list numbered-list">
+                                <li><span>1️⃣</span> Stay calm - rips won't pull you under</li>
+                                <li><span>2️⃣</span> Float and raise your hand for help</li>
+                                <li><span>3️⃣</span> Swim parallel to the beach to escape</li>
+                            </ul>
+                        </div>
+
+                        <div class="card warning-card">
+                            <h3 class="card-title"><span>🚫</span> Never...</h3>
+                            <p class="card-text">Avoid these dangerous actions:</p>
+                            <ul class="simple-list warning-list">
+                                <li><span>⚠️</span> Try to swim against the rip</li>
+                                <li><span>⚠️</span> Panic or exhaust yourself</li>
+                                <li><span>⚠️</span> Swim at unpatrolled beaches</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <style>
+        .simulation-link {
+            text-align: center;
+            margin: 2rem 0 3rem;
+        }
+
+        .sim-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 233, 153, 0.2);
+            border: 2px solid #FFE999;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transform: translateY(0);
+        }
+
+        .sim-button:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(255, 233, 153, 0.3);
+            box-shadow: 0 8px 25px rgba(255, 233, 153, 0.2);
+        }
+
+        .sim-button:active {
+            transform: translateY(-2px) scale(0.98);
+            box-shadow: 0 4px 15px rgba(255, 233, 153, 0.1);
+        }
+
+        .sim-button .wave-icon {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-block;
+        }
+
+        .sim-button:hover .wave-icon {
+            transform: scale(1.2) rotate(10deg);
+            animation: wave 1s infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .rip-cards {
+            margin-bottom: 2rem;
+        }
+
+        .rip-cards .card {
+            padding: 2rem;
+            margin: 1rem;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .card-text {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .warning-list li {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .warning-list li:last-child {
+            border-bottom: none;
+        }
+
+        .numbered-list li {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .numbered-list li:last-child {
+            border-bottom: none;
+        }
+
+        .survival-card {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(52, 152, 219, 0.1) 100%);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .warning-card {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2) 0%, rgba(231, 76, 60, 0.1) 100%);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .rip-cards {
+                flex-direction: column;
+            }
+
+            .rip-cards .card {
+                margin: 1rem 0;
+            }
+
+            .sim-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 1.1rem;
+            }
+        }
+                    </style>
+                </section>
+            </div>
+
+            <div id="escape" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title"><span>🌊</span> ESCAPING RIP CURRENTS</h2>
+                    
+                    <div class="escape-steps">
+                        <div class="step-card">
+                            <div class="step-number">1</div>
+                            <h2 class="step-title">Stay Calm</h2>
+                            <p class="step-content">Rip currents won't pull you under - they only pull you away from shore.</p>
+                            <ul class="key-points">
+                                <li><span>🧘</span> Control your breathing</li>
+                                <li><span>💪</span> Conserve your energy</li>
+                                <li><span>🌊</span> Float with the current</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">2</div>
+                            <h2 class="step-title">Signal for Help</h2>
+                            <p class="step-content">Make yourself visible to lifeguards and other beachgoers.</p>
+                            <ul class="key-points">
+                                <li><span>🙋</span> Raise one arm high</li>
+                                <li><span>👋</span> Wave for attention</li>
+                                <li><span>🗣️</span> Yell for help if close to others</li>
+                            </ul>
+                        </div>
+
+                        <div class="step-card">
+                            <div class="step-number">3</div>
+                            <h2 class="step-title">Swim Parallel</h2>
+                            <p class="step-content">Escape the rip by swimming parallel to the beach.</p>
+                            <ul class="key-points">
+                                <li><span>↔️</span> Swim along the beach</li>
+                                <li><span>🏊</span> Use the waves to help you</li>
+                                <li><span>🎯</span> Aim for breaking waves</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="simulation-link" style="text-align: center; margin: 3rem auto;">
+                        <a href="Final_escaping_rip.html" class="escape-sim-button">
+                            <span class="escape-icon">🏊‍♂️</span>
+                            Try the Escape Simulation
+                        </a>
+                    </div>
+
+                    <style>
+                        .escape-sim-button {
+            display: inline-flex;
+            align-items: center;
+                            padding: 1.2rem 2.5rem;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(52, 152, 219, 0.1) 100%);
+                            border: 2px solid rgba(52, 152, 219, 0.6);
+            color: white;
+            text-decoration: none;
+                            border-radius: 25px;
+                            font-size: 1.3rem;
+                            font-weight: 600;
+                            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+                            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+        }
+
+                        .escape-sim-button:hover {
+            transform: translateY(-5px) scale(1.02);
+                            background: linear-gradient(135deg, rgba(52, 152, 219, 0.3) 0%, rgba(52, 152, 219, 0.2) 100%);
+                            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+                            border-color: rgba(52, 152, 219, 0.8);
+        }
+
+                        .escape-sim-button:active {
+            transform: translateY(-2px) scale(0.98);
+                        }
+
+                        .escape-sim-button .escape-icon {
+                            font-size: 1.6rem;
+                            margin-right: 15px;
+                            transition: transform 0.4s ease;
+                        }
+
+                        .escape-sim-button:hover .escape-icon {
+                            transform: scale(1.2) translateX(-5px);
+                            animation: swim 1s infinite;
+                        }
+
+                        @keyframes swim {
+                            0%, 100% { transform: translateY(0) rotate(-5deg); }
+                            50% { transform: translateY(-3px) rotate(5deg); }
+        }
+
+        @media (max-width: 768px) {
+                            .escape-sim-button {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+                        }
+                    </style>
+
+                    <div class="interactive-diagram">
+                        <h2 class="diagram-title">Understanding Rip Current Escape Routes</h2>
+                        <img src="rip_escape_diagram.jpg" alt="Rip Current Escape Diagram" class="diagram-image">
+                        <p>Most rip currents are narrow - swimming parallel to the shore for just 30-40 meters can get you out of danger.</p>
+                    </div>
+
+                    <div class="emergency-banner">
+                        <h2 class="step-title">In an Emergency Call</h2>
+                        <p class="emergency-number">000</p>
+                        <p>Ask for an interpreter if needed - Help is available in your language</p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="rescue" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title"><span>🆘</span> BEACH RESCUE GUIDE</h2>
+                    
+                    <div class="simulation-link" style="text-align: center; margin: 2rem auto 3rem;">
+                        <a href="Life_rescue.html" class="sim-button">
+                            <span class="wave-icon">🛟</span>
+                            Try the Rescue Simulation
+                        </a>
+                    </div>
+
+                    <div class="cards">
+                        <div class="card">
+                            <h3 class="card-title"><span>1️⃣</span> Recognize Emergency</h3>
+                            <p class="card-text">Know the signs of a swimmer in distress.</p>
+                            <ul class="simple-list">
+                                <li><span>👀</span> Person showing distress signals</li>
+                                <li><span>👋</span> Waving arms or calling for help</li>
+                                <li><span>💦</span> Head bobbing in water</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title"><span>2️⃣</span> Alert Help</h3>
+                            <p class="card-text">Quick action can save lives.</p>
+                            <ul class="simple-list">
+                                <li><span>🏃</span> Find nearest lifeguard</li>
+                                <li><span>📞</span> Call 000 immediately</li>
+                                <li><span>📍</span> Note exact location</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title"><span>3️⃣</span> Safe Rescue</h3>
+                            <p class="card-text">Help safely without endangering yourself.</p>
+                            <ul class="simple-list">
+                                <li><span>🔍</span> Look for flotation devices</li>
+                                <li><span>🪢</span> Throw rope or buoy if available</li>
+                                <li><span>⚠️</span> Don't enter water unless trained</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="cards" style="margin-top: 2rem;">
+                        <div class="card">
+                            <h3 class="card-title"><span>🗣️</span> Communication</h3>
+                            <ul class="simple-list">
+                                <li><span>📢</span> Yell clear instructions to victim</li>
+                                <li><span>🌐</span> Ask for interpreter if needed</li>
+                                <li><span>📱</span> Stay on phone with emergency</li>
+                            </ul>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title"><span>🏥</span> After Rescue</h3>
+                            <ul class="simple-list">
+                                <li><span>👨‍⚕️</span> Get medical check even if seems fine</li>
+                                <li><span>🔄</span> Learn from the experience</li>
+                                <li><span>📝</span> Report incident to lifeguards</li>
+                            </ul>
+                        </div>
+
+                        <div class="card emergency-card">
+                            <h3 class="card-title"><span>🚨</span> Emergency Number</h3>
+                            <p class="emergency-number">000</p>
+                            <p class="card-text">Ask for interpreter if needed - Help is available in your language</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.querySelector('.video-background');
+            const cursor = document.getElementById('custom-cursor');
+            const ripple = document.getElementById('cursor-ripple');
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sideMenu = document.querySelector('.side-menu');
+            const contentWrapper = document.querySelector('.content-wrapper');
+            const menuItems = document.querySelectorAll('.menu-item');
+            
+            // Function to show a specific tab
+            function showTab(tabName) {
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+
+                // Show selected tab
+                const selectedTab = document.getElementById(tabName);
+                if (selectedTab) {
+                    selectedTab.style.display = 'block';
+                    selectedTab.classList.add('active');
+                }
+
+                // Update menu items
+                menuItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-tab') === tabName) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+
+            // Show General Safety by default if no hash is present or if hash is empty
+            if (!window.location.hash || window.location.hash === '#') {
+                showTab('general');
+            } else {
+                // If there is a hash, show that tab
+                const tabName = window.location.hash.substring(1);
+                showTab(tabName);
+            }
+
+            // Handle menu item clicks
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    const tabName = this.getAttribute('data-tab');
+                    if (!tabName) {
+                        return; // Allow regular links to work normally
+                    }
+                    
+                    e.preventDefault();
+                    showTab(tabName);
+                    
+                    // Update URL hash without scrolling
+                    history.pushState(null, '', `#${tabName}`);
+                    
+                    // Close menu on mobile
+                    if (window.innerWidth <= 768) {
+                        menuToggle.classList.remove('active');
+                        sideMenu.classList.remove('active');
+                        contentWrapper.classList.remove('shifted');
+                    }
+                });
+            });
+
+            // Handle hash changes
+            window.addEventListener('hashchange', function() {
+                const tabName = window.location.hash.substring(1) || 'general';
+                showTab(tabName);
+            });
+
+            // Try to play video
+            video.play().catch(function(error) {
+                console.log("Auto-play was prevented");
+                
+                // Add play button if autoplay is blocked
+                const playButton = document.createElement('button');
+                playButton.textContent = '▶️ Play Video';
+                playButton.style.position = 'fixed';
+                playButton.style.zIndex = '1000';
+                playButton.style.top = '50%';
+                playButton.style.left = '50%';
+                playButton.style.transform = 'translate(-50%, -50%)';
+                playButton.style.padding = '10px 20px';
+                playButton.style.background = 'rgba(255, 255, 255, 0.8)';
+                playButton.style.border = 'none';
+                playButton.style.borderRadius = '20px';
+                playButton.style.cursor = 'pointer';
+                playButton.style.fontSize = '1.2rem';
+                
+                playButton.addEventListener('click', function() {
+                    video.play();
+                    this.remove();
+                });
+                
+                document.body.appendChild(playButton);
+            });
+
+            // Mouse movement handler
+            document.addEventListener('mousemove', (e) => {
+                const x = e.clientX - 25;
+                const y = e.clientY - 25;
+                cursor.style.left = `${x}px`;
+                cursor.style.top = `${y}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+            });
+
+            // Click handler for ripple effect
+            document.addEventListener('click', () => {
+                ripple.style.animation = 'none';
+                ripple.offsetHeight; // force reflow
+                ripple.style.animation = 'rippleEffect 0.5s ease-out';
+            });
+
+            // Toggle menu
+            menuToggle.addEventListener('click', function() {
+                menuToggle.classList.toggle('active');
+                sideMenu.classList.toggle('active');
+                contentWrapper.classList.toggle('shifted');
+            });
+        });
+    </script>
+</body>
+</html> 

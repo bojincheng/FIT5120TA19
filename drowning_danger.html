@@ -1,0 +1,3188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drowning Statistics - SwimFlow</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Cormorant Garamond', serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor & Ripple */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: cursorRotate 2s linear infinite;
+            transform-origin: center;
+        }
+
+        #cursor-ripple {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        @keyframes cursorRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rippleEffect {
+            0% {
+                transform: scale(0);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(2.5);
+                opacity: 0.4;
+            }
+            100% {
+                transform: scale(3.5);
+                opacity: 0;
+            }
+        }
+
+        /* Enhanced Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-background.visible {
+            opacity: 1;
+        }
+
+        .video-background video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.15) blur(8px);
+            transition: filter 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .video-background.visible video {
+            filter: brightness(0.95) blur(0px);
+        }
+
+        .video-background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeOut 1.5s ease 2.5s forwards;
+        }
+
+        .lifebuoy-logo {
+            width: 150px;
+            height: 150px;
+            fill: none;
+            stroke-width: 2;
+            transform-origin: center;
+            animation: rotateAndPulse 4s infinite ease-in-out;
+        }
+
+        /* Content Styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards;
+        }
+
+        /* Enhanced Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 6rem 2rem;
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 68, 68, 0.1), rgba(0, 0, 0, 0.3));
+            z-index: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff4444, transparent);
+            animation: shimmerLine 4s infinite;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #ffffff, #ff4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+            animation: titlePulse 4s ease-in-out infinite;
+            line-height: 1.2;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .dramatic-text {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            line-height: 1.6;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            max-width: 900px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out 0.5s forwards;
+        }
+
+        .dramatic-counter {
+            margin-top: 4rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out 1s forwards;
+        }
+
+        .counter-number {
+            font-size: clamp(4rem, 8vw, 6rem);
+            color: #ff4444;
+            font-weight: bold;
+            text-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+            animation: numberPulse 2s infinite;
+            display: inline-block;
+        }
+
+        .counter-text {
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 1rem;
+            line-height: 1.4;
+        }
+
+        .warning-pulse {
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border-radius: 50%;
+            margin: 2rem auto;
+            animation: warningPulse 2s infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { 
+                text-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                text-shadow: 0 0 50px rgba(255, 68, 68, 0.8);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes shimmerLine {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes warningPulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+            }
+            70% { 
+                transform: scale(1.5);
+                box-shadow: 0 0 0 20px rgba(255, 68, 68, 0);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+            }
+        }
+
+        @keyframes numberPulse {
+            0%, 100% { 
+                transform: scale(1);
+                text-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+            }
+            50% { 
+                transform: scale(1.05);
+                text-shadow: 0 0 50px rgba(255, 68, 68, 0.8);
+            }
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-number {
+            font-size: 5rem;
+            color: #ff4444;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+
+        .stat-details {
+            text-align: center;
+        }
+
+        .stat-title {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-style: italic;
+        }
+
+        .child-emoji {
+            font-size: 3rem;
+            animation: float 3s ease-in-out infinite;
+            margin-top: 1rem;
+        }
+
+        .timeline-section {
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .timeline-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            width: 280px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.2);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .time-stamp {
+            margin-bottom: 1rem;
+        }
+
+        .time-stamp .number {
+            font-size: 2.5rem;
+            color: #ff4444;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+
+        .time-stamp .unit {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .event-details h3 {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 0.8rem;
+        }
+
+        .event-details p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .timeline-connector {
+            flex: 1;
+            max-width: 100px;
+            display: flex;
+            align-items: center;
+        }
+
+        .line {
+            height: 2px;
+            background: linear-gradient(to right, rgba(255, 68, 68, 0.3), rgba(255, 68, 68, 0.8), rgba(255, 68, 68, 0.3));
+            width: 100%;
+            position: relative;
+        }
+
+        .line::before, .line::after {
+            content: '•';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 68, 68, 0.8);
+            animation: pulse 2s infinite;
+        }
+
+        .line::before {
+            left: 30%;
+        }
+
+        .line::after {
+            right: 30%;
+        }
+
+        .warning {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        @media (max-width: 1024px) {
+            .timeline-container {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .timeline-card {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .timeline-connector {
+                height: 40px;
+                width: 2px;
+            }
+
+            .line {
+                width: 2px;
+                height: 100%;
+            }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #79C0E0, #3e8e41, #79C0E0);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderGlow 4s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.2; }
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #ffffff, #79C0E0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(121, 192, 224, 0.5);
+            animation: titleGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 30px rgba(121, 192, 224, 0.5); }
+            50% { text-shadow: 0 0 50px rgba(121, 192, 224, 0.8); }
+            100% { text-shadow: 0 0 30px rgba(121, 192, 224, 0.5); }
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+            letter-spacing: 0.02em;
+        }
+
+        /* Enhanced Statistics Container */
+        .statistics-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        /* Enhanced Search Sections */
+        .search-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #79C0E0, #3e8e41, #79C0E0);
+            border-radius: 15px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .search-section:hover::before {
+            opacity: 0.3;
+        }
+
+        .search-section h3 {
+            color: #79C0E0;
+            font-size: 1.6rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .search-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #79C0E0, transparent);
+        }
+
+        /* Enhanced Form Styles */
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            font-size: 1.2rem;
+            color: #79C0E0;
+            margin-bottom: 0.8rem;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        .form-group select:hover {
+            border-color: #79C0E0;
+            box-shadow: 0 0 15px rgba(121, 192, 224, 0.2);
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #79C0E0;
+            box-shadow: 0 0 20px rgba(121, 192, 224, 0.3);
+        }
+
+        /* Enhanced Button Styles */
+        .button-group {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding: 0 1rem;
+        }
+
+        .search-button, .clear-button {
+            padding: 1.2rem 2.5rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-family: 'Cormorant Garamond', serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-button {
+            background: linear-gradient(45deg, #3e8e41, #2e6b31);
+            color: white;
+        }
+
+        .clear-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-button:hover, .clear-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-button:active, .clear-button:active {
+            transform: translateY(-1px);
+        }
+
+        .search-button::after, .clear-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            transition: transform 0.5s ease;
+        }
+
+        .search-button:hover::after, .clear-button:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Enhanced Results Styles */
+        .results-container {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .results-title {
+            color: #79C0E0;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .results-table th {
+            background: rgba(121, 192, 224, 0.1);
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 500;
+            color: #79C0E0;
+            border-bottom: 2px solid rgba(121, 192, 224, 0.2);
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .results-table td {
+            padding: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .results-table tr:hover td {
+            background: rgba(121, 192, 224, 0.05);
+            color: #79C0E0;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Enhanced Message Styles */
+        .error-message, .no-results {
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 2rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        .no-results {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Enhanced Responsive Styles */
+        @media (max-width: 768px) {
+            .header {
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .header h1 {
+                font-size: clamp(2rem, 4vw, 3rem);
+            }
+
+            .header p {
+                font-size: 1.1rem;
+            }
+
+            .statistics-container {
+                padding: 1.5rem;
+            }
+
+            .search-section {
+                padding: 1.5rem;
+            }
+
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .form-group select {
+                padding: 0.8rem;
+                font-size: 1rem;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(121, 192, 224, 0.3);
+            border-radius: 50%;
+            border-top-color: #79C0E0;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        @keyframes rotateAndPulse {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.05); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Enhanced Back Button */
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            opacity: 0;
+            animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.2s forwards;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .warning-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #ff4444;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .danger-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.8rem 1.5rem;
+            }
+        }
+
+        /* Hamburger Menu Styles */
+        .menu-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 2rem;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            opacity: 0;
+            animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.2s forwards;
+        }
+
+        .hamburger {
+            width: 45px;
+            height: 45px;
+            position: relative;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .hamburger:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: scale(1.05);
+        }
+
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: white;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger span::before,
+        .hamburger span::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger span::before {
+            top: -7px;
+        }
+
+        .hamburger span::after {
+            bottom: -7px;
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 7rem 3rem 3rem 3rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-panel.active {
+            left: 0;
+        }
+
+        .menu-title {
+            color: white;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            align-items: flex-start;
+        }
+
+        .menu-item {
+            color: white;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-size: 1.1rem;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+            text-align: left;
+            width: fit-content;
+        }
+
+        .menu-panel.active .menu-item {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all 0.3s ease calc(var(--delay) * 0.1s);
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #79C0E0;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .menu-item:hover {
+            color: #79C0E0;
+            transform: translateX(5px);
+        }
+        
+        /* Decorative wave line */
+        .menu-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%2379C0E0" fill-opacity="0.3" d="M0,96L48,106.7C96,117,192,139,288,149.3C384,160,480,160,576,144C672,128,768,96,864,101.3C960,107,1056,149,1152,160C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.5;
+        }
+
+        /* Styling for tabs */
+        .tabs-container {
+            margin-bottom: 2rem;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .tab-button {
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255, 68, 68, 0.2), rgba(121, 192, 224, 0.2));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-button:hover::before {
+            opacity: 1;
+        }
+
+        .tab-button.active {
+            background: rgba(255, 68, 68, 0.2);
+            border-color: rgba(255, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Update existing styles */
+        .statistics-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .search-section {
+            margin-bottom: 0;
+        }
+
+        .results-container {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        /* New Impact Section Styles */
+        .impact-section {
+            margin: 3rem 0;
+            animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.5s forwards;
+            opacity: 0;
+        }
+
+        .impact-card {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .impact-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .impact-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .impact-card h2 {
+            color: #ff4444;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .impact-card p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .key-facts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .fact-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .fact-card:hover {
+            transform: translateY(-5px);
+            background: rgba(121, 192, 224, 0.1);
+        }
+
+        .fact-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .fact-card h3 {
+            color: #79C0E0;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .fact-card p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .call-to-action {
+            background: linear-gradient(135deg, rgba(121, 192, 224, 0.1), rgba(62, 142, 65, 0.1));
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin: 3rem 0;
+            border: 1px solid rgba(121, 192, 224, 0.2);
+        }
+
+        .call-to-action h2 {
+            color: #79C0E0;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .call-to-action p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Enhanced Readability */
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1.2;
+            margin-bottom: 2rem;
+        }
+
+        .header p {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .key-facts {
+                grid-template-columns: 1fr;
+            }
+
+            .impact-card, .fact-card, .call-to-action {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: clamp(2rem, 4vw, 3rem);
+            }
+
+            .header p {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Dramatic Elements */
+        .dramatic-counter {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.5s forwards;
+        }
+
+        .counter-number {
+            font-size: 5rem;
+            color: #ff4444;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+            animation: numberPulse 2s infinite;
+        }
+
+        .counter-text {
+            display: block;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 1rem;
+        }
+
+        .dramatic-quote {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #ff4444;
+        }
+
+        .quote-text {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            color: #fff;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .quote-author {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+        }
+
+        .dramatic-stat {
+            margin-top: 2rem;
+        }
+
+        .stat-number {
+            font-size: 4rem;
+            color: #ff4444;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(255, 68, 68, 0.7);
+        }
+
+        .pulse-animation {
+            animation: pulseDanger 2s infinite;
+        }
+
+        @keyframes pulseDanger {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+
+        .dramatic-timer {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 1rem;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: #ff4444;
+            width: 0;
+            animation: timerProgress 20s linear infinite;
+        }
+
+        @keyframes timerProgress {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+
+        .heartbeat-animation {
+            width: 30px;
+            height: 30px;
+            margin: 1rem auto;
+            background: #ff4444;
+            border-radius: 50%;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
+        .wave-animation {
+            height: 40px;
+            background: linear-gradient(to right, #79C0E0, #3e8e41);
+            margin-top: 1rem;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform-origin: 0 0;
+            animation: wave 3s linear infinite;
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(0) scaleY(1); }
+            50% { transform: translateX(-25%) scaleY(0.5); }
+            100% { transform: translateX(-50%) scaleY(1); }
+        }
+
+        .emergency-alert {
+            background: linear-gradient(45deg, #ff4444, #ff6b6b);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 3rem 0;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            animation: alertPulse 4s infinite;
+        }
+
+        .alert-icon {
+            font-size: 3rem;
+        }
+
+        .alert-content h2 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-content p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+        }
+
+        @keyframes alertPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .scroll-indicator {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .scroll-arrow {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #79C0E0;
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-arrow::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid #79C0E0;
+            border-bottom: 2px solid #79C0E0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .dramatic-text {
+            font-size: 1.6rem;
+            line-height: 1.8;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            margin: 2rem auto;
+            animation: fadeInUp 1.5s cubic-bezier(0.4, 0, 0.2, 1) 3.7s forwards;
+        }
+
+        @keyframes numberPulse {
+            0% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
+            50% { transform: scale(1.1); text-shadow: 0 0 40px rgba(255, 68, 68, 0.7); }
+            100% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
+        }
+
+        /* Enhanced Dramatic Elements for Child Focus */
+        .child-silhouette {
+            width: 100px;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%23ff4444" d="M50 90c20 0 30-20 30-40S70 10 50 10 20 30 20 50s10 40 30 40z"/></svg>');
+            margin: 0 auto 1rem;
+            opacity: 0.8;
+            animation: fadeInOut 3s infinite;
+        }
+
+        .counter-subtext {
+            display: block;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .dramatic-timeline {
+            margin: 4rem auto;
+            padding: 2rem;
+            max-width: 1400px;
+            overflow-x: hidden;
+        }
+
+        .timeline-cards {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 1.5rem;
+            padding: 1rem;
+            flex-wrap: nowrap;
+        }
+
+        .time-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 1.5rem;
+            width: 260px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .connector {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: rgba(255, 68, 68, 0.5);
+            padding: 0 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .time-emoji {
+            font-size: 2.2rem;
+        }
+
+        .time-number {
+            font-size: 2.5rem;
+        }
+
+        .time-unit {
+            font-size: 1.1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+        }
+
+        .card-description {
+            font-size: 1.1rem;
+            padding: 0 0.25rem;
+        }
+
+        @media (max-width: 1100px) {
+            .timeline-cards {
+                flex-direction: column;
+                align-items: center;
+                gap: 2rem;
+            }
+
+            .time-card {
+                width: 280px;
+            }
+
+            .connector {
+                transform: rotate(90deg);
+            }
+        }
+
+        .impact-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .parent-story {
+            background: linear-gradient(45deg, rgba(255, 68, 68, 0.1), rgba(0, 0, 0, 0.3));
+            border-left: 5px solid #ff4444;
+        }
+
+        .child-focused {
+            border: 1px solid rgba(255, 68, 68, 0.3);
+        }
+
+        .countdown-animation {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin: 1rem auto;
+        }
+
+        .countdown-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid #ff4444;
+            border-radius: 50%;
+            animation: countdown 72s linear infinite;
+        }
+
+        .countdown-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            color: #ff4444;
+        }
+
+        @keyframes countdown {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .split-animation {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .split-half {
+            width: 50%;
+            height: 100%;
+            background: #ff4444;
+            position: absolute;
+            left: 0;
+            animation: splitPulse 2s infinite;
+        }
+
+        @keyframes splitPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse-heart {
+            width: 30px;
+            height: 30px;
+            background: #ff4444;
+            margin: 1rem auto;
+            clip-path: path('M15,8 C15,4 12,0 8,0 C2,0 0,6 0,8 C0,12 6,16 8,18 C10,16 16,12 16,8 C16,6 14,0 8,0 C4,0 1,4 1,8');
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        .child-warning {
+            background: linear-gradient(45deg, #ff4444, #ff6b6b);
+            border: none;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.3);
+        }
+
+        .risk-factors {
+            list-style: none;
+            margin-top: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .risk-factors li {
+            color: white;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+
+        .stat-source {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* Enhanced Tab Structure */
+        .tabs-wrapper {
+            margin: 3rem 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tab-button {
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255, 68, 68, 0.2), rgba(121, 192, 224, 0.2));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-button:hover::before {
+            opacity: 1;
+        }
+
+        .tab-button.active {
+            background: rgba(255, 68, 68, 0.2);
+            border-color: rgba(255, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Enhanced Timeline */
+        .floating-timeline {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .time-indicator {
+            width: 10px;
+            height: 10px;
+            background: #ff4444;
+            border-radius: 50%;
+            margin: 1rem auto 0;
+            animation: pulse 2s infinite;
+        }
+
+        /* Enhanced Risk Cards */
+        .risk-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .risk-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .risk-title {
+            font-size: 2rem;
+            color: #79C0E0;
+            margin-bottom: 1rem;
+        }
+
+        .risk-description {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        /* Location Grid */
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .location-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            background: rgba(121, 192, 224, 0.1);
+        }
+
+        .location-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        .location-card h3 {
+            font-size: 1.8rem;
+            color: #79C0E0;
+            margin-bottom: 1rem;
+        }
+
+        .location-card p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        /* Statistics Grid */
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 3rem;
+            color: #ff4444;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card p {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        .stat-card.highlight {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+        }
+
+        /* Enhanced Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .glowing {
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(121, 192, 224, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(121, 192, 224, 0.8); }
+        }
+
+        .percentage-indicator {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .percentage-bar {
+            width: 50%;
+            height: 100%;
+            background: #ff4444;
+            animation: fillBar 2s ease-out;
+        }
+
+        .percentage-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff4444;
+            font-size: 1.2rem;
+        }
+
+        @keyframes fillBar {
+            from { width: 0; }
+            to { width: 50%; }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .tab-navigation {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .risk-cards, .location-grid, .statistics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .risk-title {
+                font-size: 1.8rem;
+            }
+
+            .risk-description {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* New Testimonial Styles */
+        .testimonials-section {
+            margin: 4rem 0;
+            padding: 2rem;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .testimonial-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.2);
+        }
+
+        .quote-mark {
+            font-size: 3rem;
+            color: rgba(255, 68, 68, 0.5);
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+        }
+
+        .testimonial-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin: 1.5rem 0;
+            color: #fff;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            text-align: right;
+        }
+
+        /* Risk Section Styles */
+        .risk-section {
+            margin: 4rem 0;
+            padding: 2rem;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .risk-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(121, 192, 224, 0.3);
+        }
+
+        .risk-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .risk-stat {
+            font-size: 2rem;
+            color: #ff4444;
+            margin: 1rem 0;
+        }
+
+        .risk-detail {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Data Section Styles */
+        .data-section {
+            margin: 4rem 0;
+            padding: 2rem;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .data-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .data-stat {
+            font-size: 2.5rem;
+            color: #ff4444;
+            margin: 1rem 0;
+        }
+
+        .data-detail {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #79C0E0;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .emergency-cta {
+            background: linear-gradient(45deg, rgba(255, 68, 68, 0.2), rgba(0, 0, 0, 0.3));
+            padding: 3rem;
+            text-align: center;
+            border-radius: 15px;
+            margin: 4rem 0;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+        }
+
+        .emergency-cta h2 {
+            font-size: 2.5rem;
+            color: #ff4444;
+            margin-bottom: 1rem;
+        }
+
+        .emergency-cta p {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .dramatic-timeline {
+            margin: 4rem auto;
+            padding: 2rem;
+            max-width: 1400px;
+            overflow-x: hidden;
+        }
+
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255, 68, 68, 0.3);
+            z-index: 1;
+        }
+
+        .timeline-point {
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 2rem;
+            width: 300px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 2;
+        }
+
+        .timeline-point:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.2);
+        }
+
+        .time-marker {
+            margin-bottom: 1rem;
+        }
+
+        .time-marker .time {
+            font-size: 3rem;
+            color: #ff4444;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+
+        .time-marker .unit {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .event-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .event-description {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff4444;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(255, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+            }
+        }
+
+        .timeline-line {
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #ff4444;
+            transform: translateX(50%);
+        }
+
+        .timeline-point:last-child .timeline-line {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .timeline-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 2rem;
+            }
+
+            .timeline-container::before {
+                width: 2px;
+                height: 100%;
+                left: 50%;
+                top: 0;
+                transform: translateX(-50%);
+            }
+
+            .timeline-point {
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .timeline-line {
+                left: 50%;
+                width: 2px;
+                height: 2rem;
+                bottom: -2rem;
+                transform: translateX(-50%);
+            }
+        }
+
+        .dramatic-timeline {
+            margin: 4rem auto;
+            padding: 2rem;
+            max-width: 1400px;
+            overflow-x: hidden;
+        }
+
+        .timeline-cards {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 1.5rem;
+            padding: 1rem;
+            flex-wrap: nowrap;
+        }
+
+        .time-card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 1.5rem;
+            width: 260px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .connector {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: rgba(255, 68, 68, 0.5);
+            padding: 0 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .time-emoji {
+            font-size: 2.2rem;
+        }
+
+        .time-number {
+            font-size: 2.5rem;
+        }
+
+        .time-unit {
+            font-size: 1.1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+        }
+
+        .card-description {
+            font-size: 1.1rem;
+            padding: 0 0.25rem;
+        }
+
+        @media (max-width: 1100px) {
+            .timeline-cards {
+                flex-direction: column;
+                align-items: center;
+                gap: 2rem;
+            }
+
+            .time-card {
+                width: 280px;
+            }
+
+            .connector {
+                transform: rotate(90deg);
+            }
+        }
+
+        .time-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        .time-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .emoji-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            padding: 1rem;
+        }
+
+        .time-emoji {
+            font-size: 2.5rem;
+            position: relative;
+            z-index: 2;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .time-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff4444;
+            display: block;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+        }
+
+        .time-unit {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            line-height: 1.3;
+            padding: 0 1rem;
+            position: relative;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: -0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: rgba(255, 68, 68, 0.5);
+        }
+
+        .card-description {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 0 0.5rem;
+            flex-grow: 1;
+        }
+
+        .warning-indicator {
+            font-size: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+            margin-top: auto;
+            padding: 1rem;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .connector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 68, 68, 0.5);
+            padding: 0 1rem;
+        }
+
+        .connector .dot {
+            font-size: 1.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .connector .dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .connector .dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .time-card.fade-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .time-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+
+        .emoji-container {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+        }
+
+        .time-emoji {
+            font-size: 2rem;
+            position: relative;
+            z-index: 2;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .time-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff4444;
+            display: block;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+        }
+
+        .time-unit {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .card-description {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .warning-indicator {
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .connector {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: rgba(255, 68, 68, 0.5);
+            font-size: 1.2rem;
+            margin: 0 0.5rem;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .timeline-cards {
+                flex-direction: column;
+            }
+
+            .time-card {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .connector {
+                transform: rotate(90deg);
+                margin: 0.5rem 0;
+            }
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff6b6b);
+            position: absolute;
+            left: 0;
+            top: 0;
+            animation: progress 20s linear infinite;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shimmer 2s linear infinite;
+        }
+
+        .progress-label {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-top: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <svg id="custom-cursor" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="red" stroke-width="5" />
+        <circle cx="50" cy="50" r="30" fill="white" />
+        <line x1="50" y1="5" x2="50" y2="20" stroke="white" stroke-width="5" />
+        <line x1="50" y1="80" x2="50" y2="95" stroke="white" stroke-width="5" />
+        <line x1="5" y1="50" x2="20" y2="50" stroke="white" stroke-width="5" />
+        <line x1="80" y1="50" x2="95" y2="50" stroke="white" stroke-width="5" />
+    </svg>
+
+    <!-- Cursor Ripple Effect -->
+    <div id="cursor-ripple"></div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <svg class="lifebuoy-logo" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#ff3e3e" />
+            <circle cx="50" cy="50" r="30" fill="white" />
+            <line x1="50" y1="5" x2="50" y2="20" stroke="white" stroke-width="5" />
+            <line x1="50" y1="80" x2="50" y2="95" stroke="white" stroke-width="5" />
+            <line x1="5" y1="50" x2="20" y2="50" stroke="white" stroke-width="5" />
+            <line x1="80" y1="50" x2="95" y2="50" stroke="white" stroke-width="5" />
+        </svg>
+    </div>
+
+    <!-- Video Background -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="2419461-hd_1920_1080_30fps.mp4" type="video/mp4">
+        </video>
+    </div>
+    
+    <!-- Hamburger Menu -->
+    <nav class="menu-container">
+        <div class="hamburger">
+            <span></span>
+        </div>
+        <div class="menu-panel">
+            <div class="menu-title">Menu</div>
+            <div class="menu-items">
+                <a href="HomePage.html" class="menu-item" style="--delay: 1">Home</a>
+                <a href="drowning_danger.html" class="menu-item" style="--delay: 2">Drowning Danger</a>
+                <a href="beach_rescue.html" class="menu-item" style="--delay: 3">Beach Safety</a>
+                <a href="#" class="menu-item" style="--delay: 4">Pool Safety</a>
+                <a href="#" class="menu-item" style="--delay: 5">River Safety</a>
+            </div>
+            <div class="menu-wave"></div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="warning-pulse"></div>
+                <h1>Their Last Breath Could Be Silent</h1>
+                <p class="dramatic-text">A child can drown in the time it takes to answer a phone call. No splashing. No screaming. Just silence.</p>
+                <div class="dramatic-counter">
+                    <span class="counter-number">240</span>
+                    <span class="counter-text">Children Lost to Drowning (2004-2021)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Structure -->
+        <div class="tabs-wrapper">
+            <div id="timeline" class="content-section active">
+                <div class="dramatic-timeline">
+                    <div class="timeline-cards">
+                        <div class="time-card fade-in">
+                            <div class="time-content">
+                                <div class="time-header">
+                                    <div class="emoji-container">
+                                        <span class="time-emoji">⏱️</span>
+                                    </div>
+                                    <span class="time-number">20</span>
+                                    <span class="time-unit">seconds</span>
+                                    <div class="progress-container">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                    <div class="progress-label">Time until submersion</div>
+                                </div>
+                                <h3 class="card-title">Silent Submersion</h3>
+                                <p class="card-description">A child drowns without a sound, with no warning signs or splashing to alert nearby adults.</p>
+                                <div class="warning-indicator">⚠️</div>
+                            </div>
+                        </div>
+
+                        <div class="connector">
+                            <span class="dot">•</span>
+                            <span class="dot">•</span>
+                            <span class="dot">•</span>
+                        </div>
+
+                        <div class="time-card fade-in" style="animation-delay: 0.3s;">
+                            <div class="time-content">
+                                <div class="time-header">
+                                    <div class="emoji-container">
+                                        <span class="time-emoji">⚡</span>
+                                    </div>
+                                    <span class="time-number">4</span>
+                                    <span class="time-unit">minutes</span>
+                                </div>
+                                <h3 class="card-title">Point of No Return</h3>
+                                <p class="card-description">Irreversible brain damage occurs, permanently changing a child's future and capabilities forever.</p>
+                                <div class="warning-indicator">⚠️</div>
+                            </div>
+                        </div>
+
+                        <div class="connector">
+                            <span class="dot">•</span>
+                            <span class="dot">•</span>
+                            <span class="dot">•</span>
+                        </div>
+
+                        <div class="time-card fade-in" style="animation-delay: 0.6s;">
+                            <div class="time-content">
+                                <div class="time-header">
+                                    <div class="emoji-container">
+                                        <span class="time-emoji">👨‍👩‍👧‍👦</span>
+                                    </div>
+                                    <span class="time-number">∞</span>
+                                    <span class="time-unit">forever</span>
+                                </div>
+                                <h3 class="card-title">Eternal Echo</h3>
+                                <p class="card-description">A family's life changed forever, carrying the weight of loss and grief that never truly fades.</p>
+                                <div class="warning-indicator">💔</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonials Section -->
+                <div class="testimonials-section">
+                    <h2 class="section-title">💔 Voices of Loss</h2>
+                    <div class="testimonial-grid">
+                        <div class="testimonial-card">
+                            <div class="quote-mark">❝</div>
+                            <p class="testimonial-text">"I just turned away for a moment to answer the phone. That moment changed our lives forever. My beautiful Sarah was gone in seconds, without a sound."</p>
+                            <div class="testimonial-author">- Sarah's Mother, Melbourne</div>
+                            <div class="wave-animation"></div>
+                        </div>
+                        <div class="testimonial-card">
+                            <div class="quote-mark">❝</div>
+                            <p class="testimonial-text">"In our home country, we never had beaches like this. We didn't know about rips. Our son loved the water, but we didn't know its dangers."</p>
+                            <div class="testimonial-author">- Ali's Father, Sydney</div>
+                            <div class="wave-animation"></div>
+                        </div>
+                        <div class="testimonial-card">
+                            <div class="quote-mark">❝</div>
+                            <p class="testimonial-text">"The pool looked so calm. We thought she was just playing. There was no splashing, no crying. Just silence. The deadly silence I'll never forget."</p>
+                            <div class="testimonial-author">- Emma's Mother, Brisbane</div>
+                            <div class="wave-animation"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Immigrant Children Risk Section -->
+                <div class="risk-section">
+                    <h2 class="section-title">🌊 Why Immigrant Children Are More Vulnerable</h2>
+                    <div class="risk-grid">
+                        <div class="risk-card danger-pulse">
+                            <div class="risk-icon">🗺️</div>
+                            <h3>Cultural Gap</h3>
+                            <p class="risk-stat">4x Higher Risk</p>
+                            <p class="risk-detail">Unfamiliarity with Australian waters and beach culture leads to increased vulnerability</p>
+                            <div class="pulse-animation"></div>
+                        </div>
+                        <div class="risk-card danger-pulse">
+                            <div class="risk-icon">🏊</div>
+                            <h3>Limited Swimming Experience</h3>
+                            <p class="risk-stat">50% Never Had Lessons</p>
+                            <p class="risk-detail">Many immigrant children have never received formal swimming instruction</p>
+                            <div class="pulse-animation"></div>
+                        </div>
+                        <div class="risk-card danger-pulse">
+                            <div class="risk-icon">🗣️</div>
+                            <h3>Language Barriers</h3>
+                            <p class="risk-stat">Critical Safety Gap</p>
+                            <p class="risk-detail">Difficulty understanding safety signs and warnings at beaches and pools</p>
+                            <div class="pulse-animation"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Visualization Section -->
+                <div class="data-section">
+                    <h2 class="section-title">📊 The Silent Crisis</h2>
+                    <div class="data-grid">
+                        <div class="data-card highlight">
+                            <div class="data-icon">🏖️</div>
+                            <h3>Beach Drownings</h3>
+                            <p class="data-stat">47%</p>
+                            <p class="data-detail">of victims were born overseas</p>
+                            <div class="wave-animation"></div>
+                        </div>
+                        <div class="data-card highlight">
+                            <div class="data-icon">👶</div>
+                            <h3>Under 5 Years</h3>
+                            <p class="data-stat">#1</p>
+                            <p class="data-detail">Leading cause of accidental death</p>
+                            <div class="pulse-animation"></div>
+                        </div>
+                        <div class="data-card highlight">
+                            <div class="data-icon">📍</div>
+                            <h3>High-Risk Locations</h3>
+                            <p class="data-stat">4</p>
+                            <p class="data-detail">Beaches, pools, rivers, and home</p>
+                            <div class="wave-animation"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Call to Action -->
+                <div class="emergency-cta">
+                    <h2>⚠️ Every Second Counts</h2>
+                    <p>Learn water safety. Protect your children. Save lives.</p>
+                    <div class="pulse-animation"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="call-to-action dramatic">
+            <h2>Every Child Deserves to Live</h2>
+            <p>Explore drowning risks by location below</p>
+            <div class="scroll-indicator">
+                <div class="scroll-arrow"></div>
+                <span>View Location Data</span>
+            </div>
+        </div>
+
+        <div class="statistics-container">
+            <div class="tabs-container">
+                <div class="tabs-nav">
+                    <button class="tab-button active" data-tab="deaths">Drowning Deaths</button>
+                    <button class="tab-button" data-tab="injuries">Drowning Injuries</button>
+                </div>
+
+                <!-- Deaths Tab -->
+                <div id="deaths-tab" class="tab-content active">
+                    <div class="search-section">
+                        <h3>Search Drowning Deaths</h3>
+                        <div class="search-form">
+                            <div class="form-group">
+                                <label for="death-age-group">Age Group</label>
+                                <select id="death-age-group">
+                                    <option value="">All Age Groups</option>
+                                    <option value="0-4">0-4 years</option>
+                                    <option value="5-14">5-14 years</option>
+                                    <option value="15-24">15-24 years</option>
+                                    <option value="25-44">25-44 years</option>
+                                    <option value="45-64">45-64 years</option>
+                                    <option value="65+">65+ years</option>
+                                </select>
+                            </div>
+                            <div class="form-group tooltip">
+                                <label for="death-location">Location</label>
+                                <select id="death-location">
+                                    <option value="">All Locations</option>
+                                    <option value="Natural water">Natural water</option>
+                                    <option value="Swimming pool">Swimming pool</option>
+                                    <option value="Bathtub">Bathtub</option>
+                                    <option value="Other or unspecified">Other or unspecified</option>
+                                </select>
+                                <span class="tooltip-text">Select a specific location to filter drowning death statistics</span>
+                            </div>
+                            <div class="button-group">
+                                <button id="search-deaths-btn" class="search-button">Search</button>
+                                <button id="clear-deaths-btn" class="clear-button">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Injuries Tab -->
+                <div id="injuries-tab" class="tab-content">
+                    <div class="search-section">
+                        <h3>Search Drowning Injuries</h3>
+                        <div class="search-form">
+                            <div class="form-group">
+                                <label for="injury-age-group">Age Group</label>
+                                <select id="injury-age-group">
+                                    <option value="">All Age Groups</option>
+                                    <option value="0-4">0-4 years</option>
+                                    <option value="5-14">5-14 years</option>
+                                    <option value="15-24">15-24 years</option>
+                                    <option value="25-44">25-44 years</option>
+                                    <option value="45-64">45-64 years</option>
+                                    <option value="65+">65+ years</option>
+                                </select>
+                            </div>
+                            <div class="form-group tooltip">
+                                <label for="injury-location">Location</label>
+                                <select id="injury-location">
+                                    <option value="">All Locations</option>
+                                    <option value="Natural water">Natural water</option>
+                                    <option value="Swimming pool">Swimming pool</option>
+                                    <option value="Bathtub">Bathtub</option>
+                                    <option value="Other or unspecified">Other or unspecified</option>
+                                </select>
+                                <span class="tooltip-text">Select a specific location to filter drowning injury statistics</span>
+                            </div>
+                            <div class="button-group">
+                                <button id="search-injuries-btn" class="search-button">Search</button>
+                                <button id="clear-injuries-btn" class="clear-button">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="search-results" class="results-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const cursor = document.getElementById('custom-cursor');
+        const ripple = document.getElementById('cursor-ripple');
+        const backgroundVideo = document.querySelector('.video-background');
+        const video = backgroundVideo.querySelector('video');
+
+        // Video loading and visibility
+        video.addEventListener('loadeddata', () => {
+            backgroundVideo.classList.add('visible');
+        });
+
+        // Custom cursor and ripple effect
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX - 25;
+            const y = e.clientY - 25;
+            cursor.style.left = `${x}px`;
+            cursor.style.top = `${y}px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+        });
+
+        document.addEventListener('click', () => {
+            ripple.style.animation = 'none';
+            ripple.offsetHeight;
+            ripple.style.animation = 'rippleEffect 0.5s ease-out';
+        });
+
+        // Ensure video plays
+        document.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+            }
+        });
+
+        // Hamburger menu functionality
+        const hamburger = document.querySelector('.hamburger');
+        const menuPanel = document.querySelector('.menu-panel');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            menuPanel.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuPanel.contains(e.target) && !hamburger.contains(e.target)) {
+                hamburger.classList.remove('active');
+                menuPanel.classList.remove('active');
+            }
+        });
+
+        // Enhanced Statistics search functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // Update active states
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Activate selected tab
+                    button.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    // Clear results when switching tabs
+                    document.getElementById('search-results').innerHTML = '';
+                });
+            });
+
+            // Existing search functionality
+            const searchDeathsBtn = document.getElementById('search-deaths-btn');
+            const searchInjuriesBtn = document.getElementById('search-injuries-btn');
+            const clearDeathsBtn = document.getElementById('clear-deaths-btn');
+            const clearInjuriesBtn = document.getElementById('clear-injuries-btn');
+            const resultsDiv = document.getElementById('search-results');
+
+            let isDeathSearch = true;
+
+            const showLoading = () => {
+                resultsDiv.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                `;
+            };
+
+            const clearForm = (type) => {
+                if (type === 'deaths') {
+                    document.getElementById('death-age-group').value = '';
+                    document.getElementById('death-location').value = '';
+                } else {
+                    document.getElementById('injury-age-group').value = '';
+                    document.getElementById('injury-location').value = '';
+                }
+                resultsDiv.innerHTML = '';
+            };
+
+            const fetchData = async (endpoint, criteria) => {
+                showLoading();
+                try {
+                    const params = new URLSearchParams(criteria);
+                    const response = await fetch(`${endpoint}?${params}`);
+                    const data = await response.json();
+
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = `
+                            <div class="no-results">
+                                <p>No drowning data found based on your selection. Try adjusting the filters.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let tableHTML = `
+                        <h3 class="results-title">${isDeathSearch ? 'Drowning Deaths' : 'Drowning Injuries'} Results</h3>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Location</th>
+                                    <th>Age Group</th>
+                                    <th>${isDeathSearch ? 'Deaths' : 'Cases'}</th>
+                                    ${isDeathSearch ? '<th>Rate (per 100,000 population)</th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.forEach(item => {
+                        tableHTML += `
+                            <tr>
+                                <td>${item.location || 'All Locations'}</td>
+                                <td>${item.age_group || 'All Ages'}</td>
+                                <td>${isDeathSearch ? `${item.deaths} deaths` : `${item.cases} cases`}</td>
+                                ${isDeathSearch ? `<td>${item.rate !== null ? parseFloat(item.rate).toFixed(2) : 'N/A'}</td>` : ''}
+                            </tr>
+                        `;
+                    });
+
+                    tableHTML += '</tbody></table>';
+                    resultsDiv.innerHTML = tableHTML;
+                } catch (error) {
+                    resultsDiv.innerHTML = `
+                        <div class="error-message">
+                            <p>An error occurred while fetching data. Please try again later.</p>
+                        </div>
+                    `;
+                    console.error('Error:', error);
+                }
+            };
+
+            searchDeathsBtn.addEventListener('click', () => {
+                isDeathSearch = true;
+                const criteria = {
+                    age_group: document.getElementById('death-age-group').value,
+                    location: document.getElementById('death-location').value
+                };
+                fetchData('https://fit5120ta19.onrender.com/DrowningDeathSearch', criteria);
+            });
+
+            searchInjuriesBtn.addEventListener('click', () => {
+                isDeathSearch = false;
+                const criteria = {
+                    age_group: document.getElementById('injury-age-group').value,
+                    location: document.getElementById('injury-location').value
+                };
+                fetchData('https://fit5120ta19.onrender.com/DrowningInjurySearch', criteria);
+            });
+
+            clearDeathsBtn.addEventListener('click', () => clearForm('deaths'));
+            clearInjuriesBtn.addEventListener('click', () => clearForm('injuries'));
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhanced animations for danger indicators
+            const dangerElements = document.querySelectorAll('.danger-pulse, .danger-glow');
+            dangerElements.forEach(element => {
+                element.addEventListener('mouseover', () => {
+                    element.style.transform = 'scale(1.05)';
+                    element.style.boxShadow = '0 0 20px rgba(255, 68, 68, 0.5)';
+                });
+
+                element.addEventListener('mouseout', () => {
+                    element.style.transform = 'scale(1)';
+                    element.style.boxShadow = 'none';
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scroll to top on page load
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
+            // Animate cards and arrows on page load
+            const cards = document.querySelectorAll('.time-card');
+            const arrows = document.querySelectorAll('.sequence-arrow');
+            
+            setTimeout(() => {
+                cards.forEach(card => {
+                    card.classList.add('animate');
+                });
+                
+                arrows.forEach(arrow => {
+                    arrow.classList.add('animate');
+                });
+            }, 300);
+            
+            // Add intersection observer for animation when scrolling
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                    } else {
+                        entry.target.classList.remove('animate');
+                    }
+                });
+            }, {
+                threshold: 0.2
+            });
+            
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+            
+            arrows.forEach(arrow => {
+                observer.observe(arrow);
+            });
+        });
+    </script>
+</body>
+</html>

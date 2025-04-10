@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beach Comparison - SwimFlow</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Cormorant Garamond', serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comparison-container {
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        .beaches-wrapper {
+            display: flex;
+            gap: 2rem;
+            height: 70vh;
+        }
+
+        .beach-scene {
+            position: relative;
+            width: 50%;
+            background: linear-gradient(180deg, #87CEEB 0%, #1E90FF 100%);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 40%;
+            background: rgba(255, 255, 255, 0.8);
+            transform-origin: bottom center;
+        }
+
+        .beach-info {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1rem;
+            border-radius: 10px;
+            max-width: 300px;
+            z-index: 2;
+        }
+
+        .beach-name {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #79C0E0;
+        }
+
+        .beach-stats {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #79C0E0;
+        }
+
+        .comparison-result {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .result-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #79C0E0;
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem;
+            z-index: 1;
+        }
+
+        .recommendation-tabs {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 0.5rem 1rem;
+            background: rgba(121, 192, 224, 0.2);
+            border: 1px solid rgba(121, 192, 224, 0.3);
+            border-radius: 5px;
+            color: #79C0E0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background: rgba(121, 192, 224, 0.3);
+        }
+
+        .tab-button.active {
+            background: rgba(121, 192, 224, 0.4);
+            border-color: #79C0E0;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .comparison-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .metric-card {
+            background: rgba(121, 192, 224, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(121, 192, 224, 0.2);
+        }
+
+        .metric-title {
+            color: #79C0E0;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-values {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-value {
+            font-weight: bold;
+        }
+
+        .danger-indicator {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .danger-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        .danger-low {
+            background: rgba(46, 204, 113, 0.8);
+        }
+
+        .danger-medium {
+            background: rgba(241, 196, 15, 0.8);
+        }
+
+        .danger-high {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
+        .wave-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            overflow: hidden;
+        }
+
+        .wave-animation {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(180deg, 
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0.2) 100%
+            );
+            transform-origin: bottom center;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .comparison-arrows {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            opacity: 0;
+        }
+
+        .arrow {
+            font-size: 3rem;
+        }
+
+        .wind-indicator {
+            position: absolute;
+            top: 30%;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1;
+        }
+
+        .wind-particle {
+            width: 20px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            position: absolute;
+        }
+
+        .uv-indicator {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .recommendation {
+            background: rgba(121, 192, 224, 0.2);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            border: 1px solid rgba(121, 192, 224, 0.3);
+        }
+
+        .recommendation h3 {
+            color: #79C0E0;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .recommendation ul {
+            list-style: none;
+            text-align: left;
+        }
+
+        .recommendation li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .recommendation li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #79C0E0;
+        }
+
+        .comparison-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            opacity: 0;
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+    <div class="comparison-container">
+        <div class="beaches-wrapper">
+            <div class="beach-scene" id="beach1">
+                <div class="beach-info">
+                    <h2 class="beach-name" id="beach1-name"></h2>
+                    <div class="beach-stats" id="beach1-stats"></div>
+                </div>
+                <div class="danger-indicator" id="beach1-danger">
+                    <div class="danger-icon"></div>
+                    <span></span>
+                </div>
+                <div class="wind-indicator" id="wind1"></div>
+                <div class="uv-indicator" id="uv1"></div>
+                <div class="wave-container">
+                    <div class="wave-animation" id="wave1"></div>
+                </div>
+            </div>
+
+            <div class="beach-scene" id="beach2">
+                <div class="beach-info">
+                    <h2 class="beach-name" id="beach2-name"></h2>
+                    <div class="beach-stats" id="beach2-stats"></div>
+                </div>
+                <div class="danger-indicator" id="beach2-danger">
+                    <div class="danger-icon"></div>
+                    <span></span>
+                </div>
+                <div class="wind-indicator" id="wind2"></div>
+                <div class="uv-indicator" id="uv2"></div>
+                <div class="wave-container">
+                    <div class="wave-animation" id="wave2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-result">
+            <h2 class="result-title">Beach Comparison Results</h2>
+            <div class="comparison-metrics" id="comparison-metrics"></div>
+            
+            <div class="recommendation-tabs">
+                <button class="tab-button active" data-tab="differences">Key Differences</button>
+                <button class="tab-button" data-tab="safety">Safety Tips</button>
+                <button class="tab-button" data-tab="chart">Comparison Chart</button>
+            </div>
+
+            <div class="tab-content active" id="differences-tab">
+                <div class="recommendation" id="recommendation"></div>
+            </div>
+
+            <div class="tab-content" id="safety-tab">
+                <div class="recommendation" id="safety-tips"></div>
+            </div>
+
+            <div class="tab-content" id="chart-tab">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const beach1Data = JSON.parse(decodeURIComponent(urlParams.get('beach1')));
+        const beach2Data = JSON.parse(decodeURIComponent(urlParams.get('beach2')));
+
+        // Calculate danger level
+        function calculateDangerLevel(data) {
+            const waveHeight = data.marine.wave_height;
+            const windSpeed = data.weather.current.wind_speed_10m;
+            const uvIndex = data.weather.daily_uv_index_max[0].uv_index_max;
+
+            let dangerScore = 0;
+            
+            if (waveHeight > 2) dangerScore += 3;
+            else if (waveHeight > 1) dangerScore += 2;
+            else dangerScore += 1;
+
+            if (windSpeed > 30) dangerScore += 3;
+            else if (windSpeed > 20) dangerScore += 2;
+            else dangerScore += 1;
+
+            if (uvIndex > 8) dangerScore += 3;
+            else if (uvIndex > 5) dangerScore += 2;
+            else dangerScore += 1;
+
+            return {
+                level: dangerScore >= 7 ? 'high' : dangerScore >= 5 ? 'medium' : 'low',
+                score: dangerScore
+            };
+        }
+
+        // Populate beach data
+        function populateBeachData(beachNum, data) {
+            const nameEl = document.getElementById(`beach${beachNum}-name`);
+            const statsEl = document.getElementById(`beach${beachNum}-stats`);
+            const dangerEl = document.getElementById(`beach${beachNum}-danger`);
+            const waveEl = document.getElementById(`wave${beachNum}`);
+            const windEl = document.getElementById(`wind${beachNum}`);
+            const uvEl = document.getElementById(`uv${beachNum}`);
+
+            nameEl.textContent = data.name;
+            
+            const stats = [
+                ['Temperature', `${data.weather.current.temperature_2m.toFixed(1)}°C`],
+                ['Wind Speed', `${data.weather.current.wind_speed_10m.toFixed(1)} km/h`],
+                ['Wave Height', `${data.marine.wave_height.toFixed(1)}m`],
+                ['UV Index', data.weather.daily_uv_index_max[0].uv_index_max.toFixed(1)]
+            ];
+
+            statsEl.innerHTML = stats.map(([label, value]) => `
+                <div class="stat-item">
+                    <span>${label}:</span>
+                    <span class="stat-value">${value}</span>
+                </div>
+            `).join('');
+
+            const danger = calculateDangerLevel(data);
+            dangerEl.querySelector('span').textContent = `Risk Level: ${danger.level.toUpperCase()}`;
+            dangerEl.querySelector('.danger-icon').className = `danger-icon danger-${danger.level}`;
+
+            // Animate waves based on height
+            const waveHeight = data.marine.wave_height;
+            const windSpeed = data.weather.current.wind_speed_10m;
+            const uvIndex = data.weather.daily_uv_index_max[0].uv_index_max;
+
+            // Wave animation
+            gsap.to(waveEl, {
+                scaleY: 0.5 + (waveHeight * 0.5),
+                duration: 2,
+                ease: "power1.inOut"
+            });
+
+            gsap.to(waveEl, {
+                x: "-50%",
+                duration: 3 / (windSpeed * 0.05),
+                repeat: -1,
+                ease: "none"
+            });
+
+            // UV indicator color
+            const uvColor = uvIndex > 8 ? '#ff4444' : 
+                           uvIndex > 5 ? '#ffa500' : '#2ecc71';
+            uvEl.style.background = uvColor;
+            uvEl.textContent = `UV ${uvIndex.toFixed(1)}`;
+
+            // Create wind particles
+            windEl.innerHTML = '';
+            const particleCount = Math.min(Math.floor(windSpeed / 5), 10);
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'wind-particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                windEl.appendChild(particle);
+
+                gsap.to(particle, {
+                    x: "+=100",
+                    duration: 1 + Math.random(),
+                    repeat: -1,
+                    ease: "none"
+                });
+            }
+        }
+
+        // Compare beaches and show results
+        function compareBeaches() {
+            const beach1Danger = calculateDangerLevel(beach1Data);
+            const beach2Danger = calculateDangerLevel(beach2Data);
+            
+            let resultText = '';
+            const recommendations = [];
+            const safetyTips = [];
+
+            // Compare overall safety
+            if (beach1Danger.score === beach2Danger.score) {
+                resultText = `Both ${beach1Data.name} and ${beach2Data.name} have similar safety conditions.`;
+            } else {
+                const safer = beach1Danger.score < beach2Danger.score ? beach1Data.name : beach2Data.name;
+                resultText = `${safer} appears to have safer overall conditions for swimming.`;
+            }
+
+            // Create comparison data structure for all metrics
+            const metrics = [
+                {
+                    label: 'Air Temperature (°C)',
+                    beach1: beach1Data.weather.current.temperature_2m,
+                    beach2: beach2Data.weather.current.temperature_2m,
+                    threshold: 2,
+                    formatValue: (v) => v.toFixed(1) + '°C',
+                    compareText: (b1, b2, name1, name2) => {
+                        const warmer = b1 > b2 ? name1 : name2;
+                        return `${warmer} has warmer air temperature`;
+                    }
+                },
+                {
+                    label: 'Wave Height (m)',
+                    beach1: beach1Data.marine.wave_height,
+                    beach2: beach2Data.marine.wave_height,
+                    threshold: 0.5,
+                    formatValue: (v) => v.toFixed(1) + 'm',
+                    compareText: (b1, b2, name1, name2) => {
+                        const calmer = b1 < b2 ? name1 : name2;
+                        return `${calmer} has calmer waves`;
+                    }
+                },
+                {
+                    label: 'Wind Speed (km/h)',
+                    beach1: beach1Data.weather.current.wind_speed_10m,
+                    beach2: beach2Data.weather.current.wind_speed_10m,
+                    threshold: 5,
+                    formatValue: (v) => v.toFixed(1) + ' km/h',
+                    compareText: (b1, b2, name1, name2) => {
+                        const lessWindy = b1 < b2 ? name1 : name2;
+                        return `${lessWindy} has lower wind speeds`;
+                    }
+                },
+                {
+                    label: 'UV Index',
+                    beach1: beach1Data.weather.daily_uv_index_max[0].uv_index_max,
+                    beach2: beach2Data.weather.daily_uv_index_max[0].uv_index_max,
+                    threshold: 2,
+                    formatValue: (v) => v.toFixed(1),
+                    compareText: (b1, b2, name1, name2) => {
+                        const lowerUV = b1 < b2 ? name1 : name2;
+                        return `${lowerUV} has lower UV exposure`;
+                    }
+                }
+            ];
+
+            // Add conditional metrics based on data availability
+            if (beach1Data.marine.swell_height && beach2Data.marine.swell_height) {
+                metrics.push({
+                    label: 'Swell Height (m)',
+                    beach1: beach1Data.marine.swell_height,
+                    beach2: beach2Data.marine.swell_height,
+                    threshold: 0.5,
+                    formatValue: (v) => v.toFixed(1) + 'm',
+                    compareText: (b1, b2, name1, name2) => {
+                        const calmer = b1 < b2 ? name1 : name2;
+                        return `${calmer} has lower swell`;
+                    }
+                });
+            }
+
+            if (beach1Data.marine.current_velocity && beach2Data.marine.current_velocity) {
+                metrics.push({
+                    label: 'Current Velocity (m/s)',
+                    beach1: beach1Data.marine.current_velocity,
+                    beach2: beach2Data.marine.current_velocity,
+                    threshold: 0.2,
+                    formatValue: (v) => v.toFixed(1) + ' m/s',
+                    compareText: (b1, b2, name1, name2) => {
+                        const weaker = b1 < b2 ? name1 : name2;
+                        return `${weaker} has weaker currents`;
+                    }
+                });
+            }
+
+            if (beach1Data.marine.sea_surface_temperature && beach2Data.marine.sea_surface_temperature) {
+                metrics.push({
+                    label: 'Sea Temperature (°C)',
+                    beach1: beach1Data.marine.sea_surface_temperature,
+                    beach2: beach2Data.marine.sea_surface_temperature,
+                    threshold: 1,
+                    formatValue: (v) => v.toFixed(1) + '°C',
+                    compareText: (b1, b2, name1, name2) => {
+                        const warmer = b1 > b2 ? name1 : name2;
+                        return `${warmer} has warmer water`;
+                    }
+                });
+            }
+
+            if (beach1Data.marine.sea_level_height && beach2Data.marine.sea_level_height) {
+                metrics.push({
+                    label: 'Sea Level (m)',
+                    beach1: beach1Data.marine.sea_level_height,
+                    beach2: beach2Data.marine.sea_level_height,
+                    threshold: 0.3,
+                    formatValue: (v) => v.toFixed(1) + 'm',
+                    compareText: (b1, b2, name1, name2) => {
+                        const lower = b1 < b2 ? name1 : name2;
+                        return `${lower} has lower sea level`;
+                    }
+                });
+            }
+
+            // Generate metrics cards
+            const metricsContainer = document.getElementById('comparison-metrics');
+            metricsContainer.innerHTML = metrics.map(metric => `
+                <div class="metric-card">
+                    <h3 class="metric-title">${metric.label}</h3>
+                    <div class="metric-values">
+                        <div>
+                            <span class="metric-value">${metric.formatValue(metric.beach1)}</span>
+                            <span>${beach1Data.name}</span>
+                        </div>
+                        <div>
+                            <span class="metric-value">${metric.formatValue(metric.beach2)}</span>
+                            <span>${beach2Data.name}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Generate recommendations based on metrics
+            metrics.forEach(metric => {
+                const diff = Math.abs(metric.beach1 - metric.beach2);
+                if (diff > metric.threshold) {
+                    const comparisonText = metric.compareText(
+                        metric.beach1,
+                        metric.beach2,
+                        beach1Data.name,
+                        beach2Data.name
+                    );
+                    recommendations.push(
+                        `${comparisonText} (${metric.formatValue(Math.min(metric.beach1, metric.beach2))} vs ${metric.formatValue(Math.max(metric.beach1, metric.beach2))})`
+                    );
+                }
+            });
+
+            // Generate safety tips based on conditions
+            if (beach1Danger.level === 'high' || beach2Danger.level === 'high') {
+                safetyTips.push('High danger conditions detected. Consider postponing your beach visit.');
+            }
+            if (beach1Data.weather.daily_uv_index_max[0].uv_index_max > 8 || 
+                beach2Data.weather.daily_uv_index_max[0].uv_index_max > 8) {
+                safetyTips.push('High UV levels detected. Remember to apply sunscreen regularly.');
+            }
+            if (beach1Data.marine.wave_height > 2 || beach2Data.marine.wave_height > 2) {
+                safetyTips.push('Large waves detected. Be cautious when swimming.');
+            }
+
+            document.getElementById('recommendation').innerHTML = `
+                <h3>Key Differences:</h3>
+                <ul>
+                    ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                </ul>
+            `;
+
+            document.getElementById('safety-tips').innerHTML = `
+                <h3>Safety Recommendations:</h3>
+                <ul>
+                    ${safetyTips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            `;
+
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+                    
+                    // Update active states
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    button.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // Create chart data structure
+            const chartData = {
+                labels: metrics.map(m => m.label),
+                datasets: [
+                    {
+                        label: beach1Data.name,
+                        data: metrics.map(m => m.beach1),
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: beach2Data.name,
+                        data: metrics.map(m => m.beach2),
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            // Update or create chart if chart.js is available
+            if (typeof Chart !== 'undefined') {
+                const ctx = document.getElementById('comparison-chart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                title: {
+                                    display: true,
+                                    text: 'Beach Comparison Chart'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Smooth scroll to results
+            document.querySelector('.comparison-result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        populateBeachData(1, beach1Data);
+        populateBeachData(2, beach2Data);
+        compareBeaches();
+    </script>
+</body>
+</html> 
