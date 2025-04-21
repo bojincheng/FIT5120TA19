@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../components/HomePage.vue';
-import DrowningSearch from '../components/DrowningSearch.vue';
-import BeachData from '../components/BeachData.vue';
-
+import DrowningSearch from '../components/beach/DrowningSearch.vue';
+import BeachData from '../components/beach/BeachData.vue';
+import PoolSafetyKnowledgeCheck from '../components/pool/PoolSafetyKnowledgeCheck.vue';
 const routes = [
   {
     path: '/',
@@ -15,9 +15,14 @@ const routes = [
     component: DrowningSearch
   },
   {
-    path: '/Beachdata',
-    name: 'Beachdata',
+    path: '/BeachData',
+    name: 'BeachData',
     component: BeachData
+  },
+  {
+    path: '/PoolSafetyKnowledgeCheck',
+    name: 'PoolSafetyKnowledgeCheck',
+    component: PoolSafetyKnowledgeCheck
   }
 ];
 

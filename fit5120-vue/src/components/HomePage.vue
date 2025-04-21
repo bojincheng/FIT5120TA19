@@ -1,11 +1,7 @@
 <template>
     <div>
-      <h1>Welcome to Drowning Statistics</h1>
-      <p>Explore drowning statistics, search for specific data, and learn more about water safety.</p>
-      
-      <router-link to="/DrowningSearch">
-        <button>Go to Drowning Search</button>
-      </router-link>
+      <h1>Welcome to Water Wise Family</h1>
+      <p>Call to action placeholder</p>
     </div>
   </template>
   

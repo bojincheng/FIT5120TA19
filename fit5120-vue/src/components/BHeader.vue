@@ -1,11 +1,12 @@
 <template>
   <header>
-    <h1>Drowning Statistics</h1>
+    <h1>Welcome to Water Wise Family</h1>
     <nav>
       <ul>
         <li>
-          <router-link to="/">Drowning Search</router-link>
-          <router-link to="/Beachdata">Beachdata</router-link>
+          <router-link to="/DrowningSearch">Drowning Search </router-link>
+          <router-link to="/BeachData">Beach Data </router-link>
+          <router-link to="/PoolSafetyKnowledgeCheck">Pool Safety Knowledge Check</router-link>
         </li>
       </ul>
     </nav>

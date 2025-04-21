@@ -8,13 +8,13 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 import pandas as pd
-
+import smtplib
+from email.mime.text import MIMEText
 # Load environment variables from .env file
 load_dotenv()
 app = Flask(__name__)
 # Enable the cross original resource sharing
 CORS(app)
-
 
 # Epic 1 backend function
 # Call the database connection function in database.py
@@ -30,7 +30,7 @@ try:
 except Exception as e:
     print("Error connecting to the database:", e)
    
-# Drowning death search 
+# Drowning Death Search 
 @app.route('/DrowningDeathSearch', methods=['GET'])
 def search_deaths():
     """Query the drowning_deaths table based on filters (age, location)."""
@@ -39,7 +39,6 @@ def search_deaths():
         age_group = request.args.get('age_group', '').strip()
         location = request.args.get('location', '').strip()
         print(f"Received request - Age Group: {age_group}, Location: {location}")
-        
         # Map age groups to correct database column names
         age_column_map = {
             "0-4": ("age_0_4_deaths", "age_0_4_rate"),
@@ -49,7 +48,6 @@ def search_deaths():
             "45-64": ("age_45_64_deaths", "age_45_64_rate"),
             "65+": ("age_65_plus_deaths", "age_65_plus_rate"),
         }
-
         # If a specific age group is selected, get deaths and rate
         if age_group:
             age_column, rate_column = age_column_map.get(age_group, ("total_deaths", "total_rate"))
@@ -63,7 +61,6 @@ def search_deaths():
                            "age_45_64_deaths * age_45_64_rate + age_65_plus_deaths * age_65_plus_rate) / "
                            "(age_0_4_deaths + age_5_14_deaths + age_15_24_deaths + "
                            "age_25_44_deaths + age_45_64_deaths + age_65_plus_deaths) AS rate")
-
         # Build SQL query
         query = f"""
             SELECT location, {age_column}, {rate_column}
@@ -71,23 +68,18 @@ def search_deaths():
             WHERE 1=1
         """
         params = []
-
         # Handle location filtering
         if location and location != "Total":
             query += " AND location = %s"
             params.append(location)
-
         # Print final query for debugging
         print("🔍 Final SQL Query:")
         print(cursor.mogrify(query, tuple(params)).decode())  # Show formatted query
-
         # Execute query
         cursor.execute(query, tuple(params))
         results = cursor.fetchall()
         conn.commit()
-
         print(f"✅ Query executed successfully. Found {len(results)} results.")
-
         # Return results as JSON
         return jsonify([
             {
@@ -99,7 +91,6 @@ def search_deaths():
             }
             for row in results
         ])
-
     except psycopg2.Error as e:
         conn.rollback()
         print("⚠️ SQL Error:", e)
@@ -108,8 +99,6 @@ def search_deaths():
         print("❌ General Error:", e)
         return jsonify({"error": "An unexpected error occurred", "message": str(e)}), 500
 
-
-
 # Drowning Injury Search
 @app.route('/DrowningInjurySearch', methods=['GET'])
 def search_injury():
@@ -117,13 +106,10 @@ def search_injury():
     try:
         # Rollback any failed transactions
         conn.rollback()
-
         # Fetch request parameters
         age_group = request.args.get('age_group', '').strip()
         location = request.args.get('location', '').strip()
-
         print(f"Received request - Age Group: {age_group}, Location: {location}")
-
         # Map age groups to the correct column names
         age_column_map = {
             "0-4": "age_0_4_cases",
@@ -133,39 +119,30 @@ def search_injury():
             "45-64": "age_45_64_cases",
             "65+": "age_65_plus_cases"
         }
-
         # Default to total cases if no specific age group is selected
         age_column = age_column_map.get(age_group, 'total_cases')
-
         # Build SQL query
         query = f"SELECT location, {age_column} as cases FROM drowning_injury WHERE 1=1"
         params = []
-
         # Handle location filtering (with case-insensitive matching)
         if location and location != "All Locations":
             query += " AND location ILIKE %s"
             params.append(f"%{location}%")  # Ensure partial matching with LIKE
-
         print(f"Executing SQL Query: {query}")
         print(f"Parameters: {params}")
-
         # Execute the query
         cursor.execute(query, tuple(params))
         results = cursor.fetchall()
         conn.commit()
-
         # If no results are found
         if not results:
             return jsonify({"message": "No injury data found based on your selection. Try adjusting the filters."}), 404
-
         print(f"Query executed successfully. Found {len(results)} results.")
-
         # Return results in JSON format (only location and cases)
         return jsonify([
             {"location": row[0], "age_group": age_group if age_group else "All", "cases": row[1]}
             for row in results
         ])
-
     except psycopg2.Error as e:
         conn.rollback()
         print("SQL Error:", e)
@@ -174,22 +151,18 @@ def search_injury():
         print("❌ General Error:", e)
         return jsonify({"error": "An unexpected error occurred", "message": str(e)}), 500
 
-
 # Epic 2 Search Beach Infomation
 # Open-Meteo set-up
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
-
 # Marine api
 @app.route("/marine", methods=["GET"])
 def get_marine_data():
     latitude = request.args.get("latitude", type=float)
     longitude = request.args.get("longitude", type=float)
-
     if latitude is None or longitude is None:
         return jsonify({"error": "Missing latitude or longitude"}), 400
-
     try:
         url = "https://marine-api.open-meteo.com/v1/marine"
         params = {
@@ -203,10 +176,8 @@ def get_marine_data():
                 "sea_level_height_msl"
             ]
         }
-
         responses = openmeteo.weather_api(url, params=params)
         response = responses[0]
-
         current = response.Current()
         result = {
             "latitude": response.Latitude(),
@@ -221,21 +192,17 @@ def get_marine_data():
             "sea_surface_temperature": current.Variables(3).Value(),
             "sea_level_height_msl": current.Variables(4).Value()
         }
-
         return jsonify(result)
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Weather api    
+# Weather Api    
 @app.route("/weather", methods=["GET"])
 def get_weather_data():
     latitude = request.args.get("latitude", type=float)
     longitude = request.args.get("longitude", type=float)
-
     if latitude is None or longitude is None:
         return jsonify({"error": "Missing latitude or longitude"}), 400
-
     try:
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
@@ -249,12 +216,9 @@ def get_weather_data():
                 "wind_speed_10m"
             ]
         }
-
         responses = openmeteo.weather_api(url, params=params)
         response = responses[0]
-
         current = response.Current()
-
         current_data = {
             "time": current.Time(),
             "pressure_msl": float(current.Variables(0).Value()),
@@ -262,7 +226,6 @@ def get_weather_data():
             "temperature_2m": float(current.Variables(2).Value()),
             "wind_speed_10m": float(current.Variables(3).Value())
         }
-
         daily = response.Daily()
         uv_index_max = daily.Variables(0).ValuesAsNumpy()
         time_range = pd.date_range(
@@ -271,14 +234,12 @@ def get_weather_data():
             freq=pd.Timedelta(seconds=daily.Interval()),
             inclusive="left"
         )
-
         uv_list = []
         for t, val in zip(time_range, uv_index_max):
             uv_list.append({
                 "date": t.strftime("%Y-%m-%d"),
                 "uv_index_max": float(val)
             })
-
         return jsonify({
             "latitude": response.Latitude(),
             "longitude": response.Longitude(),
@@ -288,8 +249,34 @@ def get_weather_data():
             "current": current_data,
             "daily_uv_index_max": uv_list
         })
-
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# Epic 3 Pool Daily Reminders
+@app.route('/send-checklist', methods=['POST'])
+def send_checklist():
+    data = request.json
+    email = data.get('email')
+    checklist = data.get('checklist')
+    if not email or not checklist:
+        return jsonify({"error": "Missing email or checklist"}), 400
+    message_body = (
+    "\nYour Daily Pool Safety Checklist:\n\n"
+    + "\n".join(f"✓ {step}" for step in checklist)
+    + "\n\n---\nThis email was automatically sent by Water Wise Family.\nPlease do not reply to this message."
+)
+    msg = MIMEText(message_body)
+    msg['Subject'] = 'Your Pool Safety Checklist'
+    msg['From'] = 'c1564580950@gmail.com'
+    msg['To'] = email
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(os.getenv('EMAIL_USER'), os.getenv('EMAIL_PASS'))
+            server.send_message(msg)
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Email send failed: {e}")
         return jsonify({"error": str(e)}), 500
         
 if __name__ == "__main__":
