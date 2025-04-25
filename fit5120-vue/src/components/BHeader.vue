@@ -8,10 +8,13 @@
           <div class="nav-label">Home</div>
         </router-link>
         <router-link to="/Drowningsearch" class="nav-item" active-class="active">
-          <div class="nav-icon">🏠</div>
+          <div class="nav-icon">🔍</div>
           <div class="nav-label">Drowningsearch</div>
         </router-link>
-        
+        <router-link to="/ripcurrent" class="nav-item" active-class="active">
+          <div class="nav-icon">🌊</div>
+          <div class="nav-label">Rip Current</div>
+        </router-link>
       </nav>
     </div>
   </template>
