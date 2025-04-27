@@ -1,6 +1,9 @@
 import requests 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import time
+import base64
+from werkzeug.utils import secure_filename
 import psycopg2
 from dotenv import load_dotenv
 import os
@@ -156,6 +159,7 @@ def search_injury():
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
+
 # Marine api
 @app.route("/marine", methods=["GET"])
 def get_marine_data():
@@ -195,7 +199,7 @@ def get_marine_data():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 # Weather Api    
 @app.route("/weather", methods=["GET"])
 def get_weather_data():
@@ -252,32 +256,136 @@ def get_weather_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# Epic 3 Pool Daily Reminders
-@app.route('/send-checklist', methods=['POST'])
-def send_checklist():
-    data = request.json
-    email = data.get('email')
-    checklist = data.get('checklist')
-    if not email or not checklist:
-        return jsonify({"error": "Missing email or checklist"}), 400
-    message_body = (
-    "\nYour Daily Pool Safety Checklist:\n\n"
-    + "\n".join(f"✓ {step}" for step in checklist)
-    + "\n\n---\nThis email was automatically sent by Water Wise Family.\nPlease do not reply to this message."
-)
-    msg = MIMEText(message_body)
-    msg['Subject'] = 'Your Pool Safety Checklist'
-    msg['From'] = 'c1564580950@gmail.com'
-    msg['To'] = email
-    try:
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(os.getenv('EMAIL_USER'), os.getenv('EMAIL_PASS'))
-            server.send_message(msg)
-        return jsonify({"success": True})
-    except Exception as e:
-        print(f"Email send failed: {e}")
-        return jsonify({"error": str(e)}), 500
+# # Epic 3 Pool Daily Reminders
+# @app.route('/send-checklist', methods=['POST'])
+# def send_checklist():
+#     data = request.json
+#     email = data.get('email')
+#     checklist = data.get('checklist')
+#     if not email or not checklist:
+#         return jsonify({"error": "Missing email or checklist"}), 400
+#     message_body = (
+#     "\nYour Daily Pool Safety Checklist:\n\n"
+#     + "\n".join(f"✓ {step}" for step in checklist)
+#     + "\n\n---\nThis email was automatically sent by Water Wise Family.\nPlease do not reply to this message."
+# )
+#     msg = MIMEText(message_body)
+#     msg['Subject'] = 'Your Pool Safety Checklist'
+#     msg['From'] = 'c1564580950@gmail.com'
+#     msg['To'] = email
+#     try:
+#         with smtplib.SMTP('smtp.gmail.com', 587) as server:
+#             server.starttls()
+#             server.login(os.getenv('EMAIL_USER'), os.getenv('EMAIL_PASS'))
+#             server.send_message(msg)
+#         return jsonify({"success": True})
+#     except Exception as e:
+#         print(f"Email send failed: {e}")
+#         return jsonify({"error": str(e)}), 500
+    
+# # Epic 8 Rip Current Detection
+# # Set up config for file uploads
+# UPLOAD_FOLDER = './uploads'
+# ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Max upload size 50 MB
+# # Ensure uploads directory exists
+# if not os.path.exists(UPLOAD_FOLDER):
+#     os.makedirs(UPLOAD_FOLDER)
+# # Helper function to check allowed extensions
+# def allowed_file(filename):
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# # Process image upload
+# @app.route('/process-image', methods=['POST'])
+# def process_image():
+#     if 'image' not in request.files:
+#         return jsonify({'error': 'No file part'}), 400
+#     file = request.files['image']
+#     if file.filename == '':
+#         return jsonify({'error': 'No selected file'}), 400
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#         file.save(file_path)
+#         # Read the image as base64
+#         with open(file_path, 'rb') as f:
+#             image_base64 = base64.b64encode(f.read()).decode('utf-8')
+#         try:
+#             # Retrieve the API key from environment variables
+#             api_key = os.getenv('ROBOFLOW_API_KEY')
+#             # Call the Roboflow API with the uploaded image
+#             response = requests.post(
+#                 'https://detect.roboflow.com/rip-currents/3',
+#                 params={
+#                     'api_key': api_key,
+#                     'confidence': 5,
+#                     'overlap': 50,
+#                     'format': 'json',
+#                     'stroke': 5
+#                 },
+#                 data=image_base64,
+#                 headers={"Content-Type": "application/x-www-form-urlencoded"}
+#             )
+#             if response.status_code == 200:
+#                 return jsonify({
+#                     'original': f'/uploads/{filename}',
+#                     'predictions': response.json().get('predictions', []),
+#                     'rawResponse': response.json()
+#                 })
+#             else:
+#                 return jsonify({'error': 'Error from Roboflow API', 'details': response.text}), 500
+#         except Exception as e:
+#             return jsonify({'error': str(e)}), 500
+#     else:
+#         return jsonify({'error': 'Invalid file type'}), 400
+
+# # Process image from camera using URL
+# @app.route('/process-camera-image', methods=['POST'])
+# def process_camera_image():
+#     data = request.get_json()
+#     if 'image' not in data:
+#         return jsonify({'error': 'No image data URL provided'}), 400
+#     image_data_url = data['image']
+#     if not image_data_url.startswith('data:image'):
+#         return jsonify({'error': 'Invalid image data URL'}), 400
+#     # Extract base64 image data
+#     base64_data = image_data_url.replace('data:image/jpeg;base64,', '').replace('data:image/png;base64,', '')
+#     # Save the image to a file
+#     timestamp = str(int(time.time()))
+#     file_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{timestamp}-camera.jpg')
+#     with open(file_path, 'wb') as f:
+#         f.write(base64.b64decode(base64_data))
+#     try:
+#         # Retrieve the API key from environment variables
+#         api_key = os.getenv('ROBOFLOW_API_KEY')
+#         # Call the Roboflow API with the camera image data
+#         response = requests.post(
+#             'https://detect.roboflow.com/rip-currents/3',
+#             params={
+#                 'api_key': api_key,
+#                 'confidence': 5,
+#                 'overlap': 50,
+#                 'format': 'json',
+#                 'stroke': 5
+#             },
+#             data=base64_data,
+#             headers={"Content-Type": "application/x-www-form-urlencoded"}
+#         )
+#         if response.status_code == 200:
+#             return jsonify({
+#                 'original': f'/uploads/{timestamp}-camera.jpg',
+#                 'predictions': response.json().get('predictions', []),
+#                 'rawResponse': response.json()
+#             })
+#         else:
+#             return jsonify({'error': 'Error from Roboflow API', 'details': response.text}), 500
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+# # Serve uploaded files
+# @app.route('/uploads/<filename>')
+# def uploaded_file(filename):
+#     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
         
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  

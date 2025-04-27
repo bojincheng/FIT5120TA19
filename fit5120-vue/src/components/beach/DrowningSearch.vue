@@ -1,10 +1,16 @@
 <template>
-  <div>
-    <h2>Drowning Statistics Search</h2>
+  <div class="drowning-search">
+    <div class="intro-banner">
+      <h2>Protecting Our Little Ones</h2>
+      <p>
+        Every drowning case is a heartbreaking loss — especially for families new to Australia, where water safety rules and risks may be unfamiliar. This tool helps you understand where, how, and to whom drowning happens — so we can prevent it together.
+      </p>
+    </div>
+
+    <h1>Drowning Statistics Search</h1>
 
     <!-- Drowning Deaths Search Section -->
-    <h3>Search Drowning Deaths</h3>
-
+    <h2>Search Drowning Deaths</h2>
     <label for="age">Select Age Group:</label>
     <select v-model="deathSearchCriteria.age_group" id="age">
       <option value="">All</option>
@@ -29,6 +35,7 @@
     <button @click="searchDeaths">Search Deaths</button>
     <button @click="clearFilters">Clear</button>
 
+    <!-- Drowning Injuries Search Section -->
     <h3>Search Drowning Injuries</h3>
     <label for="injury-age">Select Age Group:</label>
     <select v-model="injurySearchCriteria.age_group" id="injury-age">
@@ -61,24 +68,53 @@
           <tr>
             <th>Location</th>
             <th>Age Group</th>
-            <th>Deaths / Cases</th>
-            <th v-if="isDeathSearch">Rate (per 100,00000 population)</th>
+            <th>Cases</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(result, index) in results" :key="index">
+          <tr
+            v-for="(result, index) in results"
+            :key="index"
+            @click="showVisual(result)"
+          >
             <td>{{ result.location }}</td>
             <td>{{ result.age_group || "All age groups" }}</td>
             <td>
               <span v-if="isDeathSearch">{{ result.deaths }} deaths</span>
               <span v-else>{{ result.cases }} cases</span>
             </td>
-            <td v-if="isDeathSearch">
-              {{ result.rate !== null && result.rate !== undefined ? parseInt(result.rate) : "N/A" }}
-            </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Pop-up for Visualisation -->
+      <div v-if="showPopup" class="popup">
+        <div class="popup-content">
+          <span @click="closePopup" class="close-btn">&times;</span>
+          <h4>
+            {{ isDeathSearch ? "Understanding Drowning Deaths" : "Understanding Drowning Injuries" }}
+          </h4>
+          <p>For age group {{ selectedResult.age_group || "All" }} at {{ selectedResult.location }}:</p>
+          <div class="visuals">
+            <div
+              v-for="i in (isDeathSearch ? selectedResult.deaths : selectedResult.cases)"
+              :key="i"
+              class="visual-child"
+            >
+              <span v-if="selectedResult.age_group === '0-4'">👶</span>
+              <span v-else-if="i % 2 === 0">👦</span>
+              <span v-else>👧</span>
+            </div>
+          </div>
+          <p>
+            This represents
+            {{ isDeathSearch ? selectedResult.deaths : selectedResult.cases }}
+            {{ isDeathSearch ? "drowning deaths" : "drowning injury cases" }} — each icon stands for a real child whose life was 
+            lost or forever changed. As parents, it’s painful to imagine, but vital to acknowledge: behind every symbol is a son, 
+            a daughter, a story that ended or changed too soon. We use icons, not photos, to honor privacy and dignity — but the reality they represent is heartbreakingly real.
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- No Results Message -->
@@ -110,17 +146,18 @@ export default {
       results: [],
       errorMessage: "",
       isNoResults: false,
-      isDeathSearch: false, // Tracks if the search is for deaths or injuries
+      isDeathSearch: false,
+      showPopup: false,
+      selectedResult: {},
     };
   },
   methods: {
     async searchDeaths() {
-      this.isDeathSearch = true; // Set flag for deaths
+      this.isDeathSearch = true;
       await this.fetchData("https://fit5120ta19.onrender.com/DrowningDeathSearch", this.deathSearchCriteria);
-
     },
     async searchInjuries() {
-      this.isDeathSearch = false; // Set flag for injuries
+      this.isDeathSearch = false;
       await this.fetchData("https://fit5120ta19.onrender.com/DrowningInjurySearch", this.injurySearchCriteria);
     },
     async fetchData(endpoint, criteria) {
@@ -128,26 +165,21 @@ export default {
         this.errorMessage = "";
         const response = await axios.get(endpoint, { params: criteria });
 
-        console.log("API Response:", response.data); // Debugging: Check if 'rates' exists in response
-
         if (response.data.length === 0) {
           this.isNoResults = true;
         } else {
           this.isNoResults = false;
         }
 
-        // Process results to ensure 'rate' is correctly mapped
         this.results = response.data.map(item => ({
           location: item.location,
           age_group: item.age_group,
           deaths: item.deaths,
           cases: item.cases,
-          rate: item.rate !== null ? parseFloat(item.rate) : null // Ensure rate is always a number
         }));
-
       } catch (error) {
-        console.error("Error fetching data:", error.response || error.message);
         this.errorMessage = "An error occurred while fetching data. Please try again later.";
+        console.error("Fetch error:", error.response || error.message);
       }
     },
     clearFilters() {
@@ -156,13 +188,49 @@ export default {
       this.results = [];
       this.isNoResults = false;
       this.errorMessage = "";
-      this.isDeathSearch = false; // Reset flag
+      this.isDeathSearch = false;
+    },
+    showVisual(result) {
+      const count = this.isDeathSearch ? result.deaths : result.cases;
+      if (count > 0) {
+        this.selectedResult = result;
+        this.showPopup = true;
+      }
+    },
+    closePopup() {
+      this.showPopup = false;
     },
   },
 };
 </script>
 
 <style scoped>
+.drowning-search {
+  background-color: #f9fdfd;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+}
+
+.intro-banner {
+  background-color: #e0f7fa;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 5px solid #0097a7;
+  border-radius: 4px;
+}
+
+.intro-banner h2 {
+  margin-top: 0;
+  color: #007c91;
+}
+
+.intro-banner p {
+  margin: 0;
+  font-size: 1.1em;
+  color: #444;
+}
+
 .error-message {
   color: red;
   font-weight: bold;
@@ -172,19 +240,73 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  background-color: #fff;
 }
 
 th, td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 10px;
   text-align: left;
 }
 
 th {
-  background-color: #f4f4f4;
+  background-color: #dfeef3;
 }
 
-h2, h3 {
-  margin-top: 20px;
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 25px;
+  border-radius: 6px;
+  width: 80%;
+  max-width: 800px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-btn {
+  font-size: 24px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+.visuals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.visual-child {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.rate-note {
+  font-size: 0.9em;
+  color: #555;
 }
 </style>
+
+
+
+

@@ -6,7 +6,8 @@
         <li>
           <router-link to="/DrowningSearch">Drowning Search </router-link>
           <router-link to="/BeachData">Beach Data </router-link>
-          <router-link to="/PoolSafetyKnowledgeCheck">Pool Safety Knowledge Check</router-link>
+          <router-link to="/PoolSafetyKnowledgeCheck">Pool Safety Knowledge Check </router-link>
+          <router-link to="/RipCurrentDetection">Rip Current Detection</router-link>
         </li>
       </ul>
     </nav>

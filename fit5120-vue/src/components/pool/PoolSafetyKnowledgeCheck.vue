@@ -32,13 +32,13 @@ import { ref } from 'vue'
 import SilentSeconds from './SilentSeconds.vue'
 import FenceRegulations from './FenceRegulations.vue'
 import HazardWalkthrough from './HazardWalkthrough.vue'
-import SafetyRoutine from './SafetyRoutine.vue'
+import PoolSafetyComplianceSelfAssessmentTool from './PoolSafetyComplianceSelfAssessmentTool.vue'
 
 const tabs = [
   { title: 'Silent Seconds', component: SilentSeconds },
   { title: 'Fence Laws', component: FenceRegulations },
   { title: 'Drowning Hazards', component: HazardWalkthrough },
-  { title: 'Daily Routine', component: SafetyRoutine }
+  { title: 'Pool Safety Compliance Self Assessment Tool', component: PoolSafetyComplianceSelfAssessmentTool }
 ]
 
 const currentTab = ref(null)
