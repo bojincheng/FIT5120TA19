@@ -1,19 +1,17 @@
 <template>
-  <div class="main-container">
-    <header>
-      <BHeader />
-    </header>
-
-    <main class="main-box">
-      <router-view></router-view>
-    </main>
-  </div>
+  <router-view></router-view>
 </template>
 
-<script setup>
-import BHeader from './components/BHeader.vue';
+<script>
+export default {
+  name: 'App'
+}
 </script>
 
 <style>
-
-</style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+</style> 
