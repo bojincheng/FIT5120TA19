@@ -466,7 +466,7 @@
                   <div class="equipment-grid">
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./Westpac-50-Years.jpg" alt="Rescue helicopter" class="equipment-image">
+                        <img src="./assets/Westpac-50-Years.jpg" alt="Rescue helicopter" class="equipment-image">
                       </div>
                       <h4>Rescue Helicopters</h4>
                       <p><strong>Response Time:</strong> 15-30 minutes</p>

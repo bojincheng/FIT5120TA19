@@ -132,7 +132,7 @@
                   <div class="impact-container">
                     <div class="image-text-layout">
                       <div class="family-image-container">
-                        <img src="./young_panrets.jpeg" alt="Young parents walking with their children" class="family-image" />
+                        <img src="./assets/young_panrets.jpeg" alt="Young parents walking with their children" class="family-image" />
                       </div>
                       
                       <div class="impact-text">
