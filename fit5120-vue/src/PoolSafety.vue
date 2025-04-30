@@ -106,7 +106,7 @@
                     </div>
                     
                     <div class="pool-ring-image">
-                      <img src="./POOLRING.jpg" alt="Orange life ring floating in blue pool water" />
+                      <img src="./assets/POOLRING.jpg" alt="Orange life ring floating in blue pool water" />
                     </div>
                   </div>
                 </div>
@@ -333,7 +333,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./POOLHOME.png');
+  background-image: url('./assets/POOLHOME.png');
   background-size: cover;
   background-position: center;
   z-index: 0;

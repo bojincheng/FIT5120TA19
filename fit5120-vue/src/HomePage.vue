@@ -121,7 +121,7 @@ function continueToSafety(type) {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./cswimming.jpg');
+  background-image: url('./assets/cswimming.jpg');
   background-size: cover;
   background-position: center;
   z-index: 0;

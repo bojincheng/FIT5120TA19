@@ -39,11 +39,11 @@
               
               <div class="image-comparison">
                 <div class="comparison-image">
-                  <img src="./IndianWaters.jpg" alt="Calm waters in India">
+                  <img src="./assets/IndianWaters.jpg" alt="Calm waters in India">
                   <p class="image-caption">Calm waters abroad: Lakes, rivers, or sheltered beaches in many countries</p>
                 </div>
                 <div class="comparison-image">
-                  <img src="./roughAussieBeach.jpg" alt="Rough Australian beach with powerful waves">
+                  <img src="./assets/roughAussieBeach.jpg" alt="Rough Australian beach with powerful waves">
                   <p class="image-caption">Powerful waters in Australia: Strong waves and dangerous undercurrents</p>
                 </div>
               </div>
@@ -388,7 +388,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('./Aussie_beachhome.jpg');
+    background-image: url('./assets/Aussie_beachhome.jpg');
     background-size: cover;
     background-position: center;
     z-index: 0;

@@ -56,7 +56,7 @@
             </div>
             
             <div class="offshore-image-container">
-              <img src="./Maratime.jpg" alt="Australian Maritime Rescue vessel" class="offshore-image">
+              <img src="./assets/Maratime.jpg" alt="Australian Maritime Rescue vessel" class="offshore-image">
               <div class="image-overlay"></div>
               <div class="image-caption">The Australian Maritime Rescue system operates year-round across the entire coastline</div>
             </div>
@@ -382,7 +382,7 @@
                   <div class="equipment-grid">
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./rescue_board.jpg" alt="Rescue board" class="equipment-image">
+                        <img src="./assets/rescue_board.jpg" alt="Rescue board" class="equipment-image">
                       </div>
                       <h4>Rescue Boards</h4>
                       <p><strong>Response Time:</strong> Immediate</p>
@@ -392,7 +392,7 @@
                     
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./rescue_jetski.jpg" alt="Rescue jetski" class="equipment-image">
+                        <img src="./assets/rescue_jetski.jpg" alt="Rescue jetski" class="equipment-image">
                       </div>
                       <h4>Rescue Jetskis</h4>
                       <p><strong>Response Time:</strong> 2-5 minutes</p>
@@ -402,7 +402,7 @@
                     
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./IRB.jpg" alt="Inflatable Rescue Boat" class="equipment-image">
+                        <img src="./assets/IRB.jpg" alt="Inflatable Rescue Boat" class="equipment-image">
                       </div>
                       <h4>IRBs</h4>
                       <p><strong>Response Time:</strong> 3-8 minutes</p>
@@ -424,7 +424,7 @@
                   <div class="equipment-grid">
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./RHIB.jpg" alt="Rigid Hull Inflatable Boat" class="equipment-image">
+                        <img src="./assets/RHIB.jpg" alt="Rigid Hull Inflatable Boat" class="equipment-image">
                       </div>
                       <h4>RHIBs</h4>
                       <p><strong>Response Time:</strong> 10-20 minutes</p>
@@ -434,7 +434,7 @@
                     
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./VMR.png" alt="Volunteer Marine Rescue vessel" class="equipment-image">
+                        <img src="./assets/VMR.png" alt="Volunteer Marine Rescue vessel" class="equipment-image">
                       </div>
                       <h4>VMR Vessels</h4>
                       <p><strong>Response Time:</strong> 20-45 minutes</p>
@@ -444,7 +444,7 @@
                     
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./police.jpg" alt="Water Police vessel" class="equipment-image">
+                        <img src="./assets/police.jpg" alt="Water Police vessel" class="equipment-image">
                       </div>
                       <h4>Police Vessels</h4>
                       <p><strong>Response Time:</strong> 20-60 minutes</p>
@@ -476,7 +476,7 @@
                     
                     <div class="equipment-item">
                       <div class="equipment-image-container">
-                        <img src="./drones.jpg" alt="Rescue drone" class="equipment-image">
+                        <img src="./assets/drones.jpg" alt="Rescue drone" class="equipment-image">
                       </div>
                       <h4>Rescue Drones</h4>
                       <p><strong>Response Time:</strong> 1-5 minutes</p>
@@ -575,7 +575,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./Aussie_beachhome.jpg');
+  background-image: url('./assets/Aussie_beachhome.jpg');
   background-size: cover;
   background-position: center;
   background-color: #01365c; /* Fallback color if image is not available */

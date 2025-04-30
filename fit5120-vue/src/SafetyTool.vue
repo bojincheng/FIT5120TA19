@@ -94,7 +94,7 @@
             
             <div class="resource-image-container">
               <img 
-                src="./parentChildbeachready.jpeg" 
+                src="./assets/parentChildbeachready.jpeg" 
                 alt="Parent and child at the beach" 
                 class="resource-header-image"
                 @error="handleResourceImageError"
@@ -557,7 +557,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./Aussie_beachhome.jpg');
+  background-image: url('./assets/Aussie_beachhome.jpg');
   background-size: cover;
   background-position: center;
   background-color: #01365c; /* Fallback color if image is not available */

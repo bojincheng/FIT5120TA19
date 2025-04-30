@@ -104,7 +104,7 @@
           
           <div class="section-body">
             <div class="child-danger-image">
-              <img src="./child_drwon.png" alt="Child in danger in water" class="drowning-image" @error="handleImageError">
+              <img src="./assets/child_drwon.png" alt="Child in danger in water" class="drowning-image" @error="handleImageError">
             </div>
             
             <p>If your child is caught in a rip current, swift action is critical:</p>
@@ -298,7 +298,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./Aussie_beachhome.jpg');
+  background-image: url('./assets/Aussie_beachhome.jpg');
   background-size: cover;
   background-position: center;
   background-color: #01365c; /* Fallback color if image is not available */

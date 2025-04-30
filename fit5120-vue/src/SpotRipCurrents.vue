@@ -97,7 +97,7 @@
                 
                 <div class="rip-overview">
                   <div class="rip-type-image">
-                    <img src="./Channelised-Rips-A.jpg" alt="Channelized rip current" @error="handleImageError">
+                    <img src="./assets/Channelised-Rips-A.jpg" alt="Channelized rip current" @error="handleImageError">
                     <div class="image-overlay">
                       <div class="overlay-point" style="top: 40%; left: 30%;">
                         <span class="point-marker">1</span>
@@ -208,7 +208,7 @@
                 
                 <div class="rip-overview">
                   <div class="rip-type-image boundary-image">
-                    <img src="./Boundary-Rips-A.jpg" alt="Boundary rip current" @error="handleImageError">
+                    <img src="./assets/Boundary-Rips-A.jpg" alt="Boundary rip current" @error="handleImageError">
                     <div class="image-overlay">
                       <div class="overlay-point" style="top: 30%; left: 45%;">
                         <span class="point-marker">1</span>
@@ -319,7 +319,7 @@
                 
                 <div class="rip-overview">
                   <div class="rip-type-image flash-image">
-                    <img src="./Flash-Rip.jpg" alt="Flash rip current" @error="handleImageError">
+                    <img src="./assets/Flash-Rip.jpg" alt="Flash rip current" @error="handleImageError">
                     <div class="image-overlay">
                       <div class="overlay-point" style="top: 30%; left: 50%;">
                         <span class="point-marker">1</span>
@@ -526,7 +526,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./Aussie_beachhome.jpg');
+  background-image: url('./assets/Aussie_beachhome.jpg');
   background-size: cover;
   background-position: center;
   background-color: #01365c; /* Fallback color if image is not available */

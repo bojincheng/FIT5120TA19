@@ -48,7 +48,7 @@
             <p>Before attempting any rescue, you must first be able to identify when someone is truly in danger. A swimmer in distress will often:</p>
             
             <div class="drowning-image-container">
-              <img src="./drowning.jpeg" alt="Person drowning with hand raised above water" class="drowning-image">
+              <img src="./assets/drowning.jpeg" alt="Person drowning with hand raised above water" class="drowning-image">
               <div class="image-overlay"></div>
               <div class="image-caption">A drowning person may only be able to raise one hand briefly above water</div>
             </div>
@@ -130,7 +130,7 @@
                   </div>
                   
                   <div class="lifeguard-image-container">
-                    <img src="./lifeguard rescue.jpg" alt="Lifeguards with red and yellow flags and rescue board" class="lifeguard-image">
+                    <img src="./assets/lifeguard rescue.jpg" alt="Lifeguards with red and yellow flags and rescue board" class="lifeguard-image">
                     <div class="image-overlay"></div>
                     <div class="image-caption">Professional lifeguards on duty with rescue equipment between the flags</div>
                   </div>
@@ -188,7 +188,7 @@
                   </div>
                   
                   <div class="bystander-image-container">
-                    <img src="./bystander.png" alt="Life ring floating in rough water" class="bystander-image">
+                    <img src="./assets/bystander.png" alt="Life ring floating in rough water" class="bystander-image">
                     <div class="image-overlay"></div>
                     <div class="image-caption">Life ring flotation device - a crucial tool for rescuing people without entering the water</div>
                   </div>
@@ -366,7 +366,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./Aussie_beachhome.jpg');
+  background-image: url('./assets/Aussie_beachhome.jpg');
   background-size: cover;
   background-position: center;
   background-color: #01365c; /* Fallback color if image is not available */

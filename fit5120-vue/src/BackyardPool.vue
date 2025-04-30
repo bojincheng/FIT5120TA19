@@ -396,7 +396,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./POOLHOME.png');
+  background-image: url('./assets/POOLHOME.png');
   background-size: cover;
   background-position: center;
   z-index: 0;

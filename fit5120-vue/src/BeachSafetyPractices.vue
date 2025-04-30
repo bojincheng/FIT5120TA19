@@ -58,7 +58,7 @@
             </div>
             
             <div class="flags-banner-container">
-              <img src="./flags.jpeg" alt="Lifeguards with red and yellow flags alongside surfers at an Australian beach" class="flags-banner-image">
+              <img src="./assets/flags.jpeg" alt="Lifeguards with red and yellow flags alongside surfers at an Australian beach" class="flags-banner-image">
               <div class="banner-overlay"></div>
               <div class="banner-caption">Lifeguards setting up the red and yellow flags mark the designated safe swimming area</div>
             </div>
@@ -315,7 +315,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./Aussie_beachhome.jpg');
+  background-image: url('./assets/Aussie_beachhome.jpg');
   background-size: cover;
   background-position: center;
   background-color: #01365c; /* Fallback color if image is not available */
