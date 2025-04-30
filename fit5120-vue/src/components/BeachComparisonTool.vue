@@ -461,19 +461,19 @@
                 <div class="beach-image-container">
                   <img 
                     v-if="getBeachConditionCategory(dataset.data) === 'HARSH'" 
-                    src="../harsh_beach.jpeg" 
+                    src="../assets/harsh_beach.jpeg" 
                     alt="Harsh beach conditions" 
                     class="beach-condition-image"
                   />
                   <img 
                     v-else-if="getBeachConditionCategory(dataset.data) === 'CALM'" 
-                    src="../calm_beach.jpeg" 
+                    src="../assets/calm_beach.jpeg" 
                     alt="Calm beach conditions" 
                     class="beach-condition-image"
                   />
                   <img 
                     v-else 
-                    src="../moderate.jpeg" 
+                    src="../assets/moderate.jpeg" 
                     alt="Moderate beach conditions" 
                     class="beach-condition-image"
                   />

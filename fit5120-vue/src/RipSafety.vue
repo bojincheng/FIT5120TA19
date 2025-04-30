@@ -54,7 +54,7 @@
             
             <div class="rip-video-container">
               <video controls class="rip-video" @error="handleVideoError">
-                <source src="./how_rips_form.mp4" type="video/mp4">
+                <source src="/videos/how_rips_form.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
               <p class="video-caption">Video: How rip currents form and flow out to sea</p>

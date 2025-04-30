@@ -83,7 +83,7 @@
             <div class="escape-diagram">
               <h3 class="video-title">Surviving Rip Currents</h3>
               <video controls preload="metadata" class="escape-video" @error="handleVideoError">
-                <source src="./How%20to%20Survive%20a%20Rip%20Current.mp4" type="video/mp4">
+                <source src="/videos/How to Survive a Rip Current.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
               <p class="image-caption">Video: How to escape a rip current by swimming parallel to shore</p>
