@@ -5,7 +5,7 @@
         <div class="tv-frame">
           <div class="tv-screen">
             <video class="background-video" autoplay playsinline ref="video">
-              <source src="../src/Untitled video5.mp4" type="video/mp4">
+              <source src="../src/News.mp4" type="video/mp4">
             </video>
           </div>
           <div class="tv-knobs">
