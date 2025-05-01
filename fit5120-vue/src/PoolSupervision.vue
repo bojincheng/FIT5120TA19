@@ -209,6 +209,10 @@ export default {
         console.log('Quiz loaded message received');
         this.quizLoading = false;
       }
+    },
+    // Handler for custom show-quiz event
+    handleShowQuiz() {
+      this.showQuiz = true;
     }
   },
   mounted() {
@@ -217,6 +221,12 @@ export default {
     
     // Add message listener for iframe
     window.addEventListener('message', this.handleQuizMessage);
+    
+    // Add event listener for custom show-quiz event
+    const pageElement = document.querySelector('.pool-supervision-page');
+    if (pageElement) {
+      pageElement.addEventListener('show-quiz', this.handleShowQuiz);
+    }
   },
   beforeDestroy() {
     // Remove scroll event listener when component is destroyed
@@ -224,6 +234,12 @@ export default {
     
     // Remove message listener
     window.removeEventListener('message', this.handleQuizMessage);
+    
+    // Remove custom event listener
+    const pageElement = document.querySelector('.pool-supervision-page');
+    if (pageElement) {
+      pageElement.removeEventListener('show-quiz', this.handleShowQuiz);
+    }
   },
   watch: {
     selectedLanguage() {

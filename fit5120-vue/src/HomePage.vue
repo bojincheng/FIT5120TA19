@@ -152,7 +152,7 @@
               <div class="pool-image-container" @click="navigateToPoolSafetyQuiz">
                 <img src="./assets/are_you_ready.jpg" alt="Test your pool safety knowledge" class="pool-condition-image">
                 <div class="image-overlay">
-                  <span></span>
+                  <span>Test Your Pool Safety Knowledge</span>
                 </div>
               </div>
             </div>
@@ -252,8 +252,18 @@ function navigateToSurviveRipCurrents() {
 }
 
 function navigateToPoolSafetyQuiz() {
-  router.push('/pool-safety-quiz').then(() => {
-    window.scrollTo(0, 0);
+  router.push('/pool-supervision').then(() => {
+    // Wait for page to load
+    setTimeout(() => {
+      // Find the component and trigger the quiz modal
+      const app = document.querySelector('.pool-supervision-page');
+      if (app) {
+        // Create and dispatch a custom event to open the quiz
+        const event = new CustomEvent('show-quiz');
+        app.dispatchEvent(event);
+      }
+      window.scrollTo(0, 0);
+    }, 300);
   });
 }
 </script>
