@@ -346,15 +346,16 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 2rem;
   margin-bottom: 1.5rem;
-  padding: 0.5rem;
+  padding: 0.75rem 2rem;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 2rem;
+  border-radius: 3rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   max-width: fit-content;
   margin-left: auto;
   margin-right: auto;
+  width: auto;
 }
 
 .step {
@@ -362,7 +363,8 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
-  min-width: 90px;
+  min-width: 100px;
+  padding: 0.5rem 0;
 }
 
 .step-number {
@@ -873,10 +875,10 @@ p {
   }
 
   .progress-steps {
-    padding: 0.5rem 1rem;
-    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    gap: 1.5rem;
     width: 90%;
-    max-width: 450px;
+    max-width: 500px;
   }
   
   .step-number {
@@ -980,10 +982,10 @@ p {
   .progress-steps {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.5rem 1rem;
-    padding: 0.5rem;
+    gap: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     margin-bottom: 1rem;
-    max-width: 90%;
+    max-width: 95%;
   }
 
   .step {
