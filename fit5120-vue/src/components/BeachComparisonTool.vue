@@ -543,18 +543,18 @@
 
 <script>
 // Import images
-import dangerousCurrentImage from '@/assets/dangerous_current.jpg'
-import moderateCurrentImage from '@/assets/moderate_current.jpg'
-import lowCurrentImage from '@/assets/low_current.jpg'
-import childWaveDangerImage from '@/assets/child_wave_danger.jpg'
-import childWaveModerateImage from '@/assets/child_wave_moderate.jpg'
-import childWaveSafeImage from '@/assets/child_wave_safe.jpg'
-import harshBeachImage from '@/assets/harsh_beach.jpeg'
-import calmBeachImage from '@/assets/calm_beach.jpeg'
-import moderateBeachImage from '@/assets/moderate.jpeg'
-import highwavesImage from '@/assets/highwaves.avif'
-import modWavesImage from '@/assets/mod_waves.jpg'
-import lowWavesImage from '@/assets/low_waves.jpeg'
+import dangerousCurrentImage from '../assets/dangerous_current.JPG'
+import moderateCurrentImage from '../assets/moderate_current.jpg'
+import lowCurrentImage from '../assets/low_current.jpg'
+import childWaveDangerImage from '../assets/child_wave_danger.jpg'
+import childWaveModerateImage from '../assets/child_wave_moderate.jpg'
+import childWaveSafeImage from '../assets/child_wave_safe.jpg'
+import harshBeachImage from '../assets/harsh_beach.jpeg'
+import calmBeachImage from '../assets/calm_beach.jpeg'
+import moderateBeachImage from '../assets/moderate.jpeg'
+import highwavesImage from '../assets/highwaves.avif'
+import modWavesImage from '../assets/mod_waves.jpg'
+import lowWavesImage from '../assets/low_waves.jpeg'
 
 export default {
   name: 'BeachComparisonTool',
