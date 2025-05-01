@@ -346,44 +346,67 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.4rem;
+  min-width: 90px;
 }
 
 .step-number {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background: #ffffff;
   color: #01579b;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.step:hover .step-number {
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  background: #f0f8ff;
 }
 
 .step span {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #ffffff;
-  font-weight: 500;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+  text-align: center;
+}
+
+.step:hover span {
+  transform: translateY(2px);
 }
 
 .step-connector {
-  width: 1.5rem;
-  height: 2px;
+  width: 2.5rem;
+  height: 3px;
   background: #ffffff;
-  margin-top: 0.875rem;
-  opacity: 0.8;
+  margin-top: 1.25rem;
+  opacity: 0.9;
+  border-radius: 2px;
 }
 
 .options-container {
@@ -849,6 +872,27 @@ p {
     padding: 0.75rem;
   }
 
+  .progress-steps {
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+    width: 90%;
+    max-width: 450px;
+  }
+  
+  .step-number {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1.1rem;
+  }
+  
+  .step span {
+    font-size: 0.9rem;
+  }
+  
+  .step-connector {
+    width: 1.75rem;
+  }
+
   .options-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -879,11 +923,6 @@ p {
 
   .stat-text {
     font-size: 0.85rem;
-  }
-
-  .progress-steps {
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
   }
 
   .step-number {
@@ -940,17 +979,31 @@ p {
   
   .progress-steps {
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.25rem;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    max-width: 90%;
   }
 
   .step {
-    flex: 1;
+    flex: 0 0 auto;
     min-width: 80px;
+    margin: 0 0.25rem;
   }
 
   .step-connector {
     display: none;
+  }
+  
+  .step-number {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+  
+  .step span {
+    font-size: 0.85rem;
   }
   
   .option-card {
