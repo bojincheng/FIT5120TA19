@@ -2,7 +2,7 @@
   <div class="landing-container">
     <div class="video-background">
       <video autoplay loop muted playsinline>
-        <source src="./landing_background.mp4" type="video/mp4">
+        <source src="/videos/landing_background.mp4" type="video/mp4">
       </video>
       <div class="overlay"></div>
     </div>

@@ -106,7 +106,9 @@ export default {
     skipSequence() {
       this.isSkipped = true;
       clearInterval(this.progressInterval);
-      this.navigateToHome();
+      
+      // Go directly to homepage without any transitions or delays
+      this.$router.push('/home');
     },
     navigateToHome() {
       // First delay to read the warning message
@@ -231,6 +233,12 @@ export default {
 
 .page-transition.active {
   transform: translateY(0);
+}
+
+/* Add a faster transition for skipping */
+.page-transition.skip-active {
+  transform: translateY(0);
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .tv-container {
