@@ -11,22 +11,22 @@
         <!-- Progress Bar -->
         <div class="safety-progress-nav">
           <div class="progress-bar">
+            <div class="progress-step active">
+              <div class="step-number">1</div>
+              <div class="step-label">Signs of Trouble</div>
+            </div>
+            <div class="progress-connector"></div>
             <div class="progress-step">
-              <router-link to="/beach-safety-practices" class="step-link">
-                <div class="step-number">1</div>
-                <div class="step-label">Beach Rules</div>
+              <router-link to="/survive-rip-currents" class="step-link">
+                <div class="step-number">2</div>
+                <div class="step-label">Survive Rip Currents</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
-            <div class="progress-step active">
-              <div class="step-number">2</div>
-              <div class="step-label">Near-Shore Rescue</div>
-            </div>
-            <div class="progress-connector"></div>
             <div class="progress-step">
-              <router-link to="/offshore-rescue" class="step-link">
+              <router-link to="/safety-tool" class="step-link">
                 <div class="step-number">3</div>
-                <div class="step-label">Offshore Rescue</div>
+                <div class="step-label">Safety Tools</div>
               </router-link>
             </div>
           </div>
@@ -35,8 +35,6 @@
         <div class="title-section">
           <h1>Near-Shore Rescue Techniques</h1>
           <div class="statistic-banner">
-            <h2 class="headline">Swift, effective rescue methods for <span class="highlight">swimmers</span> in distress near the shore</h2>
-            <p class="subheadline">— Learn to safely help others without putting yourself at risk</p>
           </div>
         </div>
 
@@ -45,46 +43,45 @@
           <h2 class="section-title">🚨 Recognizing a Swimmer in Distress</h2>
           
           <div class="section-body">
-            <p>Before attempting any rescue, you must first be able to identify when someone is truly in danger. A swimmer in distress will often:</p>
+            <p>Before attempting any rescue, you must first be able to identify when someone is truly in danger.</p>
+            
+            <div class="drowning-statistic">
+              <div class="stat-number">Nearly 50%</div>
+              <div class="stat-text">of adults cannot correctly identify when someone is drowning.</div>
+            </div>
             
             <div class="drowning-image-container">
               <img src="./assets/drowning.jpeg" alt="Person drowning with hand raised above water" class="drowning-image">
               <div class="image-overlay"></div>
-              <div class="image-caption">A drowning person may only be able to raise one hand briefly above water</div>
-            </div>
-            
-            <div class="distress-signs">
-              <div class="distress-sign">
-                <div class="sign-icon">👋</div>
-                <div class="sign-content">
-                  <h4>Weak or No Wave</h4>
-                  <p>Unable to wave properly - may only raise one arm briefly as they struggle to stay afloat</p>
+              
+              <!-- Interactive Hotspots -->
+              <div class="interactive-hotspots">
+                <div class="hotspot hotspot-1">
+                  <div class="hotspot-number">1</div>
+                  <div class="hotspot-content">
+                    <h4>Weak or No Wave</h4>
+                    <p>Unable to wave properly - may only raise one arm briefly as they struggle to stay afloat</p>
+                  </div>
+                </div>
+                
+                <div class="hotspot hotspot-2">
+                  <div class="hotspot-number">2</div>
+                  <div class="hotspot-content">
+                    <h4>Unable to Call for Help</h4>
+                    <p>Too focused on breathing to shout - drowning is often silent</p>
+                  </div>
+                </div>
+                
+                <div class="hotspot hotspot-3">
+                  <div class="hotspot-number">3</div>
+                  <div class="hotspot-content">
+                    <h4>Vertical Position</h4>
+                    <p>Upright in water with little forward movement, head tilted back</p>
+                  </div>
                 </div>
               </div>
               
-              <div class="distress-sign">
-                <div class="sign-icon">🗣️</div>
-                <div class="sign-content">
-                  <h4>Unable to Call for Help</h4>
-                  <p>Too focused on breathing to shout - drowning is often silent</p>
-                </div>
-              </div>
-              
-              <div class="distress-sign">
-                <div class="sign-icon">🏊‍♂️</div>
-                <div class="sign-content">
-                  <h4>Vertical Position</h4>
-                  <p>Upright in water with little forward movement, head tilted back</p>
-                </div>
-              </div>
-              
-              <div class="distress-sign">
-                <div class="sign-icon">👀</div>
-                <div class="sign-content">
-                  <h4>Glassy Stare</h4>
-                  <p>Unfocused eyes, possibly closed, or unable to fix on rescuer</p>
-                </div>
-              </div>
+              <div class="image-caption">Hover over numbers to learn the signs of a drowning person</div>
             </div>
           </div>
         </div>
@@ -93,14 +90,6 @@
           <h2 class="section-title">🛟 Rescue Techniques for Near-Shore Emergencies</h2>
           
           <div class="section-body">
-            <div class="safety-alert">
-              <div class="alert-icon">⚠️</div>
-              <div class="alert-content">
-                <h4>Safety First!</h4>
-                <p>Always call for help before attempting a rescue. Alert lifeguards if available, or have someone call emergency services (000).</p>
-              </div>
-            </div>
-            
             <div class="rescue-tabs">
               <div class="tab-buttons">
                 <button 
@@ -124,56 +113,45 @@
               <div class="tab-content">
                 <!-- Lifeguard Response Tab -->
                 <div v-if="activeRescueTab === 'lifeguard'" class="rescue-technique">
-                  <div class="technique-header">
-                    <div class="technique-icon">🏊‍♂️</div>
-                    <h3>When Lifeguards Respond</h3>
-                  </div>
-                  
                   <div class="lifeguard-image-container">
                     <img src="./assets/lifeguard rescue.jpg" alt="Lifeguards with red and yellow flags and rescue board" class="lifeguard-image">
                     <div class="image-overlay"></div>
+                    <div class="image-overlay-button">
+                      <router-link to="/water-safety-simulation" class="simulation-button">
+                        <div class="sim-icon">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                          </svg>
+                        </div>
+                        <span>Try the Rescue Simulation</span>
+                      </router-link>
+                    </div>
                     <div class="image-caption">Professional lifeguards on duty with rescue equipment between the flags</div>
                   </div>
                   
-                  <div class="simulation-button-container">
-                    <router-link to="/water-safety-simulation" class="simulation-button">
-                      <div class="sim-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                      </div>
-                      <span>Try the Rescue Simulation</span>
-                    </router-link>
-                  </div>
-                  
-                  <p class="technique-description">What parents should do while waiting for professional help:</p>
-                  <div class="technique-steps">
-                    <div class="rescue-method">
-                      <div class="method-header">
-                        <div class="method-number">1</div>
-                        <h4>CALL FOR HELP</h4>
-                      </div>
-                      <div class="method-content">
+                  <div class="parent-actions">
+                    <h4 class="parent-actions-title">What To Do While Waiting For Professional Help</h4>
+                    
+                    <div class="parent-action-card">
+                      <div class="action-number">1</div>
+                      <div class="action-content">
+                        <h5>Call For Help</h5>
                         <p>Alert lifeguards immediately or call 000. Wave arms overhead and shout "HELP" to draw attention to the emergency.</p>
                       </div>
                     </div>
                     
-                    <div class="rescue-method">
-                      <div class="method-header">
-                        <div class="method-number">2</div>
-                        <h4>STAY ON SHORE</h4>
-                      </div>
-                      <div class="method-content">
+                    <div class="parent-action-card">
+                      <div class="action-number">2</div>
+                      <div class="action-content">
+                        <h5>Stay On Shore</h5>
                         <p><strong>DO NOT</strong> enter deep water yourself. Parents who enter water often become victims themselves, making the rescue more difficult.</p>
                       </div>
                     </div>
                     
-                    <div class="rescue-method">
-                      <div class="method-header">
-                        <div class="method-number">3</div>
-                        <h4>GUIDE RESCUERS</h4>
-                      </div>
-                      <div class="method-content">
+                    <div class="parent-action-card">
+                      <div class="action-number">3</div>
+                      <div class="action-content">
+                        <h5>Guide Rescuers</h5>
                         <p>Keep pointing to the person in trouble, maintain visual contact, and help direct lifeguards to their exact location.</p>
                       </div>
                     </div>
@@ -182,49 +160,41 @@
                 
                 <!-- Bystander Response Tab -->
                 <div v-if="activeRescueTab === 'bystander'" class="rescue-technique">
-                  <div class="technique-header">
-                    <div class="technique-icon">🪃</div>
-                    <h3>Safe Bystander Response</h3>
-                  </div>
-                  
                   <div class="bystander-image-container">
-                    <img src="./assets/bystander.png" alt="Life ring floating in rough water" class="bystander-image">
+                    <img src="./assets/bystander.jpg" alt="Person reaching from shore to help drowning victim" class="bystander-image">
                     <div class="image-overlay"></div>
-                    <div class="image-caption">Life ring flotation device - a crucial tool for rescuing people without entering the water</div>
+                    
+                    <!-- Interactive Hotspots -->
+                    <div class="interactive-hotspots">
+                      <div class="hotspot hotspot-reach">
+                        <div class="hotspot-number">1</div>
+                        <div class="hotspot-content">
+                          <h4>REACH</h4>
+                          <p>If the person is close to shore, use a pole, branch, or towel to reach them without entering the water.</p>
+                        </div>
+                      </div>
+                      
+                      <div class="hotspot hotspot-throw">
+                        <div class="hotspot-number">2</div>
+                        <div class="hotspot-content">
+                          <h4>THROW</h4>
+                          <p>If they're further out, throw a flotation device (life ring, bodyboard, esky lid) with a rope attached if possible.</p>
+                        </div>
+                      </div>
+                      
+                      <div class="hotspot hotspot-wade">
+                        <div class="hotspot-number">3</div>
+                        <div class="hotspot-content">
+                          <h4>WADE</h4>
+                          <p>If safe to do so, wade into shallow water (keeping your feet firmly on the bottom) to reach them with an extended device.</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="image-caption">Hover over numbers to learn safe rescue methods without entering deep water</div>
                   </div>
                   
-                  <p class="technique-description">Methods that can be used by untrained rescuers without entering deep water:</p>
-                  <div class="technique-steps">
-                    <div class="rescue-method">
-                      <div class="method-header">
-                        <div class="method-number">1</div>
-                        <h4>REACH</h4>
-                      </div>
-                      <div class="method-content">
-                        <p>If the person is close to shore, use a pole, branch, or towel to reach them without entering the water.</p>
-                      </div>
-                    </div>
-                    
-                    <div class="rescue-method">
-                      <div class="method-header">
-                        <div class="method-number">2</div>
-                        <h4>THROW</h4>
-                      </div>
-                      <div class="method-content">
-                        <p>If they're further out, throw a flotation device (life ring, bodyboard, esky lid) with a rope attached if possible.</p>
-                      </div>
-                    </div>
-                    
-                    <div class="rescue-method">
-                      <div class="method-header">
-                        <div class="method-number">3</div>
-                        <h4>WADE</h4>
-                      </div>
-                      <div class="method-content">
-                        <p>If safe to do so, wade into shallow water (keeping your feet firmly on the bottom) to reach them with an extended device.</p>
-                      </div>
-                    </div>
-                  </div>
+                  <p class="technique-description">Methods that can be used by untrained rescuers without entering deep water</p>
                 </div>
               </div>
             </div>
@@ -235,30 +205,51 @@
           <h2 class="section-title">🩹 Post-Rescue Care</h2>
           
           <div class="section-body">
-            <p>After a successful rescue, immediate care is crucial:</p>
+            <p class="post-rescue-intro">After a successful rescue, immediate care is crucial. Hover over cards to see details:</p>
             
-            <div class="post-rescue-steps">
-              <div class="post-rescue-step">
-                <div class="step-icon">🫁</div>
-                <div class="step-content">
-                  <h4>Check Breathing</h4>
-                  <p>Ensure their airway is clear and they're breathing normally. Begin CPR if necessary.</p>
+            <div class="flip-cards-container">
+              <div class="flip-card">
+                <div class="flip-card-inner">
+                  <div class="flip-card-front">
+                    <img src="./assets/breathing.png" alt="Person administering breathing support" class="card-image">
+                    <div class="card-overlay"></div>
+                    <div class="card-title">Check Breathing</div>
+                    <div class="flip-hint">Hover to flip</div>
+                  </div>
+                  <div class="flip-card-back">
+                    <h4>Check Breathing</h4>
+                    <p>Ensure their airway is clear and they're breathing normally. Begin CPR if necessary.</p>
+                  </div>
                 </div>
               </div>
-              
-              <div class="post-rescue-step">
-                <div class="step-icon">🧣</div>
-                <div class="step-content">
-                  <h4>Treat for Shock</h4>
-                  <p>Keep them warm with towels or blankets, even on hot days.</p>
+
+              <div class="flip-card">
+                <div class="flip-card-inner">
+                  <div class="flip-card-front">
+                    <img src="./assets/000.jpg" alt="000 Emergency number on red background" class="card-image">
+                    <div class="card-overlay"></div>
+                    <div class="card-title">Call 000</div>
+                    <div class="flip-hint">Hover to flip</div>
+                  </div>
+                  <div class="flip-card-back">
+                    <h4>Seek Medical Attention</h4>
+                    <p>Always get medical help after a water rescue, even if they seem fine. Secondary drowning can occur hours later.</p>
+                  </div>
                 </div>
               </div>
-              
-              <div class="post-rescue-step">
-                <div class="step-icon">👨‍⚕️</div>
-                <div class="step-content">
-                  <h4>Seek Medical Attention</h4>
-                  <p>Always get medical help after a water rescue, even if they seem fine. Secondary drowning can occur hours later.</p>
+
+              <div class="flip-card">
+                <div class="flip-card-inner">
+                  <div class="flip-card-front">
+                    <img src="./assets/treat_shock.jpg" alt="Person in distress" class="card-image">
+                    <div class="card-overlay"></div>
+                    <div class="card-title">Treat for Shock</div>
+                    <div class="flip-hint">Hover to flip</div>
+                  </div>
+                  <div class="flip-card-back">
+                    <h4>Treat for Shock</h4>
+                    <p>Keep them warm with towels or blankets, even on hot days.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -268,7 +259,7 @@
     </div>
     
     <div class="next-section-arrow" v-if="showNavigationArrow" @click="navigateToNextSection">
-      <div class="arrow-label">Offshore Rescue</div>
+      <div class="arrow-label">Survive Rip Currents</div>
       <div class="arrow-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 8 4 4-4 4"/></svg>
       </div>
@@ -321,12 +312,12 @@ export default {
         link.classList.remove('active');
       });
       
-      // Add active class to beach safety practices links
-      const desktopPracticesLink = document.querySelector('.nav-link[href="/beach-safety-practices"]');
-      const mobilePracticesLink = document.querySelector('.mobile-nav-link[href="/beach-safety-practices"]');
+      // Add active class to "Facing the Risk" links
+      const desktopRipLink = document.querySelector('.nav-link[href="/beach-safety-rescue"]');
+      const mobileRipLink = document.querySelector('.mobile-nav-link[href="/beach-safety-rescue"]');
       
-      if (desktopPracticesLink) desktopPracticesLink.classList.add('active');
-      if (mobilePracticesLink) mobilePracticesLink.classList.add('active');
+      if (desktopRipLink) desktopRipLink.classList.add('active');
+      if (mobileRipLink) mobileRipLink.classList.add('active');
     },
     checkScrollPosition() {
       // Show navigation arrow when user is near the bottom of the page
@@ -337,9 +328,9 @@ export default {
       this.showNavigationArrow = scrollPosition > pageHeight * 0.9;
     },
     navigateToNextSection() {
-      // Navigate to the next section and ensure we start at the top of that page
+      // Navigate to the next section in the sequence
       this.$router.push({ 
-        path: '/offshore-rescue',
+        path: '/survive-rip-currents',
         // Adding this option ensures the page is scrolled to the top
         query: { _: Date.now() } 
       }).then(() => {
@@ -514,6 +505,7 @@ h1 {
   text-align: center;
   position: relative;
   z-index: 2;
+  flex: 1;
 }
 
 .progress-step.active .step-number {
@@ -563,198 +555,375 @@ h1 {
 }
 
 .progress-connector {
-  flex: 1;
+  width: 100%;
   height: 2px;
   background: rgba(255, 255, 255, 0.3);
   margin: 0 0.5rem;
   position: relative;
   top: -8px;
+  flex: 1;
+  max-width: 100px;
 }
 
-/* Distress Signs Styles */
-.distress-signs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
+/* Interactive Hotspots */
+.interactive-hotspots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.distress-sign {
-  display: flex;
-  align-items: flex-start;
-  background: rgba(1, 54, 92, 0.6);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border-left: 3px solid #e74c3c;
-}
-
-.sign-icon {
-  font-size: 2rem;
-  margin-right: 1rem;
-  flex-shrink: 0;
-}
-
-.sign-content h4 {
-  color: #e74c3c;
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.sign-content p {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-/* Rescue Techniques Styles */
-.safety-alert {
-  display: flex;
-  background: rgba(241, 196, 15, 0.2);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-  border-left: 4px solid #f1c40f;
-  align-items: center;
-}
-
-.alert-icon {
-  font-size: 2rem;
-  margin-right: 1rem;
-  color: #f1c40f;
-  flex-shrink: 0;
-}
-
-.alert-content h4 {
-  margin: 0 0 0.5rem;
-  color: #f1c40f;
-  font-weight: 600;
-}
-
-.rescue-types {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin: 1.5rem 0;
-}
-
-.rescue-technique {
-  background: rgba(1, 54, 92, 0.6);
-  border-radius: 0.75rem;
+.drowning-statistic {
+  background-color: rgba(243, 156, 18, 0.9);
+  border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin: 1.5rem auto;
+  max-width: 700px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: pulse-stat 2.5s infinite;
 }
 
-.technique-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 0.5rem;
 }
 
-.technique-icon {
-  font-size: 2.2rem;
-  margin-right: 1rem;
-  color: #3498db;
+.stat-text {
+  font-size: 1.2rem;
+  color: white;
+  font-weight: 600;
 }
 
-.technique-header h3 {
-  font-size: 1.3rem;
-  color: #3498db;
-  margin: 0;
-  font-weight: 700;
+@keyframes pulse-stat {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
 }
 
-.technique-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+@media (max-width: 768px) {
+  .drowning-statistic {
+    padding: 1.2rem;
+    margin: 1.2rem auto;
+  }
+  
+  .stat-number {
+    font-size: 1.7rem;
+  }
+  
+  .stat-text {
+    font-size: 1.1rem;
+  }
 }
 
-.rescue-method {
-  background: rgba(52, 152, 219, 0.15);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border-left: 4px solid #3498db;
+@media (max-width: 576px) {
+  .drowning-statistic {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .stat-text {
+    font-size: 1rem;
+  }
 }
 
-.method-header {
-  display: flex;
-  align-items: center;
-  background: rgba(52, 152, 219, 0.3);
-  padding: 0.8rem 1.25rem;
-  border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+.hotspot {
+  position: absolute;
+  pointer-events: auto;
 }
 
-.method-number {
+.hotspot-1 {
+  top: 45%;
+  left: 60%;
+}
+
+.hotspot-2 {
+  top: 35%;
+  right: 30%;
+}
+
+.hotspot-3 {
+  bottom: 30%;
+  left: 40%;
+}
+
+/* Bystander image hotspots */
+.hotspot-reach {
+  top: 35%;
+  right: 15%;
+}
+
+.hotspot-throw {
+  bottom: 30%;
+  left: 25%;
+}
+
+.hotspot-wade {
+  bottom: 25%;
+  right: 40%;
+}
+
+.hotspot-number {
+  width: 36px;
+  height: 36px;
+  background: #f39c12;
+  color: white;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: #3498db;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 5;
+  position: relative;
+  animation: pulse-hotspot 2s infinite;
+  border: 2px solid #fff;
+}
+
+.hotspot-number::after {
+  content: "Hover me";
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
-  font-weight: 700;
-  font-size: 1.3rem;
-  border-radius: 50%;
-  margin-right: 1rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+  z-index: 5;
 }
 
-.method-header h4 {
+.hotspot:hover .hotspot-number::after {
+  opacity: 0;
+}
+
+@keyframes pulse-hotspot {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+  }
+  
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+  }
+  
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+  }
+}
+
+.hotspot-content {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(5px);
+  padding: 12px 15px;
+  border-radius: 8px;
+  width: 250px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 10;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  bottom: 100%;
+  margin-bottom: 10px;
+  pointer-events: none;
+  border-left: 3px solid #f39c12;
+}
+
+.hotspot-content:after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(0, 0, 0, 0.95);
+}
+
+.hotspot:hover .hotspot-number {
+  transform: scale(1.2);
+  background-color: #e67e22;
+  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.6);
+}
+
+.hotspot:hover .hotspot-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.hotspot-content h4 {
+  color: #f39c12;
+  margin: 0 0 7px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.hotspot-content p {
   margin: 0;
-  font-size: 1.2rem;
-  color: white;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-.method-content {
-  padding: 1.25rem;
-}
-
-.method-content p {
-  margin: 0;
-  line-height: 1.5;
-}
-
-.technique-description {
-  margin: 0.5rem 0 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-style: italic;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 /* Post-Rescue Styles */
-.post-rescue-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin: 1rem 0;
-}
-
-.post-rescue-step {
-  display: flex;
-  align-items: flex-start;
-  background: rgba(1, 54, 92, 0.6);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border-left: 3px solid #2ecc71;
-}
-
-.step-icon {
-  font-size: 2rem;
-  margin-right: 1rem;
-  color: #2ecc71;
-  flex-shrink: 0;
-}
-
-.step-content h4 {
-  color: #2ecc71;
-  margin: 0 0 0.5rem;
+.post-rescue-intro {
   font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #f39c12;
   font-weight: 600;
+}
+
+.flip-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin: 2rem 0;
+  justify-content: center;
+}
+
+.flip-card {
+  width: 280px;
+  height: 350px;
+  perspective: 1000px;
+  margin-bottom: 1rem;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.flip-card-front {
+  background-color: #01365c;
+  color: white;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.emergency-image {
+  object-position: right center;
+}
+
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
+  z-index: 1;
+}
+
+.card-title {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  width: 100%;
+  padding: 0 1rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  z-index: 2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.flip-hint {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  width: 100%;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  z-index: 2;
+  padding: 5px 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.flip-card-back {
+  background-color: #3498db;
+  color: white;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.flip-card-back h4 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.flip-card-back p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
 }
 
 /* Navigation Arrow */
@@ -809,182 +978,72 @@ h1 {
   }
 }
 
-/* Hide old step styling elements that conflict with our new design */
-.step {
-  display: none;
-}
-
 /* Responsive Styles */
 @media (max-width: 992px) {
-  .distress-signs, .post-rescue-steps {
-    grid-template-columns: repeat(2, 1fr);
+  .flip-cards-container {
+    gap: 1.5rem;
   }
   
-  .progress-connector {
-    width: 100px;
+  .flip-card {
+    width: 250px;
+    height: 320px;
   }
   
-  .rescue-types {
-    grid-template-columns: 1fr;
+  .card-title {
+    font-size: 1.3rem;
+    bottom: 45px;
   }
 }
 
 @media (max-width: 768px) {
-  .content-wrapper {
-    padding-top: 3.5rem;
+  .flip-cards-container {
+    gap: 1rem;
   }
   
-  .main-content {
-    padding: 0 1rem 2rem;
+  .flip-card {
+    width: 220px;
+    height: 300px;
   }
   
-  .content-section {
-    padding: 1.25rem 1.5rem;
-    width: 95%;
+  .card-title {
+    font-size: 1.2rem;
+    bottom: 40px;
   }
   
-  .technique-header, .safety-alert, .caution-box {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .technique-icon, .alert-icon, .caution-icon {
-    margin-right: 0;
-    margin-bottom: 0.75rem;
-  }
-  
-  .safety-progress-nav {
-    padding: 0;
-    margin-bottom: 1.5rem;
-  }
-  
-  .progress-bar {
-    padding: 0.75rem;
-  }
-  
-  .step-number {
-    width: 30px;
-    height: 30px;
-    font-size: 0.9rem;
-  }
-  
-  .step-label {
+  .flip-hint {
     font-size: 0.8rem;
   }
   
-  .next-section-arrow {
-    bottom: 1.5rem;
-    right: 1.5rem;
-    padding: 0.6rem 1rem;
+  .flip-card-back h4 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
   }
   
-  .arrow-label {
-    font-size: 0.9rem;
-  }
-  
-  .distress-signs, .post-rescue-steps {
-    grid-template-columns: 1fr;
-  }
-  
-  .progress-connector {
-    width: 50px;
-  }
-  
-  .method-header {
-    padding: 0.7rem 1rem;
-  }
-  
-  .method-number {
-    width: 35px;
-    height: 35px;
-    font-size: 1.2rem;
-    margin-right: 0.8rem;
-  }
-  
-  .method-header h4 {
-    font-size: 1.1rem;
-  }
-  
-  .method-content {
-    padding: 1rem;
+  .flip-card-back p {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 576px) {
-  .content-wrapper {
-    padding-top: 3rem;
+  .flip-cards-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
   }
   
-  .main-content {
-    padding: 0 0.75rem 1rem;
+  .flip-card {
+    width: 280px;
+    height: 350px;
+    margin-bottom: 0;
   }
   
-  .content-section, .distress-sign, .rescue-technique, .post-rescue-step {
-    padding: 1rem;
+  .card-title {
+    font-size: 1.4rem;
+    bottom: 50px;
   }
   
-  .step-label {
-    font-size: 0.75rem;
-  }
-  
-  .step-number {
-    width: 25px;
-    height: 25px;
-    font-size: 0.8rem;
-    margin-bottom: 0.3rem;
-  }
-  
-  .progress-connector {
-    top: -5px;
-  }
-  
-  .next-section-arrow {
-    bottom: 1rem;
-    right: 1rem;
-  }
-  
-  .technique-icon, .sign-icon, .step-icon {
-    font-size: 1.6rem;
-  }
-  
-  .progress-connector {
-    width: 30px;
-  }
-  
-  .method-header {
-    padding: 0.6rem 0.8rem;
-  }
-  
-  .method-number {
-    width: 30px;
-    height: 30px;
-    font-size: 1rem;
-    margin-right: 0.7rem;
-  }
-  
-  .method-header h4 {
-    font-size: 1rem;
-  }
-  
-  .method-content {
-    padding: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .step-label {
-    font-size: 0.7rem;
-  }
-  
-  .step-number {
-    width: 25px;
-    height: 25px;
-    font-size: 0.8rem;
-    margin-bottom: 0.3rem;
-  }
-  
-  .progress-connector {
-    top: -5px;
+  .flip-hint {
+    font-size: 0.9rem;
   }
 }
 
@@ -992,12 +1051,12 @@ h1 {
 .drowning-image-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   margin: 1.5rem auto 2rem;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  height: 350px;
+  height: 400px;
 }
 
 .drowning-image {
@@ -1031,27 +1090,52 @@ h1 {
 }
 
 @media (max-width: 768px) {
-  .drowning-image-container {
-    margin: 1rem auto 1.5rem;
-    max-width: 500px;
-    height: 300px;
+  .hotspot-number {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
   }
   
-  .image-caption {
-    font-size: 1rem;
-    padding: 0.75rem;
+  .hotspot-content {
+    width: 220px;
+    padding: 10px 12px;
+  }
+  
+  .hotspot-number::after {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+  
+  .hotspot-content h4 {
+    font-size: 0.9rem;
+  }
+  
+ .hotspot-content p {
+    font-size: 0.8rem;
+  }
+  
+  .drowning-image-container {
+    height: 350px;
   }
 }
 
 @media (max-width: 480px) {
-  .drowning-image-container {
-    max-width: 100%;
-    height: 250px;
+  .hotspot-number {
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
   }
   
-  .image-caption {
-    font-size: 0.9rem;
-    padding: 0.5rem;
+  .hotspot-content {
+    width: 180px;
+  }
+  
+  .hotspot-number::after {
+    display: none;
+  }
+  
+  .drowning-image-container {
+    height: 300px;
   }
 }
 
@@ -1153,11 +1237,39 @@ h1 {
 
 .image-overlay {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   width: 100%;
-  height: 40%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  transition: background 0.3s ease;
+}
+
+.lifeguard-image-container:hover .image-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.image-overlay-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+.image-overlay-button .simulation-button {
+  transform: scale(1);
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lifeguard-image-container:hover .simulation-button {
+  transform: scale(1.1);
+  background: #e67e22;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
 
 .image-caption {
@@ -1171,39 +1283,10 @@ h1 {
   font-weight: 500;
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 2;
 }
 
-@media (max-width: 768px) {
-  .lifeguard-image-container {
-    height: 250px;
-    margin: 1rem auto 1.5rem;
-  }
-  
-  .image-caption {
-    font-size: 0.9rem;
-    padding: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .lifeguard-image-container {
-    height: 200px;
-  }
-  
-  .image-caption {
-    font-size: 0.8rem;
-    padding: 0.5rem;
-  }
-}
-
-/* Add CSS for the simulation button */
-.simulation-button-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 0.5rem 0 1.5rem;
-}
-
+/* Keep existing simulation button styles */
 .simulation-button {
   display: flex;
   align-items: center;
@@ -1217,26 +1300,35 @@ h1 {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.simulation-button:hover {
-  background: #e67e22;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
 .sim-icon {
   margin-right: 0.75rem;
   display: flex;
   align-items: center;
 }
 
-@media (max-width: 576px) {
-  .simulation-button {
+/* Remove the old simulation button container */
+.simulation-button-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .lifeguard-image-container {
+    height: 250px;
+    margin: 1rem auto 1.5rem;
+  }
+  
+  .image-caption {
     font-size: 0.9rem;
-    padding: 0.7rem 1.2rem;
+    padding: 0.75rem;
+  }
+  
+  .simulation-button {
+    font-size: 0.95rem;
+    padding: 0.7rem 1.3rem;
   }
   
   .sim-icon {
-    margin-right: 0.5rem;
+    margin-right: 0.6rem;
   }
   
   .sim-icon svg {
@@ -1245,16 +1337,41 @@ h1 {
   }
 }
 
+@media (max-width: 480px) {
+  .lifeguard-image-container {
+    height: 200px;
+  }
+  
+  .image-caption {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+  
+  .simulation-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.1rem;
+  }
+  
+  .sim-icon {
+    margin-right: 0.5rem;
+  }
+  
+  .sim-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 /* Add CSS for the bystander image */
 .bystander-image-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   margin: 1rem auto 1.5rem;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  height: 300px;
+  height: 450px;
 }
 
 .bystander-image {
@@ -1267,14 +1384,118 @@ h1 {
 
 @media (max-width: 768px) {
   .bystander-image-container {
-    height: 250px;
+    height: 350px;
     margin: 1rem auto 1.5rem;
   }
 }
 
 @media (max-width: 480px) {
   .bystander-image-container {
-    height: 200px;
+    height: 300px;
   }
+}
+
+/* Parent Actions CSS */
+.parent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.parent-actions-title {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.parent-action-card {
+  display: flex;
+  background: rgba(1, 54, 92, 0.6);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-left: 3px solid #3498db;
+}
+
+.action-number {
+  font-size: 1.6rem;
+  margin-right: 1.25rem;
+  color: #ffffff;
+  flex-shrink: 0;
+  background-color: #3498db;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.action-content h5 {
+  color: #f39c12;
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.action-content p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .parent-action-card {
+    padding: 1rem;
+  }
+  
+  .action-number {
+    font-size: 1.4rem;
+    margin-right: 1rem;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .action-content h5 {
+    font-size: 1rem;
+  }
+  
+  .action-content p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .parent-action-card {
+    padding: 0.8rem;
+  }
+  
+  .action-number {
+    font-size: 1.2rem;
+    margin-right: 0.8rem;
+    width: 30px;
+    height: 30px;
+  }
+  
+  .action-content h5 {
+    font-size: 0.95rem;
+  }
+  
+  .action-content p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Bystander technique description */
+.technique-description {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #f39c12;
+  font-weight: 600;
+  margin: 1.5rem 0;
 }
 </style> 

@@ -11,27 +11,20 @@
         <div class="rip-progress-nav">
           <div class="progress-bar">
             <div class="progress-step">
-              <router-link to="/rip-safety" class="step-link">
+              <router-link to="/beach-safety-rescue" class="step-link">
                 <div class="step-number">1</div>
-                <div class="step-label">What Are Rips</div>
-              </router-link>
-            </div>
-            <div class="progress-connector"></div>
-            <div class="progress-step">
-              <router-link to="/spot-rip-currents" class="step-link">
-                <div class="step-number">2</div>
-                <div class="step-label">Spot Rip Currents</div>
+                <div class="step-label">Signs of Trouble</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step active">
-              <div class="step-number">3</div>
+              <div class="step-number">2</div>
               <div class="step-label">Survive Rip Currents</div>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step">
               <router-link to="/safety-tool" class="step-link">
-                <div class="step-number">4</div>
+                <div class="step-number">3</div>
                 <div class="step-label">Safety Tools</div>
               </router-link>
             </div>
@@ -41,8 +34,6 @@
         <div class="title-section">
           <h1>How to Survive a Rip Current</h1>
           <div class="statistic-banner">
-            <h2 class="headline">Knowing the right response can be the difference between <span class="highlight">life and death</span></h2>
-            <p class="subheadline">— Follow these critical steps if caught in a rip current</p>
           </div>
         </div>
 
@@ -50,43 +41,39 @@
           <h2 class="section-title">🆘 Rip Current Survival Steps</h2>
           
           <div class="section-body">
-            <p>If you find yourself caught in a rip current, remember these critical steps:</p>
-            
-            <div class="survival-steps">
-              <div class="step-card">
-                <div class="step-number">1</div>
-                <h4>Stay Calm</h4>
-                <p>Don't panic or fight against the current. Conserve your energy.</p>
-              </div>
-              
-              <div class="step-card">
-                <div class="step-number">2</div>
-                <h4>Float or Tread Water</h4>
-                <p>Rip currents don't pull you under, they pull you out. Stay afloat and signal for help if possible.</p>
-              </div>
-              
-              <div class="step-card">
-                <div class="step-number">3</div>
-                <h4>Swim Parallel to Shore</h4>
-                <p>Swim parallel to the shoreline until you escape the rip current's pull, then swim back to shore at an angle.</p>
-              </div>
-              
-              <div class="step-card">
-                <div class="step-number">4</div>
-                <h4>If You Can't Escape</h4>
-                <p>Continue floating and signal for help by raising one arm and calling out.</p>
-              </div>
-            </div>
-            
-            <p class="video-importance">Watch this critical video to see exactly how these survival techniques are applied in real rip currents. Understanding these movements can save your life or the life of a loved one.</p>
-            
             <div class="escape-diagram">
-              <h3 class="video-title">Surviving Rip Currents</h3>
+              <h3 class="video-title">Rip Current Survival: Surf Life Saving Victoria</h3>
               <video controls preload="metadata" class="escape-video" @error="handleVideoError">
                 <source src="/videos/How to Survive a Rip Current.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
               <p class="image-caption">Video: How to escape a rip current by swimming parallel to shore</p>
+            </div>
+            
+            <div class="survival-steps-compact">
+              <div class="step-card-compact">
+                <div class="step-number">1</div>
+                <h4>Stay Calm</h4>
+                <p>Don't panic. Conserve energy.</p>
+              </div>
+              
+              <div class="step-card-compact">
+                <div class="step-number">2</div>
+                <h4>Float</h4>
+                <p>Rip currents pull out, not under. Stay afloat.</p>
+              </div>
+              
+              <div class="step-card-compact">
+                <div class="step-number">3</div>
+                <h4>Swim Parallel</h4>
+                <p>Swim along shore until free, then angle back.</p>
+              </div>
+              
+              <div class="step-card-compact">
+                <div class="step-number">4</div>
+                <h4>Signal for Help</h4>
+                <p>Raise one arm and call out if needed.</p>
+              </div>
             </div>
             
             <div class="alert-box warning">
@@ -103,40 +90,38 @@
           <h2 class="section-title">👨‍👩‍👧‍👦 Helping Your Child in a Rip Current</h2>
           
           <div class="section-body">
-            <div class="child-danger-image">
-              <img src="./assets/child_drwon.png" alt="Child in danger in water" class="drowning-image" @error="handleImageError">
-            </div>
-            
-            <p>If your child is caught in a rip current, swift action is critical:</p>
-            
-            <div class="parent-rescue-grid">
-              <div class="parent-rescue-card">
-                <div class="step-number">1</div>
-                <div class="rescue-icon">🔍</div>
-                <h4>Stay Calm and Locate</h4>
-                <p>Remain calm so you can think clearly. Keep your eyes on your child at all times and note their position.</p>
+            <div class="child-danger-container">
+              <img src="./assets/child_drwoning.jpg" alt="Parent helping child in rip current" class="child-danger-image" @error="handleImageError">
+              <div class="image-overlay"></div>
+              
+              <!-- Interactive Hotspots - 3 key steps -->
+              <div class="interactive-hotspots">
+                <div class="hotspot hotspot-stay-calm">
+                  <div class="hotspot-number">1</div>
+                  <div class="hotspot-content">
+                    <h4>Stay Calm & Guide</h4>
+                    <p>Remain calm and keep your eyes on your child. Call out clear instructions: "Float on your back!" and "Swim sideways along the shore!"</p>
+                  </div>
+                </div>
+                
+                <div class="hotspot hotspot-throw">
+                  <div class="hotspot-number">2</div>
+                  <div class="hotspot-content">
+                    <h4>Throw, Don't Go</h4>
+                    <p>Throw anything that floats—beach balls, coolers, boogie boards. Never enter the water yourself unless you're trained in water rescue.</p>
+                  </div>
+                </div>
+                
+                <div class="hotspot hotspot-get-help">
+                  <div class="hotspot-number">3</div>
+                  <div class="hotspot-content">
+                    <h4>Get Professional Help</h4>
+                    <p>Alert lifeguards immediately or call 000. While waiting, keep visual contact with your child and continue guiding them from shore.</p>
+                  </div>
+                </div>
               </div>
               
-              <div class="parent-rescue-card">
-                <div class="step-number">2</div>
-                <div class="rescue-icon">📢</div>
-                <h4>Clear Instructions</h4>
-                <p>"Float on your back!" and "Swim sideways!" Use hand signals to show the direction. Keep your voice confident.</p>
-              </div>
-              
-              <div class="parent-rescue-card">
-                <div class="step-number">3</div>
-                <div class="rescue-icon">🪂</div>
-                <h4>Flotation, Not You</h4>
-                <p>Throw anything that floats—never enter the water yourself unless trained. Even inflatable toys can help.</p>
-              </div>
-              
-              <div class="parent-rescue-card">
-                <div class="step-number">4</div>
-                <div class="rescue-icon">⚠️</div>
-                <h4>Get Professional Help</h4>
-                <p>Alert lifeguards immediately. If none are present, call emergency services (000).</p>
-              </div>
+              <div class="image-caption">Hover over numbers to learn how to help a child caught in a rip current</div>
             </div>
             
             <div class="alert-box warning parent-warning">
@@ -148,7 +133,6 @@
             </div>
             
             <p class="emphasis">Remember: In emergency situations, call 000 (Australian emergency services) immediately.</p>
-            
           </div>
         </div>
       </div>
@@ -253,12 +237,12 @@ export default {
         link.classList.remove('active');
       });
       
-      // Add active class to rip current safety links
-      const desktopRipLink = document.querySelector('.nav-link[href="/rip-safety"]');
-      const mobileRipLink = document.querySelector('.mobile-nav-link[href="/rip-safety"]');
+      // Add active class to Beach Safety links
+      const desktopBeachLink = document.querySelector('.nav-link[href="/beach-safety-rescue"]');
+      const mobileBeachLink = document.querySelector('.mobile-nav-link[href="/beach-safety-rescue"]');
       
-      if (desktopRipLink) desktopRipLink.classList.add('active');
-      if (mobileRipLink) mobileRipLink.classList.add('active');
+      if (desktopBeachLink) desktopBeachLink.classList.add('active');
+      if (mobileBeachLink) mobileBeachLink.classList.add('active');
     },
     checkScrollPosition() {
       // Show navigation arrow when user is near the bottom of the page
@@ -445,6 +429,7 @@ h1 {
   text-align: center;
   position: relative;
   z-index: 2;
+  flex: 1;
 }
 
 .progress-step.active .step-number {
@@ -494,12 +479,14 @@ h1 {
 }
 
 .progress-connector {
-  flex: 1;
+  width: 100%;
   height: 2px;
   background: rgba(255, 255, 255, 0.3);
   margin: 0 0.5rem;
   position: relative;
   top: -8px;
+  flex: 1;
+  max-width: 100px;
 }
 
 .survival-steps {
@@ -537,6 +524,54 @@ h1 {
   font-size: 1.1rem;
   font-weight: 600;
   color: white;
+}
+
+.survival-steps-compact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.step-card-compact {
+  background: rgba(1, 54, 92, 0.7);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  position: relative;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-card-compact .step-number {
+  background: #f39c12;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+}
+
+.step-card-compact h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.step-card-compact p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .escape-diagram {
@@ -900,6 +935,23 @@ h1 {
   .arrow-label {
     font-size: 0.9rem;
   }
+  
+  .survival-steps-compact {
+    gap: 1rem;
+  }
+  
+  .step-card-compact {
+    width: 160px;
+    padding: 0.8rem;
+  }
+  
+  .step-card-compact h4 {
+    font-size: 0.95rem;
+  }
+  
+  .step-card-compact p {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -962,6 +1014,239 @@ h1 {
   .next-section-arrow {
     bottom: 1rem;
     right: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .survival-steps-compact {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .step-card-compact {
+    width: 140px;
+    padding: 0.7rem;
+  }
+}
+
+/* Bystander image hotspots */
+.hotspot-reach {
+  top: 35%;
+  right: 15%;
+}
+
+.hotspot-throw {
+  top: 45%;
+  right: 30%;
+}
+
+.hotspot-wade {
+  bottom: 25%;
+  right: 40%;
+}
+
+/* Child in danger hotspots */
+.hotspot-stay-calm {
+  top: 10%;
+  left: 20%;
+}
+
+.hotspot-throw {
+  top: 25%;
+  right: 25%;
+}
+
+.hotspot-get-help {
+  bottom: 40%;
+  right: 55%;
+}
+
+.child-danger-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 1rem auto 1.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  height: 450px;
+}
+
+.child-danger-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+/* Interactive hotspots styles */
+.interactive-hotspots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+}
+
+.hotspot {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  z-index: 6;
+}
+
+.hotspot .hotspot-number {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f39c12;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 7;
+}
+
+.hotspot:hover .hotspot-number {
+  transform: scale(1.1);
+  background-color: #e67e22;
+}
+
+.hotspot-content {
+  position: absolute;
+  width: 250px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  color: white;
+  font-size: 0.9rem;
+  z-index: 8;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.hotspot-stay-calm .hotspot-content {
+  left: 0;
+  top: 50px;
+}
+
+.hotspot-throw .hotspot-content {
+  right: 0;
+  top: 50px;
+}
+
+.hotspot-get-help .hotspot-content {
+  right: 0;
+  top: 50px;
+}
+
+.hotspot-content h4 {
+  color: #f39c12;
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.hotspot-content p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.hotspot:hover .hotspot-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Hotspot pulse animation */
+.hotspot .hotspot-number:after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 16px);
+  border-radius: 50%;
+  border: 2px solid #f39c12;
+  opacity: 0;
+  animation: pulse-ring 2s infinite ease-out;
+  z-index: 6;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .child-danger-container {
+    height: 350px;
+  }
+  
+  .hotspot .hotspot-number {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+  
+  .hotspot-content {
+    width: 200px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .child-danger-container {
+    height: 300px;
+  }
+  
+  .hotspot .hotspot-number {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+  
+  .hotspot-content {
+    width: 180px;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .hotspot-content h4 {
+    font-size: 0.9rem;
   }
 }
 </style> 

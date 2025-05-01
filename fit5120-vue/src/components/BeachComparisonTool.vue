@@ -53,7 +53,6 @@
             <div :class="['rating-indicator', getSafetyRatingClass()]">
               <span class="rating-label">{{ getSafetyRating() }}</span>
             </div>
-            <p class="rating-description">{{ getSafetyDescription() }}</p>
           </div>
         </div>
         
@@ -65,13 +64,6 @@
               @click="setReportTab('conditions')"
             >
               Condition Breakdown
-            </div>
-            <div 
-              class="report-tab" 
-              :class="{ active: reportTab === 'family' }" 
-              @click="setReportTab('family')"
-            >
-              Family Swim Guide
             </div>
             <div 
               class="report-tab" 
@@ -94,40 +86,85 @@
                     <span class="condition-value">{{ marine.wave_height?.toFixed(2) }} m</span>
                   </div>
                 </div>
-                <div class="condition-meaning">
-                  <div class="condition-for-group">
-                    <h5>For Your Child</h5>
-                    <ul>
-                      <li v-if="marine.wave_height > 1">
-                        <strong>Unsafe</strong> – Waves this size can easily knock over small children and pull them under.
-                      </li>
-                      <li v-else-if="marine.wave_height > 0.5">
-                        <strong>Caution</strong> – Waves may be challenging for children.
-                      </li>
-                      <li v-else>
-                        <strong>Generally safe</strong> – But always supervise closely.
-                      </li>
-                      <li>
-                        Playing at the water's edge is okay, but keep them within arm's reach.
-                      </li>
-                    </ul>
+                
+                <div class="risk-meter-container">
+                  <h4 class="risk-meter-title">Current Risk Level</h4>
+                  <div class="risk-meter">
+                    <div class="risk-segments">
+                      <div class="risk-segment safe"></div>
+                      <div class="risk-segment caution"></div>
+                      <div class="risk-segment danger"></div>
+                    </div>
+                    <div class="risk-indicator" :style="{ left: getWaveRiskPosition() }">
+                      <div class="risk-value">{{ marine.wave_height?.toFixed(2) }} m</div>
+                      <div class="risk-indicator-arrow"></div>
+                    </div>
                   </div>
-                  <div class="condition-for-group">
-                    <h5>For You (as a Parent)</h5>
-                    <ul>
-                      <li v-if="marine.wave_height > 1">
-                        You may be able to swim, but expect strong pushback from the waves.
-                      </li>
-                      <li v-else-if="marine.wave_height > 0.5">
-                        Conditions are manageable for adults but stay alert.
-                      </li>
-                      <li v-else>
-                        Good conditions for swimming, but stay vigilant if supervising children.
-                      </li>
-                      <li>
-                        Stay in shallow areas if supervising children.
-                      </li>
-                    </ul>
+                  <div class="risk-labels">
+                    <span class="risk-label safe">Safe</span>
+                    <span class="risk-label caution">Caution</span>
+                    <span class="risk-label danger">Dangerous</span>
+                  </div>
+                </div>
+                
+                <div class="condition-meaning">
+                  <h4 class="wave-visual-header">Wave Height Risk For Children</h4>
+                  <div class="wave-danger-visual">
+                    <img 
+                      v-if="marine.wave_height > 1" 
+                      src="../assets/child_wave_danger.jpg" 
+                      alt="Child in dangerous wave" 
+                      class="wave-danger-image"
+                    />
+                    <img 
+                      v-else-if="marine.wave_height > 0.5" 
+                      src="../assets/child_wave_moderate.jpg" 
+                      alt="Child in moderate waves" 
+                      class="wave-danger-image"
+                    />
+                    <img 
+                      v-else 
+                      src="../assets/child_wave_safe.jpg" 
+                      alt="Child in safe waves" 
+                      class="wave-danger-image"
+                    />
+                    <div class="wave-danger-overlay danger" v-if="marine.wave_height > 1">
+                      <div class="hover-prompt">
+                        <span class="hover-icon">👆</span>
+                        <span class="hover-text">Hover for details</span>
+                  </div>
+                    </div>
+                    <div class="wave-danger-overlay moderate" v-else-if="marine.wave_height > 0.5">
+                      <div class="hover-prompt">
+                        <span class="hover-icon">👆</span>
+                        <span class="hover-text">Hover for details</span>
+                      </div>
+                    </div>
+                    <div class="wave-danger-overlay safe" v-else>
+                      <div class="hover-prompt">
+                        <span class="hover-icon">👆</span>
+                        <span class="hover-text">Hover for details</span>
+                      </div>
+                    </div>
+                    
+                    <div class="hover-description" v-if="marine.wave_height > 1">
+                      <div class="hover-content">
+                        <p>These waves are {{ Math.round(marine.wave_height/1.2) }}× taller than a child and can easily knock them underwater</p>
+                        <p>Adults should stay in shallow water and keep children at the water's edge only</p>
+                      </div>
+                    </div>
+                    <div class="hover-description" v-else-if="marine.wave_height > 0.5">
+                      <div class="hover-content">
+                        <p>These waves can reach up to a child's chest and have enough force to unbalance them</p>
+                        <p>Keep children within arm's reach at all times</p>
+                      </div>
+                    </div>
+                    <div class="hover-description" v-else>
+                      <div class="hover-content">
+                        <p>These smaller waves are generally below knee-height for an average child</p>
+                        <p>Still supervise children closely at all times</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -140,169 +177,89 @@
                     <span class="condition-value">{{ marine.ocean_current_velocity?.toFixed(2) }} m/s</span>
                   </div>
                 </div>
-                <div class="condition-meaning">
-                  <div class="condition-for-group">
-                    <h5>For Your Child</h5>
-                    <ul>
-                      <li v-if="marine.ocean_current_velocity > 1">
-                        <strong>Very Dangerous</strong> – This current is strong enough to sweep them off their feet.
-                      </li>
-                      <li v-else-if="marine.ocean_current_velocity > 0.5">
-                        <strong>Risky</strong> – Current may be too strong for children to swim against.
-                      </li>
-                      <li v-else>
-                        <strong>Safer conditions</strong> – But still supervise constantly.
-                      </li>
-                      <li>
-                        Do not let them swim beyond the flags or shallow waters.
-                      </li>
-                    </ul>
+                
+                <div class="risk-meter-container">
+                  <h4 class="risk-meter-title">Current Risk Level</h4>
+                  <div class="risk-meter">
+                    <div class="risk-segments">
+                      <div class="risk-segment safe"></div>
+                      <div class="risk-segment caution"></div>
+                      <div class="risk-segment danger"></div>
                   </div>
-                  <div class="condition-for-group">
-                    <h5>For You</h5>
-                    <ul>
-                      <li v-if="marine.ocean_current_velocity > 1">
-                        This current quickly exhausts even strong swimmers, pulling you away from shore unnoticed.
-                      </li>
-                      <li v-else-if="marine.ocean_current_velocity > 0.5">
-                        Be cautious and stay within flagged areas.
-                      </li>
-                      <li v-else>
-                        Manageable conditions but always be aware of changing currents.
-                      </li>
-                      <li>
-                        If you're caught, don't fight it — swim parallel to shore.
-                      </li>
-                    </ul>
+                    <div class="risk-indicator" :style="{ left: getCurrentRiskPosition() }">
+                      <div class="risk-value">{{ marine.ocean_current_velocity?.toFixed(2) }} m/s</div>
+                      <div class="risk-indicator-arrow"></div>
                   </div>
+                </div>
+                  <div class="risk-labels">
+                    <span class="risk-label safe">Safe</span>
+                    <span class="risk-label caution">Caution</span>
+                    <span class="risk-label danger">Dangerous</span>
                 </div>
               </div>
               
-              <div class="condition-item">
-                <div class="condition-header">
-                  <span class="condition-icon">🌡️</span>
-                  <div class="condition-title">
-                    <span class="condition-name">Sea Temperature</span>
-                    <span class="condition-value">{{ marine.sea_surface_temperature?.toFixed(2) }}°C</span>
+                <div class="condition-meaning">
+                  <h4 class="wave-visual-header">Current Strength Risk For Children</h4>
+                  <div class="wave-danger-visual">
+                    <img 
+                      v-if="marine.ocean_current_velocity > 0.8" 
+                      src="../assets/dangerous_current.JPG" 
+                      alt="Dangerous ocean current" 
+                      class="wave-danger-image"
+                    />
+                    <img 
+                      v-else-if="marine.ocean_current_velocity > 0.3" 
+                      src="../assets/moderate_current.jpg" 
+                      alt="Moderate ocean current" 
+                      class="wave-danger-image"
+                    />
+                    <img 
+                      v-else 
+                      src="../assets/low_current.jpg" 
+                      alt="Low ocean current" 
+                      class="wave-danger-image"
+                    />
+                    <div class="wave-danger-overlay danger" v-if="marine.ocean_current_velocity > 0.8">
+                      <div class="hover-prompt">
+                        <span class="hover-icon">👆</span>
+                        <span class="hover-text">Hover for details</span>
                   </div>
                 </div>
-                <div class="condition-meaning">
-                  <div class="condition-for-group">
-                    <h5>For Your Child</h5>
-                    <ul>
-                      <li v-if="marine.sea_surface_temperature > 25">
-                        Very comfortable, but watch for fatigue from extended play.
-                      </li>
-                      <li v-else-if="marine.sea_surface_temperature > 18">
-                        Comfortable at first, but they'll get cold faster than adults.
-                      </li>
-                      <li v-else>
-                        Water is cool - limit swim time to prevent hypothermia.
-                      </li>
-                      <li>
-                        After 20-30 mins, bring them out for a warm towel break.
-                      </li>
-                    </ul>
+                    <div class="wave-danger-overlay moderate" v-else-if="marine.ocean_current_velocity > 0.3">
+                      <div class="hover-prompt">
+                        <span class="hover-icon">👆</span>
+                        <span class="hover-text">Hover for details</span>
                   </div>
-                  <div class="condition-for-group">
-                    <h5>For You</h5>
-                    <ul>
-                      <li v-if="marine.sea_surface_temperature > 25">
-                        Very comfortable for prolonged swimming.
-                      </li>
-                      <li v-else-if="marine.sea_surface_temperature > 18">
-                        Comfortable for short swims. Watch for shivering in kids.
-                      </li>
-                      <li v-else>
-                        Cold enough to cause fatigue - take regular breaks.
-                      </li>
-                    </ul>
                   </div>
+                    <div class="wave-danger-overlay safe" v-else>
+                      <div class="hover-prompt">
+                        <span class="hover-icon">👆</span>
+                        <span class="hover-text">Hover for details</span>
                 </div>
               </div>
               
-              <div class="condition-item">
-                <div class="condition-header">
-                  <span class="condition-icon">🌤️</span>
-                  <div class="condition-title">
-                    <span class="condition-name">UV Index</span>
-                    <span class="condition-value">{{ (weather.daily_uv_index_max?.[0]?.uv_index_max ?? 'N/A')?.toFixed(2) }}</span>
+                    <div class="hover-description" v-if="marine.ocean_current_velocity > 0.8">
+                      <div class="hover-content">
+                        <p>This current is {{ Math.round(marine.ocean_current_velocity/0.3) }}× faster than a child can swim. They'll be swept away within seconds</p>
+                        <p>Even Olympic swimmers struggle against currents this strong</p>
                   </div>
                 </div>
-                <div class="condition-meaning">
-                  <div class="condition-for-group">
-                    <h5>For Your Child</h5>
-                    <ul>
-                      <li v-if="weather.daily_uv_index_max?.[0]?.uv_index_max > 8">
-                        <strong>Extreme risk</strong> - Burns can happen in minutes.
-                      </li>
-                      <li v-else-if="weather.daily_uv_index_max?.[0]?.uv_index_max > 5">
-                        <strong>High risk</strong> - Apply SPF 50+ every hour.
-                      </li>
-                      <li v-else-if="weather.daily_uv_index_max?.[0]?.uv_index_max > 2">
-                        SPF 30+ sunscreen is a must, reapply every 2 hours.
-                      </li>
-                      <li v-else>
-                        Still use sun protection - children's skin is sensitive.
-                      </li>
-                      <li>
-                        Hats and rash vests help protect their skin.
-                      </li>
-                      <li>
-                        Take a shade break every 30 mins.
-                      </li>
-                    </ul>
+                    <div class="hover-description" v-else-if="marine.ocean_current_velocity > 0.3">
+                      <div class="hover-content">
+                        <p>This current is about 2× faster than a child can swim against, making it difficult for them to make progress</p>
+                        <p>Keep children in shallow water and within arm's reach</p>
                   </div>
-                  <div class="condition-for-group">
-                    <h5>For You</h5>
-                    <ul>
-                      <li v-if="weather.daily_uv_index_max?.[0]?.uv_index_max > 5">
-                        Limit sun exposure during peak hours (10am-2pm).
-                      </li>
-                      <li>
-                        Wear sunglasses and drink plenty of water.
-                      </li>
-                      <li v-if="weather.daily_uv_index_max?.[0]?.uv_index_max < 5">
-                        UV is lower now but still harmful over time.
-                      </li>
-                    </ul>
                   </div>
+                    <div class="hover-description" v-else>
+                      <div class="hover-content">
+                        <p>This current is slower than most children can swim, making conditions more manageable</p>
+                        <p>Still supervise constantly and be aware of changing conditions</p>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div v-if="reportTab === 'family'" class="swim-suitability">
-            <h4>👨‍👩‍👧‍👦 Family Swim Safety Assessment</h4>
-            <div class="swim-guide-intro">
-              <p>This assessment is based on current wave height, current strength, and other marine conditions:</p>
             </div>
-            <table class="suitability-table">
-              <thead>
-                <tr>
-                  <th>Who Can Swim Here Today?</th>
-                  <th>Safe?</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>👶 Young Children (under 8 yrs)</td>
-                  <td :class="getChildSafetyClass()">{{ getChildSafety() }}</td>
-                </tr>
-                <tr>
-                  <td>🧒 Older Kids (8–14 yrs)</td>
-                  <td :class="getOlderChildSafetyClass()">{{ getOlderChildSafety() }}</td>
-                </tr>
-                <tr>
-                  <td>🧑‍🦱 Adults – Inexperienced Swimmers</td>
-                  <td :class="getInexperiencedAdultSafetyClass()">{{ getInexperiencedAdultSafety() }}</td>
-                </tr>
-                <tr>
-                  <td>🏊 Adults – Strong Swimmers</td>
-                  <td :class="getExperiencedAdultSafetyClass()">{{ getExperiencedAdultSafety() }}</td>
-                </tr>
-              </tbody>
-            </table>
+            </div>
           </div>
           
           <div v-if="reportTab === 'advice'" class="key-advice">
@@ -318,7 +275,7 @@
     <div v-else-if="activeTab === 'compare'" class="compare-tab">
       <div class="option-header">
         <h3 class="option-title">🌏 How Does This Beach Compare to What You Know?</h3>
-        <p class="option-description">Many immigrant families assume beaches here are like those back home — but conditions can be very different. Use our Compare Beaches feature to see how an Australian beach stacks up against a familiar beach from your country.</p>
+        <p class="option-description">Australian beaches often have different conditions than beaches elsewhere. Compare an Australian beach with a familiar one from your home country.</p>
       </div>
       
       <div class="compare-wrapper">
@@ -430,28 +387,10 @@
           <h3 class="chart-title">{{ compareChartData.datasets[0].label }} vs {{ compareChartData.datasets[1].label }}</h3>
           <p class="chart-subtitle">Understanding these conditions can help keep your family safe at Australian beaches</p>
           
-          <!-- Comparison Tabs -->
-          <div class="comparison-tabs">
-            <div 
-              class="comparison-tab" 
-              :class="{ active: comparisonTab === 'simplified' }" 
-              @click="comparisonTab = 'simplified'"
-            >
-              Comparison
-            </div>
-            <div 
-              class="comparison-tab" 
-              :class="{ active: comparisonTab === 'detailed' }" 
-              @click="comparisonTab = 'detailed'"
-            >
-              Detailed Analysis
-            </div>
-          </div>
-          
-          <!-- Simplified Comparison Tab -->
-          <div v-if="comparisonTab === 'simplified'" class="simplified-tab">
+          <!-- Simplified Comparison Content - removed tabs -->
+          <div class="simplified-tab">
             <div class="comparison-conclusion">
-              <h4 class="conclusion-title">Are you prepared for Australian beach conditions based on your home experience?</h4>
+              <h4 class="conclusion-title">Are you prepared for {{ compareChartData.datasets[1].label }}?</h4>
               <p class="conclusion-body" v-html="getComparisonConclusion()"></p>
             </div>
             
@@ -485,7 +424,86 @@
                 <!-- Beach Condition Category -->
                 <div class="beach-condition-category" :class="getBeachCategoryClass(dataset.data)">
                   <span class="category-badge">{{ getBeachConditionCategory(dataset.data) }}</span>
-                  <p class="category-explanation">{{ getBeachConditionExplanation(dataset.data) }}</p>
+                </div>
+                
+                <!-- Visual Wave Height Reference (only show if both beaches have wave data) -->
+                <div v-if="shouldShowVisualCard('wave')" class="visual-wave-container">
+                  <h4 class="visual-wave-title">Wave Height: {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0).toFixed(1) }}m</h4>
+                  <div class="wave-visual-card">
+                    <img 
+                      v-if="getBeachConditionCategory(dataset.data) === 'HARSH'" 
+                      src="../assets/highwaves.avif" 
+                      alt="Dangerous waves" 
+                      class="wave-image" 
+                    />
+                    <img 
+                      v-else-if="getBeachConditionCategory(dataset.data) === 'MODERATE'" 
+                      src="../assets/mod_waves.jpg" 
+                      alt="Moderate waves" 
+                      class="wave-image" 
+                    />
+                    <img 
+                      v-else 
+                      src="../assets/low_waves.jpeg" 
+                      alt="Gentle waves" 
+                      class="wave-image" 
+                    />
+                    <div class="hover-overlay">
+                      <div class="hover-prompt">👆 Hover for details</div>
+                    </div>
+                    <div class="wave-details-card">
+                      <div class="wave-comparison">
+                        <p>These waves are <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
+                        <p>Similar to <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
+                      </div>
+                      <div class="impact-description">
+                        <p><span v-if="getBeachConditionCategory(dataset.data) === 'HARSH'" class="warning-text">⚠️ DANGER:</span><span v-else-if="getBeachConditionCategory(dataset.data) === 'MODERATE'" class="warning-text">⚠️ CAUTION:</span><span v-else class="safe-text">✅ SAFER:</span> {{ getWaveImpactText(dataset.data) }}</p>
+                        <p><span class="advice-text">👉</span> {{ getWaveAdviceText(dataset.data) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Current Strength Visual (only show if both beaches have current data and at least one is HARSH) -->
+                <div v-if="shouldShowVisualCard('current')" class="visual-current-container">
+                  <h4 class="visual-current-title">Current Strength: {{ (dataset.data[4] || 0).toFixed(1) }} m/s</h4>
+                  <div class="current-visual-card">
+                    <img 
+                      v-if="(dataset.data[4] || 0) > 0.7" 
+                      src="../assets/dangerous_current.JPG" 
+                      alt="Dangerous current" 
+                      class="current-image" 
+                    />
+                    <img 
+                      v-else-if="(dataset.data[4] || 0) > 0.3" 
+                      src="../assets/moderate_current.jpg" 
+                      alt="Moderate current" 
+                      class="current-image" 
+                    />
+                    <img 
+                      v-else 
+                      src="../assets/low_current.jpg" 
+                      alt="Low current" 
+                      class="current-image" 
+                    />
+                    <div v-if="(dataset.data[4] || 0) > 0" class="hover-overlay">
+                      <div class="hover-prompt">👆 Hover for details</div>
+                    </div>
+                    <div v-if="(dataset.data[4] || 0) > 0" class="current-details-card">
+                      <div class="current-comparison">
+                        <p>This current is <span class="highlight">{{ Math.round((dataset.data[4] || 0)/0.8) > 1 ? Math.round((dataset.data[4] || 0)/0.8) + '× faster' : 'as fast as' }}</span> Olympic swimmers</p>
+                        <p>Pulls you <span class="highlight">{{ Math.round((dataset.data[4] || 0)*10) }}m offshore</span> in 10 seconds</p>
+                      </div>
+                      <div class="impact-description">
+                        <p><span v-if="(dataset.data[4] || 0) > 0.7" class="warning-text">⚠️ DANGER:</span><span v-else-if="(dataset.data[4] || 0) > 0.3" class="warning-text">⚠️ CAUTION:</span><span v-else class="safe-text">✅ SAFER:</span> {{ getCurrentImpactText(dataset.data) }}</p>
+                        <p><span class="advice-text">👉</span> {{ getCurrentAdviceText(dataset.data) }}</p>
+                      </div>
+                    </div>
+                    <div v-else class="static-info">
+                      <p>No significant current detected</p>
+                      <p class="safe-text">✅ SAFER: Low current risk for swimmers</p>
+                    </div>
+                  </div>
                   </div>
                 
                 <!-- Best For Groups -->
@@ -517,84 +535,6 @@
               </div>
             </div>
           </div>
-          
-          <!-- Detailed Analysis Tab -->
-          <div v-if="comparisonTab === 'detailed'" class="detailed-tab">
-            <div class="safety-comparison">
-              <!-- Key differences section -->
-              <div v-if="getKeyDifferencesBetweenBeaches().length > 0" 
-                   :class="['beach-differences', getBeachSimilarities().length === 0 ? 'full-width' : '']">
-                <h3 class="differences-title">Key Differences Between These Beaches</h3>
-                
-                <p class="differences-intro">Important differences between {{ compareChartData.datasets[0].label }} and {{ compareChartData.datasets[1].label }}:</p>
-                
-                <div class="differences-list">
-                  <div v-for="(difference, index) in getKeyDifferencesBetweenBeaches()" 
-                       :key="index" 
-                       :class="['difference-item', 'severity-' + difference.severity]">
-                    <div class="difference-header">
-                      <span class="difference-icon">
-                        <span v-if="difference.type === 'currents'">🌀</span>
-                        <span v-else-if="difference.type === 'waves'">🌊</span>
-                        <span v-else-if="difference.type === 'temperature'">🌡️</span>
-                        <span v-else-if="difference.type === 'wind'">💨</span>
-                        <span v-else>ℹ️</span>
-                      </span>
-                      <h4 class="difference-title">{{ difference.title }}</h4>
-      </div>
-                    <div class="difference-body">
-                      <p class="difference-description">{{ difference.description }}</p>
-                      <p class="difference-impact"><strong>Impact on your family:</strong> {{ difference.impact }}</p>
-      </div>
-                  </div>
-                </div>
-                </div>
-                
-              <!-- Similarities section -->
-              <div v-if="getBeachSimilarities().length > 0" 
-                   :class="['beach-similarities', getKeyDifferencesBetweenBeaches().length === 0 ? 'full-width' : '']">
-                <h3 class="similarities-title">Familiar Conditions: What Will Feel Like Home</h3>
-                
-                <p class="similarities-intro">These conditions at {{ compareChartData.datasets[1].label }} will be familiar based on your experience at {{ compareChartData.datasets[0].label }}:</p>
-                
-                <div class="similarities-list">
-                  <div v-for="(similarity, index) in getBeachSimilarities()" 
-                       :key="index" 
-                       :class="['similarity-item', 'severity-' + similarity.severity]">
-                    <div class="similarity-header">
-                      <span class="similarity-icon">
-                        <span v-if="similarity.type === 'currents'">🌀</span>
-                        <span v-else-if="similarity.type === 'waves'">🌊</span>
-                        <span v-else-if="similarity.type === 'temperature'">🌡️</span>
-                        <span v-else-if="similarity.type === 'wind'">💨</span>
-                        <span v-else-if="similarity.type === 'weather'">☀️</span>
-                        <span v-else>ℹ️</span>
-                      </span>
-                      <h4 class="similarity-title">{{ similarity.title }}</h4>
-                  </div>
-                    <div class="similarity-body">
-                      <p class="similarity-description">{{ similarity.description }}</p>
-                      <p class="similarity-impact"><strong>Impact on your family:</strong> {{ similarity.impact }}</p>
-                    </div>
-                  </div>
-                </div>
-                </div>
-                
-              <!-- Message when no differences or similarities are found -->
-              <div v-if="getKeyDifferencesBetweenBeaches().length === 0 && getBeachSimilarities().length === 0" class="no-comparison-data full-width">
-                <div v-if="compareChartData && compareChartData.datasets && compareChartData.datasets.length >= 2 && compareChartData.datasets[0].label === compareChartData.datasets[1].label">
-                  <h3>Same Beach Selected</h3>
-                  <p>You're currently comparing {{ compareChartData.datasets[0].label }} to itself.</p>
-                  <p>Please select a different beach for comparison to see differences and similarities.</p>
-                  </div>
-                <div v-else>
-                  <h3>No Comparison Data Available</h3>
-                  <p>We couldn't find significant differences or similarities between these beaches based on current data.</p>
-                  <p>Please try comparing different beaches or check back later when more data is available.</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -608,7 +548,6 @@ export default {
     return {
       activeTab: 'search',
       reportTab: 'conditions',
-      comparisonTab: 'simplified', // Default to the simplified comparison view
       address: '',
       suggestions: [],
       loading: false,
@@ -835,7 +774,6 @@ export default {
       
       const waveHeight = this.marine.wave_height || 0;
       const currentVelocity = this.marine.ocean_current_velocity || 0;
-      const uvIndex = this.weather.daily_uv_index_max?.[0]?.uv_index_max || 0;
       
       let advice = [
         'Keep children close to shore within reach'
@@ -844,11 +782,6 @@ export default {
       if (waveHeight > 1 || currentVelocity > 0.8) {
         advice.push('Watch for rip currents - look for darker patches of water with fewer breaking waves.');
         advice.push('If caught in a rip, stay calm, float, and signal for help. Don\'t swim against the current.');
-      }
-      
-      if (uvIndex > 5) {
-        advice.push('Apply waterproof SPF 30+ sunscreen every 2 hours and after swimming.');
-        advice.push('Wear sun-protective clothing, hats, and sunglasses when not in the water.');
       }
       
       if (waveHeight > 1.5) {
@@ -928,7 +861,6 @@ export default {
             'Wave Height (m)',
             'Swell Height (m)',
             'Current Speed (m/s)',
-            'Water Temp (°C)'
           ],
           datasets: [
             {
@@ -940,7 +872,6 @@ export default {
                 beach1Data.marine.wave_height || 0,
                 beach1Data.marine.swell_wave_height || 0,
                 beach1Data.marine.ocean_current_velocity || 0,
-                beach1Data.marine.sea_surface_temperature || 0
               ]
             },
             {
@@ -952,7 +883,6 @@ export default {
                 beach2Data.marine.wave_height || 0,
                 beach2Data.marine.swell_wave_height || 0,
                 beach2Data.marine.ocean_current_velocity || 0,
-                beach2Data.marine.sea_surface_temperature || 0
               ]
             }
           ]
@@ -1062,14 +992,25 @@ export default {
       }
       
       try {
-        const base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.address)}&limit=5&countrycodes=au`;
+        // Add "beach" to the search query if it doesn't already contain it
+        let searchQuery = this.address;
+        if (!searchQuery.toLowerCase().includes('beach')) {
+          searchQuery += ' beach';
+        }
+        
+        const base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&countrycodes=au`;
         const res = await fetch(base, { headers: { 'User-Agent': 'BeachApp/1.0' } });
         
         if (!res.ok) {
           throw new Error(`Search failed with status: ${res.status}`);
         }
         
-        this.suggestions = await res.json();
+        const results = await res.json();
+        
+        // Filter results to only include those with "beach" in the name
+        this.suggestions = results.filter(item => 
+          item.display_name.toLowerCase().includes('beach')
+        );
       } catch (e) {
         console.error('Search error:', e);
         this.error = `Failed to search: ${e.message}`;
@@ -1089,19 +1030,40 @@ export default {
       }
       
       try {
-        const base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`;
+        // Add "beach" to the search query if it doesn't already contain it
+        let searchQuery = query;
+        if (!searchQuery.toLowerCase().includes('beach')) {
+          searchQuery += ' beach';
+        }
+        
+        // Home beach (index 1) can be any beach in the world
+        // New beach (index 2) must be an Australian beach
+        let base;
+        if (index === 1) {
+          // For home beach, search worldwide
+          base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`;
+        } else {
+          // For new beach, limit to Australia
+          base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&countrycodes=au`;
+        }
+        
         const res = await fetch(base, { headers: { 'User-Agent': 'BeachApp/1.0' } });
         
         if (!res.ok) {
           throw new Error(`Search failed with status: ${res.status}`);
         }
         
-        const data = await res.json();
+        const results = await res.json();
+        
+        // Filter results to only include those with "beach" in the name
+        const filteredResults = results.filter(item => 
+          item.display_name.toLowerCase().includes('beach')
+        );
         
         if (index === 1) {
-          this.suggestions1 = data;
+          this.suggestions1 = filteredResults;
         } else {
-          this.suggestions2 = data;
+          this.suggestions2 = filteredResults;
         }
       } catch (e) {
         console.error('Search error:', e);
@@ -1285,7 +1247,6 @@ export default {
       const currentSpeed = data[4] || 0;
       const waveHeight = data[2] || 0;
       const swellHeight = data[3] || 0;
-      const waterTemp = data[5] || 0;
       const windSpeed = data[1] || 0;
       
       // Determine most dangerous factor
@@ -1296,36 +1257,36 @@ export default {
       if (currentSpeed > waveHeight && currentSpeed > 0.3) {
         primaryDanger = 'strong currents';
         if (currentSpeed > 0.8) {
-          dangerDetail = `Current speed (${currentSpeed.toFixed(1)} m/s) exceeds what Olympic swimmers can handle (0.8 m/s)`;
+          dangerDetail = `Current speed (${currentSpeed.toFixed(1)} m/s) ${Math.round(currentSpeed/0.8) > 1 ? 'is ' + Math.round(currentSpeed/0.8) + '× faster than' : 'exceeds what'} Olympic swimmers can handle`;
         } else if (currentSpeed > 0.5) {
-          dangerDetail = `Powerful rip currents (${currentSpeed.toFixed(1)} m/s) can pull swimmers 50+ meters offshore in seconds`;
+          dangerDetail = `Powerful rip currents pull swimmers ${Math.round(currentSpeed * 10)}m offshore in just 10 seconds`;
         } else {
-          dangerDetail = `Moderate currents (${currentSpeed.toFixed(1)} m/s) can quickly pull children beyond safe depth`;
+          dangerDetail = `Moderate currents can quickly pull children beyond safe depth`;
         }
       } else if (effectiveWaveHeight > 0.5) {
         primaryDanger = 'high waves';
         if (effectiveWaveHeight > 1.5) {
-          dangerDetail = `Massive waves (${effectiveWaveHeight.toFixed(1)} m) suitable only for professional surfers`;
+          dangerDetail = `Waves (${effectiveWaveHeight.toFixed(1)}m) about ${Math.round(effectiveWaveHeight/1.2) > 1 ? Math.round(effectiveWaveHeight/1.2) + '× taller than' : 'the same height as'} a 10-year-old child`;
         } else if (effectiveWaveHeight > 1.0) {
-          dangerDetail = `Strong waves (${effectiveWaveHeight.toFixed(1)} m) can knock down even adult swimmers`;
+          dangerDetail = `Strong waves (${effectiveWaveHeight.toFixed(1)}m) can knock down adults - similar to a dining table`;
         } else {
-          dangerDetail = `Waves (${effectiveWaveHeight.toFixed(1)} m) may knock over children and inexperienced swimmers`;
+          dangerDetail = `Waves (${effectiveWaveHeight.toFixed(1)}m) may knock over children - about knee-height for adults`;
         }
       } else if (windSpeed > 20) {
         primaryDanger = 'strong winds';
-        dangerDetail = `High winds (${windSpeed.toFixed(1)} km/h) create poor visibility and difficult rescue conditions`;
+        dangerDetail = `Wind (${Math.round(windSpeed)}km/h) creates poor visibility and difficult rescue conditions`;
       }
       
       // Create personalized description based on category
       if (category === "HARSH") {
-        return `Dangerous conditions with ${primaryDanger}. ${dangerDetail}. Not safe for recreational swimming, especially with children.`;
+        return `Dangerous conditions with ${primaryDanger}. ${dangerDetail}. Not safe for recreational swimming.`;
       } else if (category === "MODERATE") {
-        return `Exercise caution due to ${primaryDanger}. ${dangerDetail}. Adults should stay close to shore and children require constant supervision.`;
+        return `Exercise caution due to ${primaryDanger}. ${dangerDetail}. Adults stay close to shore, supervise children.`;
       } else {
         if (effectiveWaveHeight < 0.3 && currentSpeed < 0.2) {
-          return `Gentle, calm conditions with small waves (${effectiveWaveHeight.toFixed(1)} m) and minimal current. Ideal for families with children and beginner swimmers.`;
+          return `Gentle conditions with small waves (${effectiveWaveHeight.toFixed(1)}m) and minimal current. Good for families.`;
         } else {
-          return `Relatively calm conditions with manageable waves and currents. Good for most swimmers, but always supervise children.`;
+          return `Relatively calm conditions with manageable waves and currents. Supervise children.`;
         }
       }
     },
@@ -1335,7 +1296,6 @@ export default {
       const currentSpeed = data[4] || 0;
       const waveHeight = data[2] || 0;
       const swellHeight = data[3] || 0;
-      const waterTemp = data[5] || 0;
       const windSpeed = data[1] || 0;
       
       const effectiveHeight = Math.max(waveHeight, swellHeight);
@@ -1474,47 +1434,6 @@ export default {
         `);
       }
       
-      // Water temperature specific dangers
-      if (waterTemp < 16) {
-        keyDangers.push(`
-          <div class="danger-card">
-            <div class="danger-icon">🌡️</div>
-            <div class="danger-content">
-              <h4 class="danger-title">Very cold water (${waterTemp.toFixed(1)}°C)</h4>
-              <div class="danger-impacts">
-                <div class="impact-group">
-                  <span class="impact-label">👶 For children:</span>
-                  <span class="impact-text">Lose body heat 5x faster than adults - hypothermia within 10-15 minutes</span>
-                </div>
-                <div class="impact-group">
-                  <span class="impact-label">👤 For adults:</span>
-                  <span class="impact-text">Rapid loss of strength and coordination - limit swim time to 30 minutes</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `);
-      } else if (waterTemp < 20) {
-        keyDangers.push(`
-          <div class="danger-card">
-            <div class="danger-icon">🌡️</div>
-            <div class="danger-content">
-              <h4 class="danger-title">Cool water (${waterTemp.toFixed(1)}°C)</h4>
-              <div class="danger-impacts">
-                <div class="impact-group">
-                  <span class="impact-label">👶 For children:</span>
-                  <span class="impact-text">Will get cold quickly, reducing swimming ability after 15-20 minutes</span>
-                </div>
-                <div class="impact-group">
-                  <span class="impact-label">👤 For adults:</span>
-                  <span class="impact-text">Take regular breaks on shore to warm up</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `);
-      }
-      
       // Visibility/wind specific dangers
       if (windSpeed > 25) {
         keyDangers.push(`
@@ -1569,7 +1488,6 @@ export default {
       const currentSpeed = data[4] || 0;
       const waveHeight = data[2] || 0;
       const swellHeight = data[3] || 0;
-      const waterTemp = data[5] || 0;
       const windSpeed = data[1] || 0;
       
       const effectiveHeight = Math.max(waveHeight, swellHeight);
@@ -1577,9 +1495,9 @@ export default {
       // Determine the most restrictive factor
       let highestDanger = 0; // 0=low, 1=moderate, 2=high
       
-      if (currentSpeed > 0.5 || effectiveHeight > 1.2 || windSpeed > 25 || waterTemp < 16) {
+      if (currentSpeed > 0.5 || effectiveHeight > 1.2 || windSpeed > 25) {
         highestDanger = 2; // High danger
-      } else if (currentSpeed > 0.3 || effectiveHeight > 0.7 || windSpeed > 15 || waterTemp < 20) {
+      } else if (currentSpeed > 0.3 || effectiveHeight > 0.7 || windSpeed > 15) {
         highestDanger = 1; // Moderate danger
       }
       
@@ -1645,8 +1563,6 @@ export default {
       const newCurrentSpeed = newData[4] || 0;
       const homeWaveHeight = Math.max(homeData[2] || 0, homeData[3] || 0);
       const newWaveHeight = Math.max(newData[2] || 0, newData[3] || 0);
-      const homeWaterTemp = homeData[5] || 0;
-      const newWaterTemp = newData[5] || 0;
       
       // Calculate overall safety difference
       const homeSafetyScore = this.calculateSafetyScore(homeData);
@@ -1655,59 +1571,94 @@ export default {
       
       let conclusionText = "";
       
+      // Wave height comparison
+      let waveComparison = "";
+      if (Math.abs(homeWaveHeight - newWaveHeight) > 0.2) {
+        if (newWaveHeight > homeWaveHeight) {
+          // Check if home wave height is near zero
+          if (homeWaveHeight < 0.1) {
+            waveComparison = `Waves at ${newName} are much taller than your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
+          } else {
+            const ratio = Math.round(newWaveHeight/homeWaveHeight);
+            waveComparison = `Waves at ${newName} are ${ratio > 1 ? ratio + '× taller' : 'about the same height'} as your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
+          }
+        } else {
+          waveComparison = `Waves at ${newName} are smaller than your home beach, making swimming easier.`;
+        }
+      } else {
+        waveComparison = `Wave heights at both beaches are similar.`;
+      }
+      
+      // Current comparison
+      let currentComparison = "";
+      if (Math.abs(homeCurrentSpeed - newCurrentSpeed) > 0.1) {
+        if (newCurrentSpeed > homeCurrentSpeed) {
+          // Check if home current speed is near zero
+          if (homeCurrentSpeed < 0.1) {
+            currentComparison = `Currents at ${newName} are much stronger than your home beach ${newCurrentSpeed > 0.8 ? '- faster than Olympic swimmers can handle' : '- comparable to a casual cyclist'}.`;
+          } else {
+            const ratio = Math.round(newCurrentSpeed/homeCurrentSpeed);
+            currentComparison = `Currents at ${newName} are ${ratio > 1 ? ratio + '× faster' : 'about the same speed'} as your home beach ${newCurrentSpeed > 0.8 ? '- faster than Olympic swimmers can handle' : '- comparable to a casual cyclist'}.`;
+          }
+        } else {
+          currentComparison = `Currents at ${newName} are gentler than your home beach, reducing the risk of being pulled offshore.`;
+        }
+      } else {
+        currentComparison = `Current speeds at both beaches are similar.`;
+      }
+      
       // Significant difference - new beach is more dangerous
       if (scoreDifference > 1.5) {
-        conclusionText = `<strong>${newName} has significantly more challenging conditions than your home beach.</strong> `;
+        conclusionText = `<strong>${newName} has much more challenging conditions than home.</strong> `;
         
-        // Identify the main dangers
-        if (newCurrentSpeed > homeCurrentSpeed && newCurrentSpeed > 0.3) {
-          conclusionText += `The stronger rip currents at ${newName} are a major hazard you might not be prepared for based on your experience at home. `;
-        }
-        
+        // Add specific comparisons
         if (newWaveHeight > homeWaveHeight && newWaveHeight > 0.8) {
-          conclusionText += `The larger waves at ${newName} can easily knock over swimmers who are used to ${homeName}'s gentler conditions. `;
+          conclusionText += waveComparison + " ";
         }
         
-        if (newWaterTemp < homeWaterTemp && newWaterTemp < 20) {
-          conclusionText += `The colder water will cause fatigue much faster than you're accustomed to. `;
+        if (newCurrentSpeed > homeCurrentSpeed && newCurrentSpeed > 0.3) {
+          conclusionText += currentComparison + " ";
         }
         
-        conclusionText += `<strong>You should approach this beach with extra caution and potentially choose a safer, patrolled area for swimming.</strong>`;
+        conclusionText += `<strong>Use extra caution or choose a patrolled area.</strong>`;
       }
       // Moderate difference - new beach is more dangerous
       else if (scoreDifference > 0.5) {
-        conclusionText = `<strong>${newName} is somewhat more challenging than your home beach.</strong> `;
+        conclusionText = `<strong>${newName} is somewhat more challenging than home.</strong> `;
         
-        // Add specific safety advice
-        if (newCurrentSpeed > homeCurrentSpeed && newCurrentSpeed > 0.3) {
-          conclusionText += `Be particularly alert for rip currents, which are stronger here than what you're used to. `;
+        // Add specific comparisons
+        if (Math.abs(homeWaveHeight - newWaveHeight) > 0.2 || Math.abs(homeCurrentSpeed - newCurrentSpeed) > 0.1) {
+          if (newWaveHeight > homeWaveHeight) {
+            conclusionText += waveComparison + " ";
+          }
+          
+          if (newCurrentSpeed > homeCurrentSpeed) {
+            conclusionText += currentComparison + " ";
+          }
         }
         
-        if (newWaveHeight > homeWaveHeight && newWaveHeight > 0.7) {
-          conclusionText += `The waves here may be more powerful than you're accustomed to. `;
-        }
-        
-        conclusionText += `<strong>Stay between the flags and maintain closer supervision of children than you normally would.</strong>`;
+        conclusionText += `<strong>Swim between flags and supervise children closely.</strong>`;
       }
       // New beach is similar or safer 
       else if (scoreDifference >= -0.5) {
         conclusionText = `<strong>${newName} has similar conditions to your home beach.</strong> `;
         
-        conclusionText += `Your experience at ${homeName} has prepared you well for swimming here, but remember that every beach has unique features. Always swim between the flags and maintain awareness of changing conditions.`;
+        // Add comparison if there are still differences
+        if (Math.abs(homeWaveHeight - newWaveHeight) > 0.2 || Math.abs(homeCurrentSpeed - newCurrentSpeed) > 0.1) {
+          if (Math.abs(homeWaveHeight - newWaveHeight) > 0.2) {
+            conclusionText += waveComparison + " ";
+          }
+          
+          if (Math.abs(homeCurrentSpeed - newCurrentSpeed) > 0.1) {
+            conclusionText += currentComparison + " ";
+          }
+        }
+        
+        conclusionText += `<strong>Swim between flags and stay alert.</strong>`;
       }
       // New beach is significantly safer
       else {
-        conclusionText = `<strong>${newName} has gentler conditions than your home beach.</strong> `;
-        
-        if (homeCurrentSpeed > newCurrentSpeed && homeCurrentSpeed > 0.3) {
-          conclusionText += `The rip currents here are less powerful than what you're used to dealing with at home. `;
-        }
-        
-        if (homeWaveHeight > newWaveHeight && homeWaveHeight > 0.8) {
-          conclusionText += `The smaller waves make for easier swimming conditions than your home beach. `;
-        }
-        
-        conclusionText += `<strong>While conditions appear more favorable, never let your guard down at the beach — always supervise children closely and be aware of changing conditions.</strong>`;
+        conclusionText = `<strong>${newName} has gentler conditions than your home beach - you're well prepared!</strong>`;
       }
       
       return conclusionText;
@@ -1874,31 +1825,6 @@ export default {
         }
       }
       
-      // Compare water temperature
-      const homeWaterTemp = homeData[5] || 0;
-      const newWaterTemp = newData[5] || 0;
-      const tempDiff = Math.abs(homeWaterTemp - newWaterTemp).toFixed(1);
-      
-      if (Math.abs(homeWaterTemp - newWaterTemp) > 2) {
-        if (newWaterTemp < homeWaterTemp) {
-          differences.push({
-            type: 'temperature',
-            title: `Colder Water at ${newName}`,
-            description: `The water at ${newName} (${newWaterTemp.toFixed(1)}°C) is ${tempDiff}°C colder than at ${homeName} (${homeWaterTemp.toFixed(1)}°C).`,
-            impact: `Your body will tire about ${newWaterTemp < 18 ? '2-3 times' : '1.5 times'} faster in this colder water, increasing risk of fatigue. Children will get cold much faster, needing to exit the water after about ${newWaterTemp < 18 ? '15-20' : '25-30'} minutes.`,
-            severity: newWaterTemp < 18 ? 'high' : (newWaterTemp < 22 ? 'moderate' : 'low')
-          });
-        } else {
-          differences.push({
-            type: 'temperature',
-            title: `Warmer Water at ${newName}`,
-            description: `The water at ${newName} (${newWaterTemp.toFixed(1)}°C) is ${tempDiff}°C warmer than at ${homeName} (${homeWaterTemp.toFixed(1)}°C).`,
-            impact: `The warmer water means you'll be able to stay in longer without feeling cold, reducing fatigue risk compared to your home beach.`,
-            severity: 'low'
-          });
-        }
-      }
-      
       // Compare wind speeds
       const homeWindSpeed = homeData[1] || 0;
       const newWindSpeed = newData[1] || 0;
@@ -1986,26 +1912,6 @@ export default {
         });
       }
       
-      // Compare water temperature
-      const homeWaterTemp = homeData[5] || 0;
-      const newWaterTemp = newData[5] || 0;
-      
-      if (Math.abs(homeWaterTemp - newWaterTemp) <= 2) {
-        let severity = 'low';
-        if (homeWaterTemp < 18) severity = 'high';
-        else if (homeWaterTemp < 22) severity = 'moderate';
-        
-        similarities.push({
-          type: 'temperature',
-          title: `Similar Water Temperature`,
-          description: `The water temperature is very similar at both beaches (${homeName}: ${homeWaterTemp.toFixed(1)}°C, ${newName}: ${newWaterTemp.toFixed(1)}°C).`,
-          impact: homeWaterTemp < 18 
-            ? `Both beaches have cold water that will cause fatigue quickly - you're already familiar with how to manage this risk.` 
-            : `Your body's adaptation to water temperature at your home beach will serve you well here.`,
-          severity: severity
-        });
-      }
-      
       // Compare wind speeds
       const homeWindSpeed = homeData[1] || 0;
       const newWindSpeed = newData[1] || 0;
@@ -2061,6 +1967,189 @@ export default {
       const coordsMatch = latDiff < latThreshold && lonDiff < lonThreshold;
       
       return nameMatch || coordsMatch; // Return true if either name or coordinates match
+    },
+    getWaveRiskPosition() {
+      if (!this.marine || !this.marine.wave_height) return '16.7%';
+      
+      const waveHeight = this.marine.wave_height;
+      
+      // Calculate position on a scale
+      // 0-0.5m: safe (0-33%)
+      // 0.5-1.0m: caution (33-66%)
+      // >1.0m: danger (66-100%)
+      
+      if (waveHeight >= 1.5) return '90%';
+      if (waveHeight >= 1.0) return '75%';
+      if (waveHeight >= 0.8) return '66%';
+      if (waveHeight >= 0.5) return '50%';
+      if (waveHeight >= 0.3) return '33%';
+      return '16.7%';
+    },
+    
+    getCurrentRiskPosition() {
+      if (!this.marine || !this.marine.ocean_current_velocity) return '16.7%';
+      
+      const currentSpeed = this.marine.ocean_current_velocity;
+      
+      // Calculate position on a scale
+      // 0-0.3m/s: safe (0-33%)
+      // 0.3-0.7m/s: caution (33-66%)
+      // >0.7m/s: danger (66-100%)
+      
+      if (currentSpeed >= 1.2) return '90%';
+      if (currentSpeed >= 1.0) return '80%';
+      if (currentSpeed >= 0.7) return '66%';
+      if (currentSpeed >= 0.5) return '50%';
+      if (currentSpeed >= 0.3) return '33%';
+      return '16.7%';
+    },
+    
+    getSafetyImpactSummary() {
+      if (!this.compareChartData || !this.compareChartData.datasets || this.compareChartData.datasets.length < 2) {
+        return [];
+      }
+      
+      const homeData = this.compareChartData.datasets[0].data;
+      const newData = this.compareChartData.datasets[1].data;
+      const homeName = this.compareChartData.datasets[0].label;
+      const newName = this.compareChartData.datasets[1].label;
+      
+      // Get the effective wave heights and current speeds
+      const homeWaveHeight = Math.max(homeData[2] || 0, homeData[3] || 0);
+      const newWaveHeight = Math.max(newData[2] || 0, newData[3] || 0);
+      const homeCurrentSpeed = homeData[4] || 0;
+      const newCurrentSpeed = newData[4] || 0;
+      
+      const impacts = [];
+      
+      // Wave height impacts
+      if (newWaveHeight > homeWaveHeight + 0.2) {
+        if (newWaveHeight > 1.2) {
+          impacts.push({
+            type: 'danger',
+            icon: '🌊',
+            text: `Waves at ${newName} can easily knock over adults, whereas ${homeName} has gentler waves. Keep children at the water's edge only.`
+          });
+        } else if (newWaveHeight > 0.8) {
+          impacts.push({
+            type: 'warning',
+            icon: '🌊',
+            text: `${newName} has waves that can knock children over but may only reach up to adults' hips. Stay within arm's reach of children.`
+          });
+        } else {
+          impacts.push({
+            type: 'info',
+            icon: '🌊',
+            text: `${newName} has slightly larger waves than ${homeName}, but both are relatively manageable with proper supervision.`
+          });
+        }
+      } else if (homeWaveHeight > newWaveHeight + 0.2) {
+        impacts.push({
+          type: 'safe',
+          icon: '🌊',
+          text: `${newName} has gentler waves than you're used to at ${homeName}, making swimming conditions more favorable.`
+        });
+      }
+      
+      // Current impacts
+      if (newCurrentSpeed > homeCurrentSpeed + 0.1) {
+        if (newCurrentSpeed > 0.8) {
+          impacts.push({
+            type: 'danger',
+            icon: '🌀',
+            text: `${newName} has dangerously strong rip currents that can sweep swimmers 50+ meters offshore in seconds. Even Olympic swimmers struggle in these conditions.`
+          });
+        } else if (newCurrentSpeed > 0.5) {
+          impacts.push({
+            type: 'warning',
+            icon: '🌀',
+            text: `Rip currents at ${newName} are significantly stronger than at ${homeName}. Stay between the flags and maintain constant visual contact with children.`
+          });
+        } else if (newCurrentSpeed > 0.3) {
+          impacts.push({
+            type: 'info',
+            icon: '🌀',
+            text: `${newName} has stronger currents than ${homeName}, which can pull children beyond safe depth quickly. Keep children in shallow water only.`
+          });
+        }
+      } else if (homeCurrentSpeed > newCurrentSpeed + 0.1) {
+        impacts.push({
+          type: 'safe',
+          icon: '🌀',
+          text: `${newName} has gentler currents than you're used to at ${homeName}, reducing the risk of being pulled offshore unexpectedly.`
+        });
+      }
+      
+      // Combined risk assessment
+      if (newWaveHeight > 1.0 && newCurrentSpeed > 0.5) {
+        impacts.push({
+          type: 'danger',
+          icon: '⚠️',
+          text: `The combination of large waves and strong currents at ${newName} creates significant hazards. Consider a more sheltered beach for family swimming.`
+        });
+      }
+      
+      return impacts;
+    },
+    shouldShowVisualCard(type) {
+      if (!this.compareChartData || !this.compareChartData.datasets || this.compareChartData.datasets.length < 2) {
+        return false;
+      }
+      
+      const homeData = this.compareChartData.datasets[0].data;
+      const newData = this.compareChartData.datasets[1].data;
+      
+      if (type === 'wave') {
+        return homeData[2] !== undefined && newData[2] !== undefined;
+      } else if (type === 'current') {
+        // Only show current cards if at least one beach has a current > 0
+        return homeData[4] !== undefined && newData[4] !== undefined && 
+               (homeData[4] > 0 || newData[4] > 0);
+      }
+      
+      return false;
+    },
+    getWaveImpactText(data) {
+      const waveHeight = Math.max(data[2] || 0, data[3] || 0);
+      if (waveHeight > 1.2) {
+        const heightRatio = Math.round(waveHeight/1.2);
+        return `These waves are ${heightRatio > 1 ? heightRatio + '× taller than' : 'about the same height as'} a 10-year-old child and can easily knock them underwater`;
+      } else if (waveHeight > 0.7) {
+        return `These waves can reach up to a child's chest and have enough force to unbalance them`;
+      } else {
+        return `These smaller waves are generally below waist-height for a 6-year-old child`;
+      }
+    },
+    getWaveAdviceText(data) {
+      const waveHeight = Math.max(data[2] || 0, data[3] || 0);
+      if (waveHeight > 1.2) {
+        return `Adults should stay in shallow water and keep children at the water's edge only`;
+      } else if (waveHeight > 0.7) {
+        return `Keep children within arm's reach at all times`;
+      } else {
+        return `Still supervise children closely at all times`;
+      }
+    },
+    getCurrentImpactText(data) {
+      const currentSpeed = data[4] || 0;
+      if (currentSpeed > 0.8) {
+        const speedRatio = Math.round(currentSpeed/0.3);
+        return `This current is ${speedRatio > 1 ? speedRatio + '× faster than' : 'about the same speed as'} a child can swim. They'll be swept away within seconds`;
+      } else if (currentSpeed > 0.5) {
+        return `This current is about 2× faster than a child can swim against, making it difficult for them to make progress`;
+      } else {
+        return `This current is slower than most children can swim, making conditions more manageable`;
+      }
+    },
+    getCurrentAdviceText(data) {
+      const currentSpeed = data[4] || 0;
+      if (currentSpeed > 0.8) {
+        return `Even Olympic swimmers struggle against currents this strong`;
+      } else if (currentSpeed > 0.5) {
+        return `Keep children in shallow water and within arm's reach`;
+      } else {
+        return `Still supervise constantly and be aware of changing conditions`;
+      }
     }
   }
 }
@@ -3246,28 +3335,32 @@ export default {
 
 /* Beach Condition Category Styles */
 .beach-condition-category {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0.8rem;
+  padding: 0.7rem;
   margin-bottom: 1rem;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: auto;
+  min-height: 50px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding-left: 10%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .category-badge {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 800;
   display: inline-block;
-  padding: 0.25rem 1.5rem;
+  padding: 0.5rem 2rem;
   border-radius: 2rem;
-  margin-bottom: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  letter-spacing: 1px;
+  margin: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  letter-spacing: 2px;
   text-align: center;
-  min-width: 120px;
-  margin-left: 22%;
+  min-width: 150px;
+  text-transform: uppercase;
 }
 
 .category-explanation {
@@ -3776,225 +3869,18 @@ export default {
 .beach-condition-category {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 0.8rem;
-  padding: 1.5rem;
+  padding: 1rem;
   margin-bottom: 1.2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  height: 180px; /* Fixed height instead of min-height */
+  height: auto;
+  min-height: 70px;
   display: flex;
     flex-direction: column;
   align-items: center;
-  text-align: center;
-  overflow-y: auto; /* Allow scrolling if content exceeds fixed height */
-  }
-  
-.category-explanation {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9);
-  flex: 1;
-}
-
-.beach-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #f39c12;
-  margin: 0.5rem 0 1rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.75rem;
-  height: 50px; /* Fixed height for consistent alignment */
-  display: flex;
   justify-content: center;
-  align-items: center;
-}
-
-.beach-image-container {
-  width: 100%;
-  height: 180px; /* Fixed height */
-  overflow: hidden;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-  position: relative;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Style the suitability table to look better in the cards */
-.best-for-groups-container {
-  margin-top: auto; /* Push to bottom of card */
-  padding-top: 1rem;
-}
-
-.suitability-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.suitability-table th {
-  padding: 0.6rem;
-  background-color: rgba(0, 0, 0, 0.3);
-  color: #f39c12;
-  font-weight: 600;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.suitability-table td {
-  padding: 0.7rem 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  text-align: left;
-}
-
-.suitability-table td:last-child {
-  text-align: center;
-  width: 30%;
-  font-size: 1.2rem;
-}
-
-.suitability-table tr:last-child td {
-  border-bottom: none;
-}
-
-.recommendation-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #f39c12;
-    margin-bottom: 0.5rem;
   text-align: center;
 }
 
-.safety-safe {
-  color: #2ecc71;
-  font-weight: 700;
-  text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
-}
-
-.safety-caution {
-  color: #f39c12;
-  font-weight: 700;
-  text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
-}
-
-.safety-not-safe {
-  color: #e74c3c;
-  font-weight: 700;
-  text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
-}
-
-.comparison-tabs {
-  display: flex;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-  margin-bottom: 2rem;
-  position: sticky;
-  top: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  z-index: 2;
-  border-radius: 1rem 1rem 0 0;
-}
-
-.comparison-tab {
-  flex: 1;
-  text-align: center;
-  padding: 1rem;
-  cursor: pointer;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.comparison-tab.active {
-  color: #f39c12;
-}
-
-.comparison-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #f39c12;
-}
-
-/* Style updates for better alignment */
-.category-badge {
-  font-size: 1.2rem;
-  font-weight: 800;
-  display: inline-block;
-  padding: 0.5rem 2rem;
-  border-radius: 2rem;
-  margin: 0 auto 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  letter-spacing: 1px;
-  text-align: center;
-  min-width: 140px;
-}
-
-.category-harsh .category-badge {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.category-moderate .category-badge {
-  background-color: #f39c12;
-  color: white;
-}
-
-.category-calm .category-badge {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.beach-condition-category {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 0.5rem;
-  padding: 1.2rem;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  height: auto;
-  min-height: 140px; /* Increased min-height for descriptions */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.category-explanation {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.95);
-  flex: 1;
-  margin-top: 0.5rem;
-}
-
-.beach-comparison-card {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  flex: 1;
-  text-align: left;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 620px; /* Increased min-height for consistency */
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-/* Improved Badge Styles */
 .category-badge {
   font-size: 1.4rem;
   font-weight: 800;
@@ -4377,5 +4263,1002 @@ export default {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.risk-meter-container {
+  position: relative;
+  width: 95%;
+  margin: 15px auto;
+  padding: 5px 0 35px;
+}
+
+.risk-meter-title {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.risk-meter {
+  position: relative;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 11px;
+  overflow: visible;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.risk-segments {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.risk-segment {
+  height: 100%;
+  flex: 1;
+  position: relative;
+}
+
+.risk-segment:after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.risk-segment:last-child:after {
+  display: none;
+}
+
+.risk-segment.safe {
+  background: linear-gradient(to bottom, #2ecc71, #27ae60);
+}
+
+.risk-segment.caution {
+  background: linear-gradient(to bottom, #f39c12, #e67e22);
+}
+
+.risk-segment.danger {
+  background: linear-gradient(to bottom, #e74c3c, #c0392b);
+}
+
+.risk-indicator {
+  position: absolute;
+  top: -10px;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 40px;
+  transition: left 0.5s ease;
+  z-index: 5;
+}
+
+.risk-indicator:before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border: 3px solid #333;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+  animation: pulse 1.5s infinite;
+}
+
+.risk-indicator-arrow {
+  position: relative;
+  width: 0;
+  height: 0;
+  margin: 0 auto;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 14px solid #333;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+  z-index: 6;
+}
+
+.risk-value {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  z-index: 7;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.risk-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0 10px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.risk-label.safe {
+  color: #2ecc71;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.risk-label.caution {
+  color: #f39c12;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.risk-label.danger {
+  color: #e74c3c;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.wave-danger-visual {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.wave-danger-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.wave-danger-visual:hover .wave-danger-image {
+  transform: scale(1.05);
+}
+
+.wave-danger-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+  opacity: 1;
+  padding-bottom: 15px;
+}
+
+.wave-danger-visual:hover .wave-danger-overlay {
+  opacity: 0;
+}
+
+.wave-danger-overlay.moderate {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6));
+}
+
+.wave-danger-overlay.safe {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.6));
+}
+
+.hover-prompt {
+  position: relative;
+  bottom: 0;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 8px 12px;
+  border-radius: 20px;
+  margin: 0 auto;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-opacity 2s infinite;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.danger-text {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.hover-description {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.wave-danger-visual:hover .hover-description {
+  opacity: 1;
+}
+
+.hover-content {
+  padding: 1.5rem;
+  color: white;
+  text-align: center;
+  max-width: 90%;
+}
+
+.hover-content h4 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #f39c12;
+}
+
+.hover-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.wave-visual-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes point-up {
+  from { transform: translateY(3px); }
+  to { transform: translateY(-2px); }
+}
+
+@keyframes pulse-opacity {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.wave-danger-visual {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.hover-icon {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  animation: point-up 1s ease-in-out infinite alternate;
+}
+
+.hover-text {
+  font-size: 0.85rem;
+  color: white;
+  font-weight: 500;
+}
+
+.visual-comparison-container {
+  margin-top: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.visual-comparison-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f39c12;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.visual-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.comparison-item {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.comparison-visual {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.beach-column {
+  flex: 1;
+  text-align: center;
+}
+
+.beach-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.3rem;
+  display: inline-block;
+}
+
+.visual-image-container {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.condition-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.visual-image-container:hover .condition-image {
+  transform: scale(1.05);
+}
+
+.comparison-arrows {
+  flex: 0.7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.arrow-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 200px;
+  min-height: 80px;
+  justify-content: center;
+}
+
+.arrow-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.arrow {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.arrow-container.danger {
+  background: rgba(231, 76, 60, 0.2);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.arrow-container.danger .arrow-text {
+  color: #f1c40f;
+}
+
+.arrow-container.danger .arrow {
+  color: #e74c3c;
+}
+
+.arrow-container.warning .arrow-text {
+  color: #f1c40f;
+}
+
+.arrow-container.warning .arrow {
+  color: #f39c12;
+}
+
+.arrow-container.safe {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.arrow-container.safe .arrow-text {
+  color: #ffffff;
+}
+
+.arrow-container.safe .arrow {
+  color: #2ecc71;
+}
+
+.arrow-container.similar {
+  background: rgba(52, 152, 219, 0.15);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.arrow-container.similar .arrow-text {
+  color: #ffffff;
+}
+
+.arrow-similar {
+  font-size: 2.5rem;
+  color: #3498db;
+  line-height: 1;
+}
+
+.comparison-item-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.wave-size-indicator, .current-speed-indicator {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8f9fa;
+  margin-top: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.safety-impact-summary {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.impact-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.impact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.impact-list li {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.impact-list li.danger {
+  background: rgba(231, 76, 60, 0.15);
+  border-left: 4px solid #e74c3c;
+}
+
+.impact-list li.warning {
+  background: rgba(243, 156, 18, 0.15);
+  border-left: 4px solid #f39c12;
+}
+
+.impact-list li.info {
+  background: rgba(52, 152, 219, 0.15);
+  border-left: 4px solid #3498db;
+}
+
+.impact-list li.safe {
+  background: rgba(46, 204, 113, 0.15);
+  border-left: 4px solid #2ecc71;
+}
+
+.impact-icon {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.impact-text {
+  font-size: 1rem;
+  line-height: 1.4;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .comparison-visual {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .comparison-arrows {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0.5rem 0;
+  }
+  
+  .arrow-container {
+    flex-direction: row;
+    max-width: 100%;
+    gap: 0.5rem;
+    min-height: auto;
+    padding: 0.5rem;
+  }
+  
+  .arrow-text {
+    text-align: left;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+  
+  .arrow, .arrow-similar {
+    font-size: 1.5rem;
+    transform: rotate(90deg);
+  }
+  
+  .beach-comparison-cards {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .beach-comparison-card {
+    width: 100%;
+  }
+  
+  .visual-comparison-container {
+    padding: 1rem;
+  }
+}
+
+.visual-wave-container {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.visual-wave-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.wave-visual-card, .current-visual-card {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  height: 200px;
+}
+
+.wave-image, .current-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.wave-visual-card:hover .wave-image,
+.current-visual-card:hover .current-image {
+  transform: scale(1.05);
+}
+
+.hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.hover-prompt {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 0.5rem 1.2rem;
+  border-radius: 2rem;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid rgba(243, 156, 18, 0.6);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+  }
+  50% { 
+    transform: scale(1.05); 
+    box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+  }
+  100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+  }
+}
+
+.wave-details-card, .current-details-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  overflow-y: auto;
+  pointer-events: none;
+}
+
+.wave-visual-card:hover .wave-details-card,
+.current-visual-card:hover .current-details-card {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.wave-visual-card:hover .hover-overlay,
+.current-visual-card:hover .hover-overlay {
+  opacity: 0;
+}
+
+.wave-comparison, .current-comparison {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.wave-comparison p, .current-comparison p {
+  margin-bottom: 0.5rem;
+}
+
+.highlight {
+  color: #f39c12;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.impact-description {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.impact-description p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.warning-text {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.advice-text {
+  color: #3498db;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.safe-text {
+  color: #2ecc71;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .wave-visual-card, .current-visual-card {
+    height: 220px;
+  }
+  
+  .wave-details-card, .current-details-card {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+  
+  .hover-prompt {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+.safe-text {
+  color: #2ecc71;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.visual-current-container {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.visual-current-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .visual-current-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.beach-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #f39c12;
+  margin: 0.5rem 0 1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.75rem;
+  height: 50px; /* Fixed height for consistent alignment */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.beach-image-container {
+  width: 100%;
+  height: 180px; /* Fixed height */
+  overflow: hidden;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Style the suitability table to look better in the cards */
+.best-for-groups-container {
+  margin-top: auto; /* Push to bottom of card */
+  padding-top: 1rem;
+}
+
+.suitability-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suitability-table th {
+  padding: 0.6rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #f39c12;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suitability-table td {
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.suitability-table td:last-child {
+  text-align: center;
+  width: 30%;
+  font-size: 1.2rem;
+}
+
+.suitability-table tr:last-child td {
+  border-bottom: none;
+}
+
+.recommendation-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.safety-safe {
+  color: #2ecc71;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+}
+
+.safety-caution {
+  color: #f39c12;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+}
+
+.safety-not-safe {
+  color: #e74c3c;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+}
+
+.comparison-tabs {
+  display: flex;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  z-index: 2;
+  border-radius: 1rem 1rem 0 0;
+}
+
+.comparison-tab {
+  flex: 1;
+  text-align: center;
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.comparison-tab.active {
+  color: #f39c12;
+}
+
+.comparison-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #f39c12;
+}
+
+/* Category badge styles */
+.category-badge {
+  font-size: 1.4rem;
+  font-weight: 800;
+  display: inline-block;
+  padding: 0.6rem 2.5rem;
+  border-radius: 2rem;
+  margin: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  letter-spacing: 2px;
+  text-align: center;
+  min-width: 160px;
+  text-transform: uppercase;
+}
+
+.category-harsh .category-badge {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.category-moderate .category-badge {
+  background-color: #f39c12;
+  color: white;
+}
+
+.category-calm .category-badge {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.beach-comparison-card {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  flex: 1;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 620px; /* Increased min-height for consistency */
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.static-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.static-info p {
+  margin: 0.3rem 0;
 }
 </style> 

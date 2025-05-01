@@ -11,38 +11,29 @@
         <div class="rip-progress-nav">
           <div class="progress-bar">
             <div class="progress-step">
-              <router-link to="/rip-safety" class="step-link">
+              <router-link to="/beach-safety-rescue" class="step-link">
                 <div class="step-number">1</div>
-                <div class="step-label">What Are Rips</div>
-              </router-link>
-            </div>
-            <div class="progress-connector"></div>
-            <div class="progress-step">
-              <router-link to="/spot-rip-currents" class="step-link">
-                <div class="step-number">2</div>
-                <div class="step-label">Spot Rip Currents</div>
+                <div class="step-label">Signs of Trouble</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step">
               <router-link to="/survive-rip-currents" class="step-link">
-                <div class="step-number">3</div>
+                <div class="step-number">2</div>
                 <div class="step-label">Survive Rip Currents</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step active">
-              <div class="step-number">4</div>
+              <div class="step-number">3</div>
               <div class="step-label">Safety Tools</div>
             </div>
           </div>
         </div>
         
         <div class="title-section">
-          <h1>Rip Current Safety Tools</h1>
+          <h1>Beach Safety Tools</h1>
           <div class="statistic-banner">
-            <h2 class="headline">Interactive tools to help your family <span class="highlight">understand</span> and <span class="highlight">practice</span> rip current safety</h2>
-            <p class="subheadline">— Learn through simulation and visualization to build water safety skills</p>
           </div>
         </div>
 
@@ -52,15 +43,23 @@
           <div class="section-body">
             <p>Our interactive simulation helps you and your children understand the proper techniques for escaping rip currents. Visualize and practice the correct response in a safe, virtual environment.</p>
             
-            <div class="simulation-container">
-              <div v-if="!simulationActive" class="simulation-buttons">
+            <div v-if="!simulationActive" class="simulation-image-container">
+              <img 
+                src="./assets/Swimmer-in-a-rip.jpg" 
+                alt="Swimmer caught in a rip current" 
+                class="simulation-image"
+                @error="handleImageError"
+              >
+              <div class="image-overlay-button">
                 <button @click="activateSimulation" class="simulation-btn">
                   <span class="btn-icon">▶</span>
                   <span class="btn-text">Start Simulation</span>
                 </button>
               </div>
-              
-              <div v-if="simulationActive" class="simulation-active">
+            </div>
+            
+            <div v-if="simulationActive" class="simulation-container">
+              <div class="simulation-active">
                 <div class="simulation-content">
                   <!-- Simulation content goes here -->
                   <RipEscapeSimulation />
@@ -92,24 +91,13 @@
           <div class="section-body">
             <p>Use these resources to teach children about rip current safety in an age-appropriate way:</p>
             
-            <div class="resource-image-container">
-              <img 
-                src="./assets/parentChildbeachready.jpeg" 
-                alt="Parent and child at the beach" 
-                class="resource-header-image"
-                @error="handleResourceImageError"
-              >
-            </div>
-            
-            <p class="context-text">Understanding rip current safety is essential for everyone who visits beaches. Our specialized quizzes help both children and parents learn vital safety information that could save lives. Children learn through engaging questions tailored to their level, while parents gain comprehensive knowledge to better protect their families and respond to emergency situations.</p>
-            
             <div class="teaching-resources">
               <div class="teaching-resource">
                 <div class="resource-header">
                   <div class="resource-age">Children</div>
                   <h4>Rip Current Safety Quiz</h4>
                 </div>
-                <p>Interactive quiz designed to help children identify rip currents and learn essential beach safety skills. Using age-appropriate scenarios and colorful feedback, this quiz teaches youngsters how to recognize danger signs and what actions to take to stay safe at the beach.</p>
+                <p>Age-appropriate quiz helping children identify rip currents and learn essential beach safety actions.</p>
                 <button @click="startQuiz('child')" class="download-link">Take Quiz</button>
               </div>
               
@@ -118,7 +106,7 @@
                   <div class="resource-age">Parents</div>
                   <h4>Family Beach Safety Quiz</h4>
                 </div>
-                <p>Advanced assessment for parents and caregivers covering rip current identification, rescue techniques, and creating comprehensive family safety plans. This quiz provides critical knowledge that helps adults make informed decisions about beach safety and effectively teach water safety to children in their care.</p>
+                <p>Advanced quiz covering rip current identification, rescue techniques, and family safety planning.</p>
                 <button @click="startQuiz('parent')" class="download-link">Take Quiz</button>
               </div>
             </div>
@@ -318,12 +306,12 @@ export default {
         link.classList.remove('active');
       });
       
-      // Add active class to rip current safety links
-      const desktopRipLink = document.querySelector('.nav-link[href="/rip-safety"]');
-      const mobileRipLink = document.querySelector('.mobile-nav-link[href="/rip-safety"]');
+      // Add active class to Beach Safety links
+      const desktopBeachLink = document.querySelector('.nav-link[href="/beach-safety-rescue"]');
+      const mobileBeachLink = document.querySelector('.mobile-nav-link[href="/beach-safety-rescue"]');
       
-      if (desktopRipLink) desktopRipLink.classList.add('active');
-      if (mobileRipLink) mobileRipLink.classList.add('active');
+      if (desktopBeachLink) desktopBeachLink.classList.add('active');
+      if (mobileBeachLink) mobileBeachLink.classList.add('active');
     },
     activateSimulation() {
       this.simulationActive = true;
@@ -400,6 +388,17 @@ export default {
       e.target.src = '';
       // Add an error container with a message
       const container = e.target.closest('.resource-image-container');
+      if (container) {
+        container.classList.add('error-container');
+      }
+    },
+    handleImageError(e) {
+      // Add a fallback class to show a styled message
+      e.target.classList.add('image-error');
+      // Clear the source to prevent further error attempts
+      e.target.src = '';
+      // Add an error container with a message
+      const container = e.target.closest('.simulation-image-container');
       if (container) {
         container.classList.add('error-container');
       }
@@ -729,6 +728,55 @@ h1 {
   line-height: 1.6;
 }
 
+.simulation-image-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.simulation-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.image-overlay-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.image-overlay-button:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.image-overlay-button .simulation-btn {
+  transform: scale(1);
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.image-overlay-button:hover .simulation-btn {
+  transform: scale(1.1);
+  background: #e67e22;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.simulation-container {
+  margin: 1.5rem 0;
+}
+
 .rip-progress-nav {
   width: 100%;
   max-width: 800px;
@@ -753,6 +801,7 @@ h1 {
   text-align: center;
   position: relative;
   z-index: 2;
+  flex: 1;
 }
 
 .progress-step.active .step-number {
@@ -802,12 +851,14 @@ h1 {
 }
 
 .progress-connector {
-  flex: 1;
+  width: 100%;
   height: 2px;
   background: rgba(255, 255, 255, 0.3);
   margin: 0 0.5rem;
   position: relative;
   top: -8px;
+  flex: 1;
+  max-width: 100px;
 }
 
 /* Simulation container styles */

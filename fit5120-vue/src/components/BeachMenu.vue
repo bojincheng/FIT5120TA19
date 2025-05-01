@@ -6,8 +6,29 @@
       
       <div class="nav-links">
         <router-link to="/beach-safety" class="nav-link">Australian Beach Conditions</router-link>
-        <router-link to="/beach-safety-practices" class="nav-link">Beach Safety Practices</router-link>
-        <router-link to="/rip-safety" class="nav-link">Rip Current Safety</router-link>
+        <div class="nav-dropdown">
+          <router-link to="/beach-safety-practices" class="nav-link dropdown-toggle">
+            Preventing Risk
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </router-link>
+          <div class="dropdown-menu">
+            <router-link to="/beach-safety-practices" class="dropdown-item">Picking the Right Spot</router-link>
+            <router-link to="/understanding-danger" class="dropdown-item">Understanding Rip Currents</router-link>
+            <router-link to="/spot-rip-currents" class="dropdown-item">Avoiding Rip Currents</router-link>
+          </div>
+        </div>
+        <div class="nav-dropdown">
+          <router-link to="/beach-safety-rescue" class="nav-link dropdown-toggle">
+            Facing the Risk
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </router-link>
+          <div class="dropdown-menu">
+            <router-link to="/beach-safety-rescue" class="dropdown-item">Signs of Trouble</router-link>
+            <router-link to="/survive-rip-currents" class="dropdown-item">Survive Rip Currents</router-link>
+            <router-link to="/safety-tool" class="dropdown-item">Safety Tools</router-link>
+          </div>
+        </div>
+        <router-link to="/our-mission" class="nav-link">Our Mission</router-link>
       </div>
       
       <div class="safety-mode-selector">
@@ -57,8 +78,29 @@
       
       <div class="mobile-nav-links">
         <router-link to="/beach-safety" class="mobile-nav-link">Australian Beach Conditions</router-link>
-        <router-link to="/beach-safety-practices" class="mobile-nav-link">Beach Safety Practices</router-link>
-        <router-link to="/rip-safety" class="mobile-nav-link">Rip Current Safety</router-link>
+        <div class="mobile-nav-dropdown">
+          <div class="mobile-nav-link dropdown-toggle" @click="toggleMobilePreventingDropdown">
+            Preventing Risk
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mobile-dropdown-menu" v-show="mobilePreventingDropdownOpen">
+            <router-link to="/beach-safety-practices" class="mobile-dropdown-item">Picking the Right Spot</router-link>
+            <router-link to="/understanding-danger" class="mobile-dropdown-item">Understanding Rip Currents</router-link>
+            <router-link to="/spot-rip-currents" class="mobile-dropdown-item">Avoiding Rip Currents</router-link>
+          </div>
+        </div>
+        <div class="mobile-nav-dropdown">
+          <div class="mobile-nav-link dropdown-toggle" @click="toggleMobileDropdown">
+            Facing the Risk
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mobile-dropdown-menu" v-show="mobileDropdownOpen">
+            <router-link to="/beach-safety-rescue" class="mobile-dropdown-item">Signs of Trouble</router-link>
+            <router-link to="/survive-rip-currents" class="mobile-dropdown-item">Survive Rip Currents</router-link>
+            <router-link to="/safety-tool" class="mobile-dropdown-item">Safety Tools</router-link>
+          </div>
+        </div>
+        <router-link to="/our-mission" class="mobile-nav-link">Our Mission</router-link>
       </div>
       
       <div class="mobile-safety-tip">
@@ -81,6 +123,8 @@ export default {
   data() {
     return {
       modeDropdownOpen: false,
+      mobileDropdownOpen: false,
+      mobilePreventingDropdownOpen: false,
       safetyMode: 'Beach Safety'
     }
   },
@@ -100,6 +144,14 @@ export default {
       event.stopPropagation();
       this.modeDropdownOpen = !this.modeDropdownOpen;
     },
+    toggleMobileDropdown(event) {
+      event.stopPropagation();
+      this.mobileDropdownOpen = !this.mobileDropdownOpen;
+    },
+    toggleMobilePreventingDropdown(event) {
+      event.stopPropagation();
+      this.mobilePreventingDropdownOpen = !this.mobilePreventingDropdownOpen;
+    },
     selectMode(mode) {
       this.safetyMode = mode;
       this.modeDropdownOpen = false;
@@ -116,8 +168,14 @@ export default {
     },
     closeDropdownOutside(event) {
       const selector = document.querySelector('.safety-mode-selector');
+      const navDropdown = document.querySelector('.nav-dropdown');
+      
       if (selector && !selector.contains(event.target)) {
         this.modeDropdownOpen = false;
+      }
+      
+      if (navDropdown && !navDropdown.contains(event.target)) {
+        // Close any other dropdowns if needed
       }
     }
   }
@@ -521,5 +579,106 @@ export default {
   .mobile-nav-link {
     padding: 0.8rem 1.25rem;
   }
+}
+
+/* Add dropdown styles */
+.nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(1, 54, 92, 0.95);
+  border-radius: 0.75rem;
+  min-width: 200px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.nav-dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  top: calc(100% + 5px);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: rgba(243, 156, 18, 0.2);
+  color: white;
+}
+
+.dropdown-item.active {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.1);
+}
+
+/* Mobile dropdown styles */
+.mobile-nav-dropdown {
+  position: relative;
+}
+
+.mobile-nav-dropdown .dropdown-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-dropdown-menu {
+  background: rgba(1, 54, 92, 0.5);
+  margin: 0.25rem 0 0.25rem 1rem;
+  border-left: 2px solid rgba(243, 156, 18, 0.5);
+  border-radius: 0 0 0.5rem 0.5rem;
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-dropdown-item {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.mobile-dropdown-item:hover {
+  background: rgba(243, 156, 18, 0.1);
+  color: white;
+}
+
+.mobile-dropdown-item.active {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.1);
 }
 </style> 

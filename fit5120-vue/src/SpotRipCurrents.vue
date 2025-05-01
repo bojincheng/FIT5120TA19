@@ -8,46 +8,35 @@
     
     <div class="content-wrapper">
       <div class="main-content">
-        <div class="rip-progress-nav">
+        <div class="safety-progress-nav">
           <div class="progress-bar">
             <div class="progress-step">
-              <router-link to="/rip-safety" class="step-link">
+              <router-link to="/beach-safety-practices" class="step-link">
                 <div class="step-number">1</div>
-                <div class="step-label">What Are Rips</div>
+                <div class="step-label">Picking the Right Spot</div>
+              </router-link>
+            </div>
+            <div class="progress-connector"></div>
+            <div class="progress-step">
+              <router-link to="/understanding-danger" class="step-link">
+                <div class="step-number">2</div>
+                <div class="step-label">Understanding Rip Currents</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step active">
-              <div class="step-number">2</div>
-              <div class="step-label">Spot Rip Currents</div>
-            </div>
-            <div class="progress-connector"></div>
-            <div class="progress-step">
-              <router-link to="/survive-rip-currents" class="step-link">
-                <div class="step-number">3</div>
-                <div class="step-label">Survive Rip Currents</div>
-              </router-link>
-            </div>
-            <div class="progress-connector"></div>
-            <div class="progress-step">
-              <router-link to="/safety-tool" class="step-link">
-                <div class="step-number">4</div>
-                <div class="step-label">Safety Tools</div>
-              </router-link>
+              <div class="step-number">3</div>
+              <div class="step-label">Avoiding Rip Currents</div>
             </div>
           </div>
         </div>
         
         <div class="title-section">
-          <h1>How to Spot Rip Currents</h1>
-          <div class="statistic-banner">
-            <h2 class="headline">Identifying rip currents <span class="highlight">before</span> entering the water can save your life</h2>
-            <p class="subheadline">— Learn to recognize the telltale signs of these dangerous water channels</p>
-          </div>
+          <h1>Avoiding Rip Currents</h1>
         </div>
 
         <div class="content-section">
-          <h2 class="section-title">🌊 Common Types of Rip Currents</h2>
+          <h2 class="section-title">🌊 Identifying rip currents <span class="highlight">before</span> entering the water can save your life</h2>
           
           <div class="section-body">
             <p>Different types of rip currents can occur at beaches and may look and behave differently. Select a type below to learn about its characteristics:</p>
@@ -84,14 +73,14 @@
             <!-- Channelized Rips Content -->
             <div class="rip-content" v-if="activeRipTab === 'channelized'">
               <div class="rip-type-card">
-                <h3 class="rip-type-title">Channelized Rips</h3>
+                <h3 class="rip-type-title">Channelized Rips: Deep Water Channels Flowing Out to Sea</h3>
                 
-                <!-- Personal Impact Warning Box -->
+                <!-- Combined Impact Warning Box -->
                 <div class="personal-impact-box">
                   <div class="impact-icon">⚠️</div>
                   <div class="impact-content">
-                    <h4>Why It Matters to You:</h4>
-                    <p>Channelized rips cause more drownings than any other beach hazard in Australia. If you or your child are caught, you can be pulled hundreds of meters out in less than a minute. Knowing what to look for can save lives.</p>
+                    <h4>Why It Matters</h4>
+                    <p>Channelized rips are deep channels between sandbars that pull water away from shore at speeds up to 9 km/h—faster than Olympic swimmers. They look deceptively calm, but this apparent "safe water" is actually the most dangerous spot, responsible for more drownings than any other beach hazard.</p>
                   </div>
                 </div>
                 
@@ -99,93 +88,84 @@
                   <div class="rip-type-image">
                     <img src="./assets/Channelised-Rips-A.jpg" alt="Channelized rip current" @error="handleImageError">
                     <div class="image-overlay">
-                      <div class="overlay-point" style="top: 40%; left: 30%;">
+                      <div class="overlay-point" style="top: 55%; left: 30%;">
                         <span class="point-marker">1</span>
-                        <div class="point-tooltip">Deep channel between sandbars</div>
+                        <div class="point-tooltip">Darker patches in the water (deeper water absorbs more light)</div>
                       </div>
-                      <div class="overlay-point" style="top: 25%; left: 50%;">
+                      <div class="overlay-point" style="top: 45%; left: 50%;">
                         <span class="point-marker">2</span>
-                        <div class="point-tooltip">Breaking waves on sandbars</div>
+                        <div class="point-tooltip">Gaps in the waves (no breaking waves = hidden rip)</div>
                       </div>
                       <div class="overlay-point" style="top: 60%; left: 70%;">
                         <span class="point-marker">3</span>
-                        <div class="point-tooltip">Gap in breaking waves</div>
+                        <div class="point-tooltip">Calmer water between rougher areas (deceptively safer-looking)</div>
                       </div>
                     </div>
                   </div>
+                  <p class="image-caption">Hover over numbered points to see how to spot a channelized rip current</p>
                   
-                  <div class="rip-snapshot">
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">⏱️</div>
-                      <div class="snapshot-content">
-                        <h5>Duration</h5>
-                        <p>Days to months</p>
-                        <p class="snapshot-impact">Same spot might be dangerous for weeks!</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">🌊</div>
-                      <div class="snapshot-content">
-                        <h5>Speed</h5>
-                        <p>0.5-2.5 m/s (up to 9 km/h)</p>
-                        <p class="snapshot-impact">1.5x faster than Olympic swimmers</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">📏</div>
-                      <div class="snapshot-content">
-                        <h5>Width</h5>
-                        <p>10-30 meters</p>
-                        <p class="snapshot-impact">Wide enough to catch a group or family</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">🔍</div>
-                      <div class="snapshot-content">
-                        <h5>Visibility</h5>
-                        <p>High</p>
-                        <p class="snapshot-impact">Easy to spot once you know how</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="rip-info-container">
-                  <div class="rip-info-column">
-                    <div class="info-card">
-                      <h4><span class="info-icon">ℹ️</span> What Is It?</h4>
-                      <p>Channelized rips form in deeper channels that cut through sandbars parallel to the shore. These natural pathways allow water pushed toward shore by breaking waves to flow back to the ocean.</p>
-                    </div>
-                    
-                    <div class="info-card spotting-card">
-                      <h4><span class="info-icon">👁️</span> How To Spot It</h4>
-                      <ul class="spot-checklist">
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Darker patches</strong> in the water (deeper water absorbs more light)
+                  <div class="rip-characteristics">
+                    <h4 class="characteristics-title">Key Characteristics <span class="hover-instruction">(Hover cards to flip)</span></h4>
+                    <div class="flip-cards-container">
+                      <!-- Duration Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/duration.png" alt="Duration" class="characteristic-image">
+                            <h4 class="card-title">Duration</h4>
                           </div>
-                        </li>
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Gaps in the waves</strong> (no breaking waves = hidden rip)
+                          <div class="flip-card-back">
+                            <h4>Duration</h4>
+                            <p>Days to months</p>
+                            <p class="impact-note">Same spot might be dangerous for weeks!</p>
                           </div>
-                        </li>
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Calmer water</strong> between rougher areas (deceptively safer-looking)
+                        </div>
+                      </div>
+                      
+                      <!-- Speed Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/speed.png" alt="Speed" class="characteristic-image">
+                            <h4 class="card-title">Speed</h4>
                           </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div class="rip-info-column">
-                    <div class="info-card danger">
-                      <h4><span class="info-icon">⚠️</span> Danger Factor</h4>
-                      <p>These channels might look inviting because they appear calmer than surrounding water, but this apparent calmness indicates a strong current flowing seaward that can quickly carry swimmers hundreds of meters offshore.</p>
+                          <div class="flip-card-back">
+                            <h4>Speed</h4>
+                            <p>Up to 9 km/h</p>
+                            <p class="impact-note">1.5x faster than Olympic swimmers</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Width Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/width.jpeg" alt="Width" class="characteristic-image">
+                            <h4 class="card-title">Width</h4>
+                          </div>
+                          <div class="flip-card-back">
+                            <h4>Width</h4>
+                            <p>10-30 meters</p>
+                            <p class="impact-note">Wide enough to catch a group or family</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Visibility Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/visiblity.jpeg" alt="Visibility" class="characteristic-image">
+                            <h4 class="card-title">Visibility</h4>
+                          </div>
+                          <div class="flip-card-back">
+                            <h4>Visibility</h4>
+                            <p>High</p>
+                            <p class="impact-note">Easy to spot once you know how</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -195,14 +175,14 @@
             <!-- Boundary Rips Content -->
             <div class="rip-content" v-if="activeRipTab === 'boundary'">
               <div class="rip-type-card">
-                <h3 class="rip-type-title">Boundary/Structural Rips</h3>
+                <h3 class="rip-type-title">Boundary Rips: Strong Currents Next to Structures</h3>
                 
-                <!-- Personal Impact Warning Box -->
+                <!-- Combined Impact Warning Box -->
                 <div class="personal-impact-box">
                   <div class="impact-icon">⚠️</div>
                   <div class="impact-content">
-                    <h4>Why It Matters to You:</h4>
-                    <p>Swimming near piers or jetties is like stepping into a powerful underwater vacuum. Boundary rips can sweep your child 50 meters offshore in just 20 seconds — faster than you can sprint there to help. These currents can reach speeds of 10.8 km/h, making them 3x stronger than other rip types and impossible to swim against, even for Olympic athletes.</p>
+                    <h4>Why It Matters</h4>
+                    <p>Swimming near piers or jetties puts your family at double risk: a powerful current that can sweep a child 50 meters offshore in just 20 seconds, plus the danger of being slammed against the hard structure. These permanent rip currents reach speeds of 10.8 km/h—three times stronger than other rips and completely impossible to swim against, even for strong adult swimmers.</p>
                   </div>
                 </div>
                 
@@ -212,91 +192,82 @@
                     <div class="image-overlay">
                       <div class="overlay-point" style="top: 30%; left: 45%;">
                         <span class="point-marker">1</span>
-                        <div class="point-tooltip">Pier structure creating boundary</div>
+                        <div class="point-tooltip">Structure danger zone: Never swim within 50m of a pier, jetty, or rocky outcrop - the strongest rips form here</div>
                       </div>
                       <div class="overlay-point" style="top: 52%; left: 50%;">
                         <span class="point-marker">2</span>
-                        <div class="point-tooltip">Rip current flowing alongside structure</div>
+                        <div class="point-tooltip">Dark water channel: Deeper, calmer-looking water alongside structures is a powerful outward current</div>
                       </div>
-                      <div class="overlay-point" style="top: 75%; left: 30%;">
+                      <div class="overlay-point" style="top: 65%; left: 35%;">
                         <span class="point-marker">3</span>
-                        <div class="point-tooltip">Darker water indicating deeper channel</div>
+                        <div class="point-tooltip">Water movement: Watch for debris or foam moving away from shore - a key indicator of a dangerous rip</div>
                       </div>
                     </div>
                   </div>
+                  <p class="image-caption">Hover over numbered points to learn how to identify dangerous boundary rips</p>
                   
-                  <div class="rip-snapshot">
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">⏱️</div>
-                      <div class="snapshot-content">
-                        <h5>Duration</h5>
-                        <p>Permanent</p>
-                        <p class="snapshot-impact">Present anytime waves are breaking</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">🌊</div>
-                      <div class="snapshot-content">
-                        <h5>Speed</h5>
-                        <p>0.5-3.0 m/s (up to 10.8 km/h)</p>
-                        <p class="snapshot-impact">Twice as fast as Olympic swimmers</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">📍</div>
-                      <div class="snapshot-content">
-                        <h5>Location</h5>
-                        <p>Next to structures</p>
-                        <p class="snapshot-impact">Always in the same predictable spot</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">⚠️</div>
-                      <div class="snapshot-content">
-                        <h5>Danger Level</h5>
-                        <p>Very High</p>
-                        <p class="snapshot-impact">Combined hazard of rip and structure</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="rip-info-container">
-                  <div class="rip-info-column">
-                    <div class="info-card">
-                      <h4><span class="info-icon">ℹ️</span> What Is It?</h4>
-                      <p>Boundary rips form alongside physical structures like piers, jetties, groins, and rocky headlands. These structures block the natural flow of water along the beach, forcing it to flow seaward in a concentrated channel.</p>
-                    </div>
-                    
-                    <div class="info-card spotting-card">
-                      <h4><span class="info-icon">👁️</span> How To Spot It</h4>
-                      <ul class="spot-checklist">
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Always near structures</strong> - look for any pier, jetty, or rocky outcrop
+                  <div class="rip-characteristics">
+                    <h4 class="characteristics-title">Key Characteristics <span class="hover-instruction">(Hover cards to flip)</span></h4>
+                    <div class="flip-cards-container">
+                      <!-- Duration Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/duration.png" alt="Duration" class="characteristic-image">
+                            <h4 class="card-title">Duration</h4>
                           </div>
-                        </li>
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Darker water</strong> next to the structure
+                          <div class="flip-card-back">
+                            <h4>Duration</h4>
+                            <p>Permanent</p>
+                            <p class="impact-note">Present anytime waves are breaking</p>
                           </div>
-                        </li>
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Disturbed or choppy water</strong> flowing away from shore
+                        </div>
+                      </div>
+                      
+                      <!-- Speed Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/speed.png" alt="Speed" class="characteristic-image">
+                            <h4 class="card-title">Speed</h4>
                           </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div class="rip-info-column">
-                    <div class="info-card danger">
-                      <h4><span class="info-icon">⚠️</span> Danger Factor</h4>
-                      <p>Boundary rips present a double danger: the powerful current that can pull you away from shore, plus the risk of being slammed into the structure itself, causing injuries. Always stay at least 50 meters (150 feet) away from any structure on a beach.</p>
+                          <div class="flip-card-back">
+                            <h4>Speed</h4>
+                            <p>Up to 10.8 km/h</p>
+                            <p class="impact-note">Twice as fast as Olympic swimmers</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Location Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/location.jpeg" alt="Location" class="characteristic-image">
+                            <h4 class="card-title">Location</h4>
+                          </div>
+                          <div class="flip-card-back">
+                            <h4>Location</h4>
+                            <p>Next to structures</p>
+                            <p class="impact-note">Always in the same predictable spot</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Danger Level Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/danger.avif" alt="Danger Level" class="characteristic-image">
+                            <h4 class="card-title">Danger Level</h4>
+                          </div>
+                          <div class="flip-card-back">
+                            <h4>Danger Level</h4>
+                            <p>Very High</p>
+                            <p class="impact-note">Combined hazard of rip and structure</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -306,14 +277,14 @@
             <!-- Flash Rips Content -->
             <div class="rip-content" v-if="activeRipTab === 'flash'">
               <div class="rip-type-card">
-                <h3 class="rip-type-title">Flash Rips</h3>
+                <h3 class="rip-type-title">Flash Rips: Sudden, Short-Lived Currents</h3>
                 
-                <!-- Personal Impact Warning Box -->
+                <!-- Combined Impact Warning Box -->
                 <div class="personal-impact-box">
                   <div class="impact-icon">⚠️</div>
                   <div class="impact-content">
-                    <h4>Why It Matters to You:</h4>
-                    <p>Flash rips are the most unpredictable type - they can form suddenly with no warning, even at beaches that seemed safe moments before. They account for many rescues of families who were swimming in "safe" water.</p>
+                    <h4>Why It Matters</h4>
+                    <p>Flash rips are the most unpredictable beach danger because they appear without warning in water that was safe just moments before, catching families off guard. Even experienced beachgoers who monitor conditions closely can be surprised when a sudden set of large waves creates a powerful rip current in previously calm water, which is why constant supervision of children is essential.</p>
                   </div>
                 </div>
                 
@@ -321,93 +292,84 @@
                   <div class="rip-type-image flash-image">
                     <img src="./assets/Flash-Rip.jpg" alt="Flash rip current" @error="handleImageError">
                     <div class="image-overlay">
-                      <div class="overlay-point" style="top: 30%; left: 50%;">
+                      <div class="overlay-point" style="top: 30%; left: 45%;">
                         <span class="point-marker">1</span>
-                        <div class="point-tooltip">Darker water showing the rip channel</div>
+                        <div class="point-tooltip">Sudden disrupted water pattern: Watch for unexpected churning that appears after a set of large waves breaks</div>
                       </div>
-                      <div class="overlay-point" style="top: 45%; left: 52%;">
+                      <div class="overlay-point" style="top: 52%; left: 35%;">
                         <span class="point-marker">2</span>
-                        <div class="point-tooltip">Flow direction of the rip current</div>
+                        <div class="point-tooltip">Discolored water: Murky, sandy or foamy water extending outward indicates water rushing back to sea</div>
                       </div>
                       <div class="overlay-point" style="top: 65%; left: 48%;">
                         <span class="point-marker">3</span>
-                        <div class="point-tooltip">Rip current extending beyond breaking waves</div>
+                        <div class="point-tooltip">Safety zone: Keep children in shallow water where their feet touch bottom when large waves approach</div>
                       </div>
                     </div>
                   </div>
+                  <p class="image-caption">Hover over numbered points to learn how to spot sudden flash rips</p>
                   
-                  <div class="rip-snapshot">
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">⏱️</div>
-                      <div class="snapshot-content">
-                        <h5>Duration</h5>
-                        <p>Minutes only</p>
-                        <p class="snapshot-impact">Can appear and vanish in moments</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">⚡</div>
-                      <div class="snapshot-content">
-                        <h5>Speed</h5>
-                        <p>0.5-2.0 m/s (up to 7.2 km/h)</p>
-                        <p class="snapshot-impact">Can pull you 50m offshore in seconds</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">🔮</div>
-                      <div class="snapshot-content">
-                        <h5>Predictability</h5>
-                        <p>Very Low</p>
-                        <p class="snapshot-impact">Can form at any beach, any time</p>
-                      </div>
-                    </div>
-                    <div class="snapshot-item">
-                      <div class="snapshot-icon">🌊</div>
-                      <div class="snapshot-content">
-                        <h5>Trigger</h5>
-                        <p>Large wave sets</p>
-                        <p class="snapshot-impact">Watch for incoming larger waves</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="rip-info-container">
-                  <div class="rip-info-column">
-                    <div class="info-card">
-                      <h4><span class="info-icon">ℹ️</span> What Is It?</h4>
-                      <p>Flash rips are sudden, short-lived rip currents that form quickly and disappear just as fast. Unlike channelized rips, they aren't bound to fixed locations and can appear on any beach when conditions are right.</p>
-                    </div>
-                    
-                    <div class="info-card spotting-card">
-                      <h4><span class="info-icon">👁️</span> How To Spot It</h4>
-                      <ul class="spot-checklist">
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Turbulent, foamy water</strong> moving away from shore
+                  <div class="rip-characteristics">
+                    <h4 class="characteristics-title">Key Characteristics <span class="hover-instruction">(Hover cards to flip)</span></h4>
+                    <div class="flip-cards-container">
+                      <!-- Duration Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/duration.png" alt="Duration" class="characteristic-image">
+                            <h4 class="card-title">Duration</h4>
                           </div>
-                        </li>
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Suddenly appearing</strong> after a set of large waves breaks
+                          <div class="flip-card-back">
+                            <h4>Duration</h4>
+                            <p>Minutes only</p>
+                            <p class="impact-note">Can appear and vanish in moments</p>
                           </div>
-                        </li>
-                        <li>
-                          <span class="check-icon">✓</span> 
-                          <div class="checklist-content">
-                            <strong>Sandy, discolored water</strong> extending beyond the break zone
+                        </div>
+                      </div>
+                      
+                      <!-- Speed Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/speed.png" alt="Speed" class="characteristic-image">
+                            <h4 class="card-title">Speed</h4>
                           </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div class="rip-info-column">
-                    <div class="info-card danger">
-                      <h4><span class="info-icon">⚠️</span> Danger Factor</h4>
-                      <p>Flash rips are especially dangerous because they can form in previously safe water. Always watch for large sets of incoming waves - these can trigger flash rips. If waves suddenly get bigger, move to shallower water until conditions stabilize.</p>
+                          <div class="flip-card-back">
+                            <h4>Speed</h4>
+                            <p>Up to 7.2 km/h</p>
+                            <p class="impact-note">Can pull you 50m offshore in seconds</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Predictability Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/predicitablity.jpeg" alt="Predictability" class="characteristic-image">
+                            <h4 class="card-title">Predictability</h4>
+                          </div>
+                          <div class="flip-card-back">
+                            <h4>Predictability</h4>
+                            <p>Very Low</p>
+                            <p class="impact-note">Can form at any beach, any time</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Trigger Card -->
+                      <div class="flip-card characteristic-card">
+                        <div class="flip-card-inner">
+                          <div class="flip-card-front">
+                            <img src="./assets/trigger.png" alt="Trigger" class="characteristic-image">
+                            <h4 class="card-title">Trigger</h4>
+                          </div>
+                          <div class="flip-card-back">
+                            <h4>Trigger</h4>
+                            <p>Large wave sets</p>
+                            <p class="impact-note">Watch for incoming larger waves</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -419,7 +381,7 @@
     </div>
     
     <div class="next-section-arrow" v-if="showNavigationArrow" @click="navigateToNextSection">
-      <div class="arrow-label">Survive Rip Currents</div>
+      <div class="arrow-label">Return to Beach Safety</div>
       <div class="arrow-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 8 4 4-4 4"/></svg>
       </div>
@@ -478,12 +440,12 @@ export default {
         link.classList.remove('active');
       });
       
-      // Add active class to rip current safety links
-      const desktopRipLink = document.querySelector('.nav-link[href="/rip-safety"]');
-      const mobileRipLink = document.querySelector('.mobile-nav-link[href="/rip-safety"]');
+      // Add active class to beach safety practices links ("Prevent the Risk")
+      const desktopPracticesLink = document.querySelector('.nav-link[href="/beach-safety-practices"]');
+      const mobilePracticesLink = document.querySelector('.mobile-nav-link[href="/beach-safety-practices"]');
       
-      if (desktopRipLink) desktopRipLink.classList.add('active');
-      if (mobileRipLink) mobileRipLink.classList.add('active');
+      if (desktopPracticesLink) desktopPracticesLink.classList.add('active');
+      if (mobilePracticesLink) mobilePracticesLink.classList.add('active');
     },
     checkScrollPosition() {
       // Show navigation arrow when user is near the bottom of the page
@@ -494,9 +456,9 @@ export default {
       this.showNavigationArrow = scrollPosition > pageHeight * 0.9;
     },
     navigateToNextSection() {
-      // Navigate to the next section and ensure we start at the top of that page
+      // Navigate back to the beach safety practices page
       this.$router.push({ 
-        path: '/survive-rip-currents',
+        path: '/beach-safety-practices',
         // Adding this option ensures the page is scrolled to the top
         query: { _: Date.now() } 
       }).then(() => {
@@ -649,7 +611,7 @@ h1 {
   margin-bottom: 1rem;
 }
 
-.rip-progress-nav {
+.safety-progress-nav {
   width: 100%;
   max-width: 800px;
   margin: 0 auto 2rem;
@@ -859,10 +821,51 @@ h1 {
   font-weight: bold;
   font-size: 0.8rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
   pointer-events: auto;
   z-index: 2;
+  border: 2px solid transparent;
+  animation: pulse-marker 2s infinite;
+  position: relative;
+}
+
+.point-marker::after {
+  content: "Hover me";
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  font-weight: normal;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.overlay-point:hover .point-marker::after {
+  opacity: 0;
+}
+
+@keyframes pulse-marker {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+  }
+  
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+  }
+  
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+  }
 }
 
 .point-tooltip {
@@ -870,16 +873,21 @@ h1 {
   bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.95);
   color: white;
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   font-size: 0.8rem;
-  white-space: nowrap;
+  white-space: normal;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  max-width: 250px;
+  width: max-content;
+  border-left: 3px solid #f39c12;
+  backdrop-filter: blur(5px);
+  z-index: 10;
 }
 
 .point-tooltip:after {
@@ -888,18 +896,29 @@ h1 {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 5px;
+  border-width: 6px;
   border-style: solid;
-  border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+  border-color: rgba(0, 0, 0, 0.95) transparent transparent transparent;
 }
 
 .overlay-point:hover .point-marker {
   transform: scale(1.2);
   background-color: #e67e22;
+  border: 2px solid white;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.6);
 }
 
 .overlay-point:hover .point-tooltip {
   opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.image-caption {
+  text-align: center;
+  margin: 8px 0 15px;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .rip-snapshot {
@@ -1003,6 +1022,10 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.rip-info-column.full-width {
+  width: 100%;
 }
 
 .info-card {
@@ -1160,6 +1183,12 @@ h1 {
   .snapshot-item {
     min-width: 100px;
   }
+  
+  .point-marker::after {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    bottom: -22px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1214,6 +1243,14 @@ h1 {
   .next-section-arrow {
     bottom: 1rem;
     right: 1rem;
+  }
+  
+  .point-marker::after {
+    display: none;
+  }
+  
+  .image-caption {
+    font-size: 0.85rem;
   }
 }
 
@@ -1397,5 +1434,214 @@ h1 {
   height: 400px;
   object-fit: cover;
   object-position: center 40%;
+}
+
+/* Make the tooltips larger for the more detailed content */
+.boundary-image .point-tooltip,
+.flash-image .point-tooltip {
+  max-width: 280px;
+  padding: 10px 15px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .boundary-image .point-tooltip,
+  .flash-image .point-tooltip {
+    max-width: 220px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+.rip-characteristics {
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+.characteristics-title {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.hover-instruction {
+  font-size: 0.9rem;
+  color: #f39c12;
+  font-weight: normal;
+  font-style: italic;
+  margin-left: 5px;
+  animation: pulse-text 2s infinite;
+}
+
+@keyframes pulse-text {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.flip-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* Flip Card Styles */
+.characteristic-card {
+  height: 250px;
+  perspective: 1000px;
+  background-color: transparent;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.characteristic-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.flip-card-front {
+  background-color: rgba(1, 54, 92, 0.7);
+  display: flex;
+  flex-direction: column;
+}
+
+.flip-card-back {
+  background-color: rgba(1, 54, 92, 0.9);
+  transform: rotateY(180deg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 3px solid #f39c12;
+}
+
+.characteristic-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.card-title {
+  margin: 0;
+  padding: 15px 10px;
+  font-size: 1.1rem;
+  color: #ffffff;
+  background-color: rgba(1, 54, 92, 0.85);
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-card-back h4 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  color: #f39c12;
+  font-weight: 700;
+}
+
+.flip-card-back p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.impact-note {
+  font-weight: 600;
+  color: #f39c12;
+  margin-top: 0.75rem;
+}
+
+.flip-card-front::after {
+  content: "↻ Hover to flip";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(243, 156, 18, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  pointer-events: none;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+}
+
+.characteristic-card:hover .flip-card-front::after {
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .flip-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+  }
+  
+  .characteristic-card {
+    height: 220px;
+  }
+  
+  .characteristic-image {
+    height: 150px;
+  }
+  
+  .flip-card-back h4 {
+    font-size: 1.1rem;
+  }
+  
+  .flip-card-back p {
+    font-size: 0.95rem;
+  }
+  
+  .hover-instruction {
+    font-size: 0.8rem;
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
+  }
+  
+  .flip-card-front::after {
+    top: 5px;
+    right: 5px;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .flip-cards-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .hover-instruction {
+    font-size: 0.75rem;
+  }
 }
 </style> 

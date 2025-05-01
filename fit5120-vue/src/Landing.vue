@@ -2,19 +2,19 @@
   <div class="landing-container">
     <div class="video-background">
       <video autoplay loop muted playsinline>
-        <source src="/videos/landing_background.mp4" type="video/mp4">
+        <source src="./landing_background.mp4" type="video/mp4">
       </video>
       <div class="overlay"></div>
     </div>
     <div class="content">
-      <div class="static-text">
-        <h1 class="title-animation">Introducing <span class="highlight">Water Wise Family</span></h1>
-        <p class="subtitle-animation">Protect your child from becoming a victim of drowning — a few moments of learning can mean a lifetime of safety.</p>
+      <div class="message-container">
+        <h1 class="title-animation bold-message">Protect your child from becoming a victim of drowning — a few moments of learning can mean a lifetime of safety.</h1>
+        <p class="subtitle-animation">Introducing <span class="highlight">Water Wise Family</span></p>
       </div>
       <div class="buttons-container">
         <div class="button-wrapper first-time-wrapper">
           <button class="main-button first-time-button" @click="navigateToExperience">
-            Start Your Journey
+            Take the First Step Now
             <span class="arrow">→</span>
           </button>
           <div class="button-description">
@@ -64,9 +64,9 @@ export default {
   justify-content: center;
   align-items: center;
   font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  padding: 2rem;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
 }
 
 .video-background {
@@ -102,19 +102,27 @@ export default {
 }
 
 .content {
-  max-width: 1000px;
+  width: 90%;
+  max-width: 1300px;
+  height: 85vh;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 4rem;
   z-index: 2;
   position: relative;
   animation: fadeIn 1s ease forwards;
+  padding: 5% 0;
+  box-sizing: border-box;
 }
 
-.static-text {
+.message-container {
+  width: 100%;
   text-align: center;
-  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin-bottom: 2rem;
 }
 
 .title-animation {
@@ -127,15 +135,28 @@ export default {
   opacity: 0;
 }
 
-.static-text h1 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
+.message-container h1 {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   color: #ffffff;
-  margin: 0 0 1.5rem 0;
   position: relative;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.message-container p {
+  font-size: clamp(1.2rem, 2.2vw, 1.9rem);
+  font-weight: 300;
+  line-height: 1.6;
+  color: #ffffff;
+  opacity: 0.9;
+  max-width: 800px;
+  margin: 0 auto;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .highlight {
@@ -156,27 +177,15 @@ export default {
   animation: expandLine 1.2s ease-out 1.2s forwards;
 }
 
-.static-text p {
-  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
-  font-weight: 300;
-  line-height: 1.7;
-  color: #ffffff;
-  opacity: 0.9;
-  max-width: 800px;
-  margin: 0 auto;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
 .buttons-container {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   align-items: center;
-  margin-top: 1rem;
+  width: 100%;
+  max-width: 400px;
   animation: fadeIn 1.5s ease-out 0.8s forwards;
   opacity: 0;
-  width: 100%;
-  max-width: 350px;
 }
 
 .button-wrapper {
@@ -192,7 +201,9 @@ export default {
   color: rgba(255, 255, 255, 0.85);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  height: 20px;
 }
 
 .headphones-icon {
@@ -215,7 +226,9 @@ export default {
   position: relative;
   overflow: hidden;
   width: 100%;
+  height: 60px;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .main-button {
@@ -295,16 +308,14 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .landing-container {
-    padding: 1rem;
-  }
-  
   .content {
-    gap: 3rem;
+    height: auto;
+    padding: 15% 0;
+    gap: 4rem;
   }
   
-  .static-text h1 {
-    margin-bottom: 1rem;
+  .message-container {
+    gap: 2rem;
   }
   
   .buttons-container {

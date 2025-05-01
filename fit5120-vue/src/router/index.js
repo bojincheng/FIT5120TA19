@@ -17,6 +17,9 @@ import BeachSafetyPractices from '../BeachSafetyPractices.vue'
 import BeachSafetyRescue from '../BeachSafetyRescue.vue'
 import WaterSafetySimulation from '../WaterSafetySimulation.vue'
 import OffshoreRescue from '../OffshoreRescue.vue'
+import BeachMission from '../BeachMission.vue'
+import UnderstandingDanger from '../UnderstandingDanger.vue'
+import PoolSafetyQuiz from '../PoolSafetyQuiz.vue'
 
 const routes = [
   {
@@ -101,9 +104,24 @@ const routes = [
     component: BeachSafetyRescue
   },
   {
+    path: '/understanding-danger',
+    name: 'UnderstandingDanger',
+    component: UnderstandingDanger
+  },
+  {
     path: '/offshore-rescue',
     name: 'OffshoreRescue',
     component: OffshoreRescue
+  },
+  {
+    path: '/our-mission',
+    name: 'BeachMission',
+    component: BeachMission
+  },
+  {
+    path: '/pool-safety-quiz',
+    name: 'PoolSafetyQuiz',
+    component: PoolSafetyQuiz
   }
 ]
 

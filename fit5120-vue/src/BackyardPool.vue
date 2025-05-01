@@ -4,7 +4,7 @@
     <div class="bg-overlay"></div>
     
     <!-- Pool Menu Component -->
-    <PoolMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" />
+    <PoolMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" @show-quiz="showQuiz = true" />
     
     <div class="content-wrapper">
       <div class="main-content">
@@ -20,6 +20,10 @@
                 <div class="step-number">2</div>
                 <div class="step-label">Backyard Pool Safety</div>
               </div>
+              <div class="progress-step" @click="showQuiz = true">
+                <div class="step-number">3</div>
+                <div class="step-label">Test Your Readiness</div>
+              </div>
             </div>
           </div>
         </div>
@@ -27,8 +31,7 @@
         <div class="title-section">
           <h1>Backyard Pool Safety</h1>
           <div class="statistic-banner">
-            <h2 class="headline">Over <span class="highlight">50%</span> of child drownings occur in backyard pools</h2>
-            <p class="subheadline">— Where families least expect the danger</p>
+            <!-- Removed statistic text -->
           </div>
         </div>
 
@@ -41,34 +44,72 @@
             
             <div class="card-body">
               <div class="danger-stats">
-                <div class="stat-card">
+                <div class="hover-card">
+                  <img src="./assets/secuirty.png" alt="Man looking relaxed" class="card-image">
+                  <div class="card-title">
+                    <span class="stat-icon">⚠️</span>
+                    <h4>False Security</h4>
+                  </div>
+                  <div class="hover-overlay">
+                    <div class="overlay-content">
                   <div class="stat-header">
                     <span class="stat-icon">⚠️</span>
                     <h4>False Security</h4>
                   </div>
                   <p>Backyard settings create a dangerous illusion of safety where parents assume they'll notice if something goes wrong</p>
+                    </div>
+                  </div>
+                  <div class="hover-hint">Hover to reveal</div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="hover-card">
+                  <img src="./assets/trigger.png" alt="Security camera" class="card-image">
+                  <div class="card-title">
+                    <span class="stat-icon">🔍</span>
+                    <h4>Lack of Supervision</h4>
+                  </div>
+                  <div class="hover-overlay">
+                    <div class="overlay-content">
                   <div class="stat-header">
                     <span class="stat-icon">🔍</span>
                     <h4>Lack of Supervision</h4>
                   </div>
                   <p>63% of drownings occur when children are thought to be safely inside the house or under supervision</p>
+                    </div>
+                  </div>
+                  <div class="hover-hint">Hover to reveal</div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="hover-card">
+                  <img src="./assets/limited_time.jpg" alt="Stopwatch showing limited time" class="card-image limited-time-img">
+                  <div class="card-title">
+                    <span class="stat-icon">⏱️</span>
+                    <h4>Critical Window</h4>
+                  </div>
+                  <div class="hover-overlay">
+                    <div class="overlay-content">
                   <div class="stat-header">
                     <span class="stat-icon">⏱️</span>
                     <h4>Critical Window</h4>
                   </div>
                   <p>Most victims are found within 5 minutes, but resuscitation attempts are often unsuccessful</p>
+                    </div>
+                  </div>
+                  <div class="hover-hint">Hover to reveal</div>
                 </div>
               </div>
               
               <div class="barrier-importance">
-                <h4 class="section-subtitle">Pool Barriers Save Lives</h4>
-                <p>Properly installed and maintained pool barriers reduce drowning risk by 83%. Yet many Australian pool fences fail safety checks, with non-compliant gates being the most common issue.</p>
+                <h4 class="section-subtitle">Pool Barriers: The #1 Route to Pool Safety</h4>
+                
+                <div class="barrier-image-section">
+                  <h5 class="barrier-title">Pool Barrier Safety Standards</h5>
+                  <div class="barrier-image-container">
+                    <img src="./assets/barrier.jpg" alt="Swimming pool with properly installed safety barrier" class="barrier-image">
+                  </div>
+                </div>
+                
+                <p>The number one route to ensuring safety around backyard pools is effective barriers. Properly installed and maintained pool barriers reduce drowning risk by 83%. Yet many Australian pool fences fail safety checks, with non-compliant gates being the most common issue.</p>
               </div>
               
               <!-- Australian Fencing Regulations Section -->
@@ -78,7 +119,7 @@
                 <!-- Location-based finder -->
                 <div class="location-finder">
                   <div class="search-container">
-                    <h4 class="section-subtitle">Find Your Local Regulations</h4>
+                    <h4 class="section-subtitle">Does Your Pool Meet Local Safety Standards?</h4>
                     <div class="search-input-container">
                       <span class="search-icon">🔍</span>
                       <input 
@@ -124,7 +165,7 @@
                     </div>
                     <p class="location-name">{{ selectedLocation.display_name }}</p>
                     <div v-if="autoDetectedState" class="state-detected">
-                      <span class="check-icon">✓</span> We detected you're in <strong>{{ getStateFullName(autoDetectedState) }}</strong>
+                      <span class="check-icon">✓</span> We detected you're in <strong> {{ getStateFullName(autoDetectedState) }}</strong>
                     </div>
                     <p v-else class="error-message no-margin">Could not detect state from location. Please select manually below.</p>
                   </div>
@@ -171,36 +212,114 @@
                     <div class="regulation-item">
                       <h6><span class="requirement-icon">📏</span> Barrier Requirements</h6>
                       <ul>
+                        <!-- NSW Requirements -->
                         <li v-if="selectedState === 'nsw'">Minimum fence height: 1.2 meters</li>
                         <li v-if="selectedState === 'nsw'">Maximum gap from ground: 100mm</li>
                         <li v-if="selectedState === 'nsw'">No climbable objects within 900mm of fence</li>
                         <li v-if="selectedState === 'nsw'">Gates must open outwards, away from pool area</li>
                         <li v-if="selectedState === 'nsw'">Gates must be self-closing and self-latching</li>
                         
+                        <!-- VIC Requirements -->
                         <li v-if="selectedState === 'vic'">Minimum fence height: 1.2 meters</li>
                         <li v-if="selectedState === 'vic'">Maximum gap from ground: 100mm</li>
                         <li v-if="selectedState === 'vic'">No climbable objects within 900mm of fence</li>
                         <li v-if="selectedState === 'vic'">Self-closing and self-latching gates that open outward</li>
                         <li v-if="selectedState === 'vic'">Different requirements based on pool construction date</li>
                         
-                        <!-- Similar pattern for other states -->
+                        <!-- QLD Requirements -->
+                        <li v-if="selectedState === 'qld'">Minimum fence height: 1.2 meters</li>
+                        <li v-if="selectedState === 'qld'">Maximum gap from ground: 100mm</li>
+                        <li v-if="selectedState === 'qld'">No climbable objects within 900mm of fence</li>
+                        <li v-if="selectedState === 'qld'">Gates must open outwards, away from pool area</li>
+                        <li v-if="selectedState === 'qld'">Gates must be self-closing and self-latching</li>
+                        
+                        <!-- WA Requirements -->
+                        <li v-if="selectedState === 'wa'">Minimum fence height: 1.2 meters</li>
+                        <li v-if="selectedState === 'wa'">Maximum gap from ground: 100mm</li>
+                        <li v-if="selectedState === 'wa'">No climbable objects within 900mm of fence</li>
+                        <li v-if="selectedState === 'wa'">Self-closing and self-latching gates that open outward</li>
+                        <li v-if="selectedState === 'wa'">Specific regulations for isolation fencing vs boundary fencing</li>
+                        
+                        <!-- SA Requirements -->
+                        <li v-if="selectedState === 'sa'">Minimum fence height: 1.2 meters</li>
+                        <li v-if="selectedState === 'sa'">Maximum gap from ground: 100mm</li>
+                        <li v-if="selectedState === 'sa'">No climbable objects within 900mm of fence</li>
+                        <li v-if="selectedState === 'sa'">Gates must open outwards, away from pool area</li>
+                        <li v-if="selectedState === 'sa'">Gates must be self-closing and self-latching</li>
+                        
+                        <!-- TAS Requirements -->
+                        <li v-if="selectedState === 'tas'">Minimum fence height: 1.2 meters</li>
+                        <li v-if="selectedState === 'tas'">Maximum gap from ground: 100mm</li>
+                        <li v-if="selectedState === 'tas'">No climbable objects within 900mm of fence</li>
+                        <li v-if="selectedState === 'tas'">Gates must open outwards, away from pool area</li>
+                        <li v-if="selectedState === 'tas'">Gates must be self-closing and self-latching</li>
+                        
+                        <!-- NT Requirements -->
+                        <li v-if="selectedState === 'nt'">Minimum fence height: 1.2 meters</li>
+                        <li v-if="selectedState === 'nt'">Maximum gap from ground: 100mm</li>
+                        <li v-if="selectedState === 'nt'">No climbable objects within 900mm of fence</li>
+                        <li v-if="selectedState === 'nt'">Gates must open outwards, away from pool area</li>
+                        <li v-if="selectedState === 'nt'">Gates must be self-closing and self-latching</li>
+                        
+                        <!-- ACT Requirements -->
+                        <li v-if="selectedState === 'act'">Minimum fence height: 1.2 meters</li>
+                        <li v-if="selectedState === 'act'">Maximum gap from ground: 100mm</li>
+                        <li v-if="selectedState === 'act'">No climbable objects within 900mm of fence</li>
+                        <li v-if="selectedState === 'act'">Gates must open outwards, away from pool area</li>
+                        <li v-if="selectedState === 'act'">Gates must be self-closing and self-latching</li>
                       </ul>
                     </div>
                     
                     <div class="regulation-item">
                       <h6><span class="requirement-icon">📜</span> Legal Requirements</h6>
                       <ul>
+                        <!-- NSW Legal Requirements -->
                         <li v-if="selectedState === 'nsw'">All pools must be registered on the NSW Swimming Pool Register</li>
                         <li v-if="selectedState === 'nsw'">Mandatory pool barrier certification required when selling or leasing property</li>
                         <li v-if="selectedState === 'nsw'">Compliance certificate valid for 3 years</li>
                         <li v-if="selectedState === 'nsw'">Penalties of up to $5,500 for non-compliance</li>
                         
+                        <!-- VIC Legal Requirements -->
                         <li v-if="selectedState === 'vic'">All pools and spas must be registered with local council</li>
                         <li v-if="selectedState === 'vic'">Mandatory safety barrier inspections every 4 years</li>
                         <li v-if="selectedState === 'vic'">Certificate of compliance required</li>
                         <li v-if="selectedState === 'vic'">Penalties over $1,652 for individuals and $8,261 for companies</li>
                         
-                        <!-- Similar pattern for other states -->
+                        <!-- QLD Legal Requirements -->
+                        <li v-if="selectedState === 'qld'">Pool safety certificate required when selling or leasing property</li>
+                        <li v-if="selectedState === 'qld'">Pool safety certificates valid for 2 years for shared pools and 1 year for non-shared pools</li>
+                        <li v-if="selectedState === 'qld'">All pools must be registered in the state pool register</li>
+                        <li v-if="selectedState === 'qld'">Penalties of up to $21,000 for non-compliance</li>
+                        
+                        <!-- WA Legal Requirements -->
+                        <li v-if="selectedState === 'wa'">Mandatory inspections at least once every 4 years</li>
+                        <li v-if="selectedState === 'wa'">Local government authorities responsible for compliance inspections</li>
+                        <li v-if="selectedState === 'wa'">Pool owners must ensure barriers are maintained</li>
+                        <li v-if="selectedState === 'wa'">Penalties up to $5,000 for non-compliance</li>
+                        
+                        <!-- SA Legal Requirements -->
+                        <li v-if="selectedState === 'sa'">Safety barriers required for all pools and spas deeper than 30cm</li>
+                        <li v-if="selectedState === 'sa'">Development approval required before installing a pool</li>
+                        <li v-if="selectedState === 'sa'">Pool must be inspected within 2 months after construction</li>
+                        <li v-if="selectedState === 'sa'">Penalties for non-compliance with swimming pool laws</li>
+                        
+                        <!-- TAS Legal Requirements -->
+                        <li v-if="selectedState === 'tas'">All pools must have compliant barriers</li>
+                        <li v-if="selectedState === 'tas'">Compliance required for pools capable of holding water to a depth of 30cm or more</li>
+                        <li v-if="selectedState === 'tas'">Certificate of compliance required for new pools</li>
+                        <li v-if="selectedState === 'tas'">Heavy penalties for non-compliance with pool safety laws</li>
+                        
+                        <!-- NT Legal Requirements -->
+                        <li v-if="selectedState === 'nt'">All pools must have compliant barriers</li>
+                        <li v-if="selectedState === 'nt'">Pool safety compliance required when selling a property</li>
+                        <li v-if="selectedState === 'nt'">Regular maintenance of pool barriers required</li>
+                        <li v-if="selectedState === 'nt'">Significant penalties for non-compliance</li>
+                        
+                        <!-- ACT Legal Requirements -->
+                        <li v-if="selectedState === 'act'">Pool barriers must comply with Australian Standard AS1926.1</li>
+                        <li v-if="selectedState === 'act'">Building approval required before installing a pool</li>
+                        <li v-if="selectedState === 'act'">Development approval may be required from the Planning Authority</li>
+                        <li v-if="selectedState === 'act'">Penalties apply for non-compliant barriers</li>
                       </ul>
                     </div>
                   </div>
@@ -228,6 +347,18 @@
             </a>
           </div>
         </div>
+      </div>
+    </div>
+    
+    <!-- Quiz Modal Overlay -->
+    <div class="quiz-modal" v-if="showQuiz">
+      <div class="quiz-modal-content">
+        <button class="close-button" @click="closeQuiz">×</button>
+        <div v-if="quizLoading" class="quiz-loading">
+          <div class="loading-spinner"></div>
+          <p>Loading quiz...</p>
+        </div>
+        <iframe ref="quizFrame" src="/pool-safety-quiz" class="quiz-iframe" @load="onQuizLoaded" :style="{ opacity: quizLoading ? 0 : 1 }"></iframe>
       </div>
     </div>
   </div>
@@ -260,7 +391,9 @@ export default {
       locationSuggestions: [],
       selectedLocation: null,
       autoDetectedState: '',
-      errorMessage: ''
+      errorMessage: '',
+      showQuiz: false,
+      quizLoading: true
     }
   },
   methods: {
@@ -376,7 +509,41 @@ export default {
         'act': 'https://www.accesscanberra.act.gov.au/s/article/building-approval-and-requirements-tab-swimming-pools'
       };
       return linkMap[this.selectedState] || '#';
+    },
+    closeQuiz() {
+      // Send message to iframe before closing
+      if (this.$refs.quizFrame && this.$refs.quizFrame.contentWindow) {
+        try {
+          this.$refs.quizFrame.contentWindow.postMessage({ type: 'close-quiz' }, '*');
+        } catch (err) {
+          console.error('Error sending message to quiz iframe:', err);
+        }
+      }
+      this.showQuiz = false;
+      this.quizLoading = true; // Reset loading state for next time
+    },
+    onQuizLoaded() {
+      console.log('Quiz iframe loaded');
+      // Give a slight delay before showing to ensure it's fully rendered
+      setTimeout(() => {
+        this.quizLoading = false;
+      }, 500);
+    },
+    // Add message listener for iframe communication
+    handleQuizMessage(event) {
+      if (event.data && event.data.type === 'quiz-loaded') {
+        console.log('Quiz loaded message received');
+        this.quizLoading = false;
+      }
     }
+  },
+  mounted() {
+    // Add message listener for iframe
+    window.addEventListener('message', this.handleQuizMessage);
+  },
+  beforeDestroy() {
+    // Remove message listener
+    window.removeEventListener('message', this.handleQuizMessage);
   }
 }
 </script>
@@ -531,7 +698,7 @@ h1 {
   align-items: center;
   position: relative;
   margin: 0;
-  gap: 4.5rem;
+  gap: 3rem; /* Adjusted gap to fit 3 steps */
 }
 
 .progress-track::before {
@@ -648,28 +815,93 @@ h1 {
   margin-bottom: 2rem;
 }
 
-.stat-card {
-  background: rgba(0, 0, 0, 0.2);
+/* Hover Card Styles */
+.hover-card {
+  position: relative;
+  height: 320px;
   border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.stat-card:nth-child(1) {
+.hover-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.hover-card:nth-child(1) {
   border-left: 3px solid rgba(231, 76, 60, 0.7);
 }
 
-.stat-card:nth-child(2) {
+.hover-card:nth-child(2) {
   border-left: 3px solid rgba(241, 196, 15, 0.7);
 }
 
-.stat-card:nth-child(3) {
+.hover-card:nth-child(3) {
   border-left: 3px solid rgba(52, 152, 219, 0.7);
+}
+
+.card-image {
+  width: 100%;
+  height: 80%;
+  object-fit: cover;
+  display: block;
+}
+
+.limited-time-img {
+  object-fit: contain;
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+
+.card-title {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 20%;
+}
+
+.card-title h4 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+}
+
+.hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 41, 61, 0.9);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.hover-card:hover .hover-overlay {
+  opacity: 1;
+}
+
+.overlay-content {
+  text-align: center;
 }
 
 .stat-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 
@@ -685,10 +917,64 @@ h1 {
   color: white;
 }
 
-.stat-card p {
+.overlay-content p {
   margin: 0;
   line-height: 1.5;
   font-size: 1.05rem;
+  text-align: center;
+}
+
+.hover-hint {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 5px 10px;
+  border-radius: 20px;
+  z-index: 5;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Media queries for hover cards */
+@media (max-width: 768px) {
+  .hover-card {
+    height: 280px;
+  }
+  
+  .card-title h4, 
+  .stat-header h4 {
+    font-size: 1.2rem;
+  }
+  
+  .overlay-content p {
+    font-size: 1rem;
+  }
+  
+  .hover-hint {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hover-card {
+    height: 250px;
+  }
+  
+  .stat-icon {
+    font-size: 1.7rem;
+  }
 }
 
 /* Barrier Importance Section */
@@ -698,6 +984,42 @@ h1 {
   padding: 1.5rem;
   margin-bottom: 2rem;
   border-left: 3px solid rgba(46, 204, 113, 0.7);
+}
+
+.barrier-image-section {
+  margin: 1rem 0 1.5rem;
+}
+
+.barrier-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.8rem;
+  text-align: left;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.barrier-image-container {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  margin: 0 auto;
+  max-width: 600px;
+  width: 90%;
+}
+
+.barrier-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+  max-height: 350px;
+  object-fit: cover;
+}
+
+.barrier-image:hover {
+  transform: scale(1.02);
 }
 
 .section-subtitle {
@@ -1314,6 +1636,135 @@ h1 {
   .resource-link {
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
+  }
+}
+
+/* Quiz Modal Styles */
+.quiz-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.quiz-modal-content {
+  width: 95%;
+  height: 95%;
+  max-width: 1400px;
+  background-color: #fff;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.3s ease;
+  overflow: hidden; /* Ensure contents don't overflow */
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #0277BD;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #01579B;
+  transform: scale(1.05);
+}
+
+.quiz-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+  transition: opacity 0.5s ease;
+  display: block;
+}
+
+.quiz-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  z-index: 5;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 123, 194, 0.2);
+  border-top-color: #0277BD;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.quiz-loading p {
+  font-size: 18px;
+  color: #0277BD;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobile responsive adjustments for quiz modal */
+@media (max-width: 768px) {
+  .quiz-modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+  
+  .quiz-iframe {
+    border-radius: 0;
+  }
+  
+  .close-button {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
   }
 }
 </style> 

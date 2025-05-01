@@ -42,8 +42,8 @@
           </ul>
         </div>
   
-        <div v-if="loading" style="color: #2563EB; margin-bottom: 0.5rem; text-align: center;">Loading weather & marine data...</div>
-        <div v-if="error" style="color: #EF4444; margin-bottom: 0.5rem; text-align: center;">{{ error }}</div>
+        <div v-if="loading" style="color: #2563EB; margin-bottom: 0.5rem; text-align: center;">Loading weather & marine data... (This can take up to 1 minute)</div>
+        <div v-if="error" style="color: #EF4444; margin-bottom: 0.5rem; text-align: center;">{{ error }}. There might be a problem with your connection - please try again.</div>
   
         <div v-if="weather?.current && marine" style="display: grid; grid-template-columns: 1fr; gap: 1rem; width: 90%; margin-left: auto; margin-right: auto;">
           <div>
@@ -134,8 +134,8 @@
         <div v-if="error" style="color: #EF4444; margin-bottom: 1rem; text-align: center; width: 90%; margin-left: auto; margin-right: auto;">{{ error }}</div>
   
         <div v-if="loading" style="width: 90%; margin: 2rem auto; text-align: center; padding: 2rem; background-color: #f3f4f6; border-radius: 0.5rem;">
-          <div style="color: #3B82F6; font-weight: 600; margin-bottom: 0.5rem;">Loading comparison data...</div>
-          <div style="color: #6B7280; font-size: 0.9rem;">This might take a few seconds.</div>
+          <div style="color: #3B82F6; font-weight: 600; margin-bottom: 0.5rem;">Loading comparison data... (This can take up to 1 minute)</div>
+          <div style="color: #6B7280; font-size: 0.9rem;">Please be patient as we retrieve data from multiple sources.</div>
         </div>
   
         <div v-else-if="compareChartData" style="width: 90%; margin: 0 auto;">

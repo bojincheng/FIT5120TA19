@@ -4,7 +4,7 @@
     <div class="bg-overlay"></div>
     
     <!-- Pool Menu Component -->
-    <PoolMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" />
+    <PoolMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" @show-quiz="showQuiz = true" />
     
     <div class="content-wrapper">
       <div class="main-content">
@@ -20,6 +20,10 @@
                 <div class="step-number">2</div>
                 <div class="step-label">Backyard Pool Safety</div>
               </div>
+              <div class="progress-step" @click="showQuiz = true">
+                <div class="step-number">3</div>
+                <div class="step-label">Test Your Readiness</div>
+              </div>
             </div>
           </div>
         </div>
@@ -27,8 +31,7 @@
         <div class="title-section">
           <h1>Pool Supervision Guidelines</h1>
           <div class="statistic-banner">
-            <h2 class="headline">Active supervision is the <span class="highlight">first line of defense</span> against drowning</h2>
-            <p class="subheadline">— Learn how to effectively supervise children around water</p>
+            <!-- Removed headline and subheadline -->
           </div>
         </div>
 
@@ -40,20 +43,28 @@
             </div>
             
             <div class="card-body">
-              <p class="danger-intro">Drowning is silent and swift. Many parents believe they would hear splashing or calls for help, but the reality is that children who drown rarely make any noise. Just 20 silent seconds is all it takes for a toddler to drown.</p>
+              <p class="danger-intro">Drowning is silent - children rarely splash or call for help. In Australia, it's the leading preventable death for under-fives. Just 20 seconds is all it takes. Active supervision is your child's best defense. Stay within arm's reach, maintain eye contact, and eliminate distractions. Those 20 seconds are too precious to waste.</p>
               
               <div class="video-section">
                 <h4 class="video-title">See The Reality of Drowning</h4>
                 
-                <div class="language-tabs">
-                  <button 
-                    v-for="lang in languages" 
-                    :key="lang.code" 
-                    :class="['lang-tab', { active: selectedLanguage === lang.code }]"
-                    @click="selectedLanguage = lang.code"
+                <div class="language-selector">
+                  <label for="language-select">Select Language:</label>
+                  <select 
+                    id="language-select" 
+                    v-model="selectedLanguage" 
+                    class="language-dropdown"
                   >
-                    {{ lang.name }}
-                  </button>
+                    <option value="en">English</option>
+                    <option value="ar">العربية (Arabic)</option>
+                    <option value="km">ភាសាខ្មែរ (Cambodian)</option>
+                    <option value="yue">廣東話 (Cantonese)</option>
+                    <option value="zh">普通话 (Mandarin)</option>
+                    <option value="mk">Македонски (Macedonian)</option>
+                    <option value="so">Soomaali (Somali)</option>
+                    <option value="tr">Türkçe (Turkish)</option>
+                    <option value="vi">Tiếng Việt (Vietnamese)</option>
+                  </select>
                 </div>
                 
                 <div class="video-container">
@@ -86,6 +97,18 @@
         </div>
       </div>
     </div>
+    
+    <!-- Quiz Modal Overlay -->
+    <div class="quiz-modal" v-if="showQuiz">
+      <div class="quiz-modal-content">
+        <button class="close-button" @click="closeQuiz">×</button>
+        <div v-if="quizLoading" class="quiz-loading">
+          <div class="loading-spinner"></div>
+          <p>Loading quiz...</p>
+        </div>
+        <iframe ref="quizFrame" src="/pool-safety-quiz" class="quiz-iframe" @load="onQuizLoaded" :style="{ opacity: quizLoading ? 0 : 1 }"></iframe>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -112,7 +135,9 @@ export default {
         { code: 'tr', name: 'Turkish' },
         { code: 'vi', name: 'Vietnamese' }
       ],
-      showNavigationArrow: false
+      showNavigationArrow: false,
+      showQuiz: false,
+      quizLoading: true
     }
   },
   methods: {
@@ -158,15 +183,47 @@ export default {
       
       // Show arrow when user has scrolled to about 90% of the page height
       this.showNavigationArrow = scrollPosition > pageHeight * 0.9;
+    },
+    closeQuiz() {
+      // Send message to iframe before closing
+      if (this.$refs.quizFrame && this.$refs.quizFrame.contentWindow) {
+        try {
+          this.$refs.quizFrame.contentWindow.postMessage({ type: 'close-quiz' }, '*');
+        } catch (err) {
+          console.error('Error sending message to quiz iframe:', err);
+        }
+      }
+      this.showQuiz = false;
+      this.quizLoading = true; // Reset loading state for next time
+    },
+    onQuizLoaded() {
+      console.log('Quiz iframe loaded');
+      // Give a slight delay before showing to ensure it's fully rendered
+      setTimeout(() => {
+        this.quizLoading = false;
+      }, 500);
+    },
+    // Add message listener for iframe communication
+    handleQuizMessage(event) {
+      if (event.data && event.data.type === 'quiz-loaded') {
+        console.log('Quiz loaded message received');
+        this.quizLoading = false;
+      }
     }
   },
   mounted() {
     // Add scroll event listener to check position
     window.addEventListener('scroll', this.handleScroll);
+    
+    // Add message listener for iframe
+    window.addEventListener('message', this.handleQuizMessage);
   },
   beforeDestroy() {
     // Remove scroll event listener when component is destroyed
     window.removeEventListener('scroll', this.handleScroll);
+    
+    // Remove message listener
+    window.removeEventListener('message', this.handleQuizMessage);
   },
   watch: {
     selectedLanguage() {
@@ -195,7 +252,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./asset/POOLHOME.png');
+  background-image: url('./assets/POOLHOME.png');
   background-size: cover;
   background-position: center;
   z-index: 0;
@@ -259,25 +316,7 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.headline {
-  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-  line-height: 1.3;
-  margin: 0 0 0.5rem;
-  color: #ffffff;
-  font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
 .highlight {
-  color: #ffcc00;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.subheadline {
-  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
-  line-height: 1.4;
-  margin: 0 0 1rem;
   color: #ffcc00;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -330,7 +369,7 @@ h1 {
   align-items: center;
   position: relative;
   margin: 0;
-  gap: 4.5rem;
+  gap: 3rem;
 }
 
 .progress-track::before {
@@ -476,37 +515,49 @@ h1 {
   background-color: #000;
 }
 
-.language-tabs {
+.language-selector {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  align-items: center;
   justify-content: center;
+  margin-bottom: 1.2rem;
+  gap: 0.75rem;
 }
 
-.lang-tab {
-  background: rgba(0, 41, 61, 0.6);
-  border: 1px solid rgba(0, 225, 255, 0.3);
-  border-radius: 0.25rem;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.8);
+.language-selector label {
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+  font-size: 1rem;
+}
+
+.language-dropdown {
+  background: rgba(0, 41, 61, 0.8);
+  color: white;
+  border: 1px solid rgba(0, 225, 255, 0.5);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 200px;
+  outline: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.lang-tab:hover {
-  background: rgba(0, 123, 194, 0.4);
-  border-color: rgba(0, 225, 255, 0.5);
-  color: white;
-}
-
-.lang-tab.active {
+.language-dropdown:hover, .language-dropdown:focus {
   background: rgba(0, 123, 194, 0.6);
-  border-color: rgba(0, 225, 255, 0.7);
+  border-color: rgba(0, 225, 255, 0.8);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.language-dropdown option {
+  background: rgba(0, 41, 61, 1);
   color: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 8px;
+}
+
+/* Remove the language-tabs styles as they're no longer needed */
+.language-tabs, .lang-tab {
+  display: none;
 }
 
 .video-caption {
@@ -630,17 +681,14 @@ h1 {
     font-size: 0.9rem;
   }
   
-  .language-tabs {
-    gap: 0.3rem;
+  .language-selector {
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
-  .lang-tab {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-  }
-  
-  .video-section {
-    padding: 1.25rem;
+  .language-dropdown {
+    width: 100%;
+    max-width: 300px;
   }
   
   .next-section-arrow {
@@ -688,19 +736,14 @@ h1 {
     font-size: 0.9rem;
   }
   
-  .language-tabs {
-    gap: 0.25rem;
+  .language-selector {
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
-  .lang-tab {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    flex-grow: 1;
-    text-align: center;
-  }
-  
-  .video-section {
-    padding: 1rem;
+  .language-dropdown {
+    width: 100%;
+    max-width: 300px;
   }
   
   .next-section-arrow {
@@ -711,6 +754,135 @@ h1 {
   
   .arrow-label {
     font-size: 0.85rem;
+  }
+}
+
+/* Quiz Modal Styles */
+.quiz-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.quiz-modal-content {
+  width: 95%;
+  height: 95%;
+  max-width: 1400px;
+  background-color: #fff;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.3s ease;
+  overflow: hidden; /* Ensure contents don't overflow */
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #0277BD;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #01579B;
+  transform: scale(1.05);
+}
+
+.quiz-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+  transition: opacity 0.5s ease;
+  display: block;
+}
+
+.quiz-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  z-index: 5;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 123, 194, 0.2);
+  border-top-color: #0277BD;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.quiz-loading p {
+  font-size: 18px;
+  color: #0277BD;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobile responsive adjustments for quiz modal */
+@media (max-width: 768px) {
+  .quiz-modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+  
+  .quiz-iframe {
+    border-radius: 0;
+  }
+  
+  .close-button {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
   }
 }
 </style> 

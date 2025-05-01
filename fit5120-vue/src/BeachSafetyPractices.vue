@@ -13,20 +13,20 @@
           <div class="progress-bar">
             <div class="progress-step active">
               <div class="step-number">1</div>
-              <div class="step-label">Beach Rules</div>
+              <div class="step-label">Picking the Right Spot</div>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step">
-              <router-link to="/beach-safety-rescue" class="step-link">
+              <router-link to="/understanding-danger" class="step-link">
                 <div class="step-number">2</div>
-                <div class="step-label">Near-Shore Rescue</div>
+                <div class="step-label">Understanding Rip Currents</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step">
-              <router-link to="/offshore-rescue" class="step-link">
+              <router-link to="/spot-rip-currents" class="step-link">
                 <div class="step-number">3</div>
-                <div class="step-label">Offshore Rescue</div>
+                <div class="step-label">Avoiding Rip Currents</div>
               </router-link>
             </div>
           </div>
@@ -35,8 +35,6 @@
         <div class="title-section">
           <h1>Essential Beach Safety Practices</h1>
           <div class="statistic-banner">
-            <h2 class="headline">Simple practices that could mean the <span class="highlight">difference</span> between a great day out and a tragedy</h2>
-            <p class="subheadline">— Follow these proven safety guidelines to enjoy Australian beaches safely</p>
           </div>
         </div>
 
@@ -60,58 +58,93 @@
             <div class="flags-banner-container">
               <img src="./assets/flags.jpeg" alt="Lifeguards with red and yellow flags alongside surfers at an Australian beach" class="flags-banner-image">
               <div class="banner-overlay"></div>
-              <div class="banner-caption">Lifeguards setting up the red and yellow flags mark the designated safe swimming area</div>
+              <div class="banner-caption">Always Swim Between the Red and Yellow Flags</div>
+              
+              <!-- Interactive Hotspots -->
+              <div class="interactive-hotspots">
+                <div class="hotspot hotspot-1">
+                  <div class="hotspot-number">1</div>
+                  <div class="hotspot-content">
+                    <h4>Always Swim Between the Red and Yellow Flags</h4>
+                    <p>This is the safest area of the beach, actively patrolled by lifeguards.</p>
+                  </div>
+                </div>
+                
+                <div class="hotspot hotspot-2">
+                  <div class="hotspot-number">2</div>
+                  <div class="hotspot-content">
+                    <h4>Designated Safe Swimming Zone</h4>
+                    <p>Lifeguards carefully choose and set up flags in areas with safer conditions and fewer hazards.</p>
+                  </div>
+                </div>
+                
+                <div class="hotspot hotspot-4">
+                  <div class="hotspot-number">3</div>
+                  <div class="hotspot-content">
+                    <h4>Faster Response</h4>
+                    <p>Lifeguards can quickly assist if you need help</p>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div class="safety-guide-grid">
-              <!-- Golden Rule Section -->
-              <div class="guide-section">
-                <div class="section-header">
-                  <div class="section-icon main-icon">🏳️‍🌈</div>
-                  <h3>The Golden Rule</h3>
-                </div>
-                
-                <div class="most-critical-rule">
-                  <h4>Always Swim Between the Red and Yellow Flags</h4>
-                  <p>This is the safest area of the beach, actively patrolled by lifeguards.</p>
-                  
-                  <ul class="rule-reasons">
-                    <li><span class="reason-marker">✓</span> <strong>Supervised Areas:</strong> Lifeguards actively patrol these zones</li>
-                    <li><span class="reason-marker">✓</span> <strong>Safer Conditions:</strong> Flags are placed in areas with fewer hazards</li>
-                    <li><span class="reason-marker">✓</span> <strong>Faster Response:</strong> Lifeguards can quickly assist if you need help</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <!-- Danger Zones Section -->
-              <div class="guide-section">
+              <!-- Danger Zone Section -->
+              <div class="guide-section full-width">
                 <div class="section-header">
                   <div class="section-icon danger-icon">⚠️</div>
                   <h3>Danger Zones to Avoid</h3>
                 </div>
                 
-                <div class="danger-zones-list">
-                  <div class="danger-zone-item">
-                    <div class="zone-icon">🪨</div>
-                    <div class="zone-details">
-                      <h4>Rocks & Headlands</h4>
-                      <p>Strong currents often form near rocks. Waves can wash you onto sharp surfaces.</p>
+                <div class="flip-cards-container">
+                  <!-- Rock Headlands Card -->
+                  <div class="flip-card">
+                    <div class="flip-card-inner">
+                      <div class="flip-card-front">
+                        <div class="card-image rockheads-image"></div>
+                        <h4 class="card-title">Rocks & Headlands</h4>
+                      </div>
+                      <div class="flip-card-back">
+                        <h4>Rocks & Headlands</h4>
+                        <ul class="danger-points">
+                          <li>Strong currents often form around rocky outcrops and headlands</li>
+                          <li>Waves can suddenly wash you onto sharp surfaces causing injuries</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                   
-                  <div class="danger-zone-item">
-                    <div class="zone-icon">🌊</div>
-                    <div class="zone-details">
-                      <h4>Strong Wave Areas</h4>
-                      <p>Large breaking waves often indicate dangerous rip currents.</p>
+                  <!-- Strong Wave Areas Card -->
+                  <div class="flip-card">
+                    <div class="flip-card-inner">
+                      <div class="flip-card-front">
+                        <div class="card-image strong-waves-image"></div>
+                        <h4 class="card-title">Strong Wave Areas</h4>
+                      </div>
+                      <div class="flip-card-back">
+                        <h4>Strong Wave Areas</h4>
+                        <ul class="danger-points">
+                          <li>Large breaking waves often indicate dangerous rip currents</li>
+                          <li>Powerful waves can knock you over and drag you into deeper water</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                   
-                  <div class="danger-zone-item">
-                    <div class="zone-icon">🏝️</div>
-                    <div class="zone-details">
-                      <h4>Unpatrolled Areas</h4>
-                      <p>Areas far from flags or at unfamiliar beaches with unknown hazards.</p>
+                  <!-- Unpatrolled Areas Card -->
+                  <div class="flip-card">
+                    <div class="flip-card-inner">
+                      <div class="flip-card-front">
+                        <div class="card-image unpatrolled-image"></div>
+                        <h4 class="card-title">Unpatrolled Areas</h4>
+                      </div>
+                      <div class="flip-card-back">
+                        <h4>Unpatrolled Areas</h4>
+                        <ul class="danger-points">
+                          <li>No lifeguards available to assist if you get into trouble</li>
+                          <li>Hidden hazards like sudden drop-offs or submerged objects</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -130,84 +163,49 @@
         
         <!-- Combined Flag Colors and When Not to Swim Section -->
         <div class="content-section">
-          <h2 class="section-title">🚨 Flag Colors & When Not to Swim</h2>
+          <h2 class="section-title">🚨 Flag Colors & What They Mean</h2>
           
           <div class="section-body">
-            <div class="split-content">
-              <div class="left-content">
-                <p>Beach flags and signs communicate important safety information. Knowing what they mean can save lives.</p>
-                
-                <div class="flags-grid">
-                  <div class="flag-card">
-                    <div class="flag-visual red-yellow">
-                      <div class="flag-stripe red"></div>
-                      <div class="flag-stripe yellow"></div>
-                    </div>
-                    <div class="flag-info">
-                      <h4>Red and Yellow</h4>
-                      <p>Swim between these flags. This area is patrolled by lifeguards.</p>
-                    </div>
-                  </div>
-                  
-                  <div class="flag-card">
-                    <div class="flag-visual red">
-                      <div class="flag-stripe red-full"></div>
-                    </div>
-                    <div class="flag-info">
-                      <h4>Red Flag</h4>
-                      <p>DANGER! Beach closed. Do not enter the water under any circumstances.</p>
-                    </div>
-                  </div>
-                  
-                  <div class="flag-card">
-                    <div class="flag-visual yellow">
-                      <div class="flag-stripe yellow-full"></div>
-                    </div>
-                    <div class="flag-info">
-                      <h4>Yellow Flag</h4>
-                      <p>WARNING! Potentially dangerous conditions. Swim with extreme caution.</p>
-                    </div>
-                  </div>
-                  
-                  <div class="flag-card">
-                    <div class="flag-visual black-white">
-                      <div class="flag-stripe black"></div>
-                      <div class="flag-stripe white"></div>
-                    </div>
-                    <div class="flag-info">
-                      <h4>Black and White</h4>
-                      <p>Area designated for watercraft. Swimming not advised.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="left-content full-width">
+              <p>Beach flags and signs communicate important safety information. Knowing what they mean can save lives.</p>
               
-              <div class="right-content">
-                <div class="context-note">
-                  <div class="context-icon">💡</div>
-                  <p>In many other countries, people swim wherever they like. In Australia, beach conditions can change rapidly and hidden dangers may not be visible.</p>
+              <div class="flip-cards-container">
+                <div class="flip-card flag-card">
+                  <div class="flip-card-inner">
+                    <div class="flip-card-front flag-front">
+                      <img src="./assets/red_yellow.jpg" alt="Red and Yellow Flag" class="real-flag-image">
+                      <h4 class="card-title">Red and Yellow</h4>
+                    </div>
+                    <div class="flip-card-back flag-back">
+                      <h4>Red and Yellow</h4>
+                      <p class="flag-description">Swim between these flags. This area is patrolled by lifeguards and is the safest place to swim.</p>
+                    </div>
+                  </div>
                 </div>
                 
-                <h4 class="subsection-title">NEVER Swim When:</h4>
-                <div class="dont-swim-grid">
-                  <div class="dont-swim-item">
-                    <span class="dont-swim-icon">🚫</span>
-                    <span class="dont-swim-text">No red and yellow flags are present</span>
+                <div class="flip-card flag-card">
+                  <div class="flip-card-inner">
+                    <div class="flip-card-front flag-front">
+                      <img src="./assets/red_flag.jpg" alt="Red Flag" class="real-flag-image">
+                      <h4 class="card-title">Red Flag</h4>
+                    </div>
+                    <div class="flip-card-back flag-back">
+                      <h4>Red Flag</h4>
+                      <p class="flag-description">DANGER! Beach closed. Do not enter the water under any circumstances.</p>
+                    </div>
                   </div>
-                  
-                  <div class="dont-swim-item">
-                    <span class="dont-swim-icon">🔴</span>
-                    <span class="dont-swim-text">A red flag is raised (beach closed)</span>
-                  </div>
-                  
-                  <div class="dont-swim-item">
-                    <span class="dont-swim-icon">👀</span>
-                    <span class="dont-swim-text">No lifeguards are visible on duty</span>
-                  </div>
-                  
-                  <div class="dont-swim-item">
-                    <span class="dont-swim-icon">🌙</span>
-                    <span class="dont-swim-text">It's after dark or at night</span>
+                </div>
+                
+                <div class="flip-card flag-card">
+                  <div class="flip-card-inner">
+                    <div class="flip-card-front flag-front">
+                      <img src="./assets/yellow_flag.jpg" alt="Yellow Flag" class="real-flag-image">
+                      <h4 class="card-title">Yellow Flag</h4>
+                    </div>
+                    <div class="flip-card-back flag-back">
+                      <h4>Yellow Flag</h4>
+                      <p class="flag-description">WARNING! Potentially dangerous conditions. Swim with extreme caution.</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -218,7 +216,7 @@
     </div>
   
     <div class="next-section-arrow" v-if="showNavigationArrow" @click="navigateToNextSection">
-      <div class="arrow-label">Near-Shore Rescue</div>
+      <div class="arrow-label">Understanding Rip Currents</div>
       <div class="arrow-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 8 4 4-4 4"/></svg>
       </div>
@@ -288,7 +286,7 @@ export default {
     navigateToNextSection() {
       // Navigate to the next section and ensure we start at the top of that page
       this.$router.push({ 
-        path: '/beach-safety-rescue',
+        path: '/understanding-danger',
         // Adding this option ensures the page is scrolled to the top
         query: { _: Date.now() } 
       }).then(() => {
@@ -391,15 +389,6 @@ h1 {
 .highlight {
   color: #f39c12;
   font-weight: 700;
-}
-
-.subheadline {
-  font-size: clamp(0.9rem, 1.8vw, 1.2rem);
-  line-height: 1.4;
-  margin: 0 0 1rem;
-  color: #f39c12;
-  font-weight: 700;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .content-section {
@@ -1419,7 +1408,7 @@ h1 {
 
 .flags-banner-image {
   width: 100%;
-  height: 250px;
+  height: 400px;
   display: block;
   object-fit: cover;
   object-position: center;
@@ -1449,7 +1438,7 @@ h1 {
 
 @media (max-width: 768px) {
   .flags-banner-image {
-    height: 200px;
+    height: 300px;
   }
   
   .banner-caption {
@@ -1460,12 +1449,468 @@ h1 {
 
 @media (max-width: 480px) {
   .flags-banner-image {
-    height: 150px;
+    height: 250px;
   }
   
   .banner-caption {
     font-size: 0.8rem;
     padding: 0.5rem;
+  }
+}
+
+/* Add styles for interactive hotspots */
+.interactive-hotspots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hotspot {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.hotspot-1 {
+  top: 25%;
+  right: 25%;
+}
+
+.hotspot-2 {
+  top: 50%;
+  right: 20%;
+}
+
+.hotspot-4 {
+  bottom: 30%;
+  left: 20%;
+}
+
+.hotspot-number {
+  width: 36px;
+  height: 36px;
+  background: #f39c12;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 5;
+  position: relative;
+  animation: pulse-hotspot 2s infinite;
+  border: 2px solid #fff;
+}
+
+.hotspot-number::after {
+  content: "Hover me!";
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  opacity: 0.8;
+  font-weight: normal;
+}
+
+.hotspot:hover .hotspot-number::after {
+  opacity: 0;
+}
+
+@keyframes pulse-hotspot {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7);
+  }
+  
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 10px rgba(243, 156, 18, 0);
+  }
+  
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .hotspot-number {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .hotspot-number::after {
+    font-size: 0.65rem;
+    bottom: -25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hotspot-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+  
+  .hotspot-number::after {
+    display: none;
+  }
+}
+
+.hotspot-content {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  padding: 12px 15px;
+  border-radius: 8px;
+  width: 220px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 6;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  bottom: 100%;
+  margin-bottom: 10px;
+  pointer-events: none;
+  border-left: 3px solid #f39c12;
+}
+
+.hotspot:hover .hotspot-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.hotspot-content:after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(0, 0, 0, 0.8);
+}
+
+.hotspot-content h4 {
+  color: #f39c12;
+  margin: 0 0 5px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.hotspot-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+  .hotspot-content {
+    width: 180px;
+    padding: 10px 12px;
+  }
+  
+  .hotspot-number {
+    width: 25px;
+    height: 25px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hotspot-content {
+    width: 150px;
+  }
+  
+  .hotspot-number {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+  }
+  
+  .hotspot-content h4 {
+    font-size: 0.8rem;
+  }
+  
+  .hotspot-content p {
+    font-size: 0.75rem;
+  }
+}
+
+/* Add CSS for flip cards */
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.flip-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.flip-card {
+  background-color: transparent;
+  perspective: 1000px;
+  height: 300px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.flip-card-front {
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  transition: all 0.3s ease;
+}
+
+.flip-card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.rockheads-image {
+  background-image: url('./assets/rockheads.jpg');
+}
+
+.strong-waves-image {
+  background-image: url('./assets/strong_wave_area.jpg');
+}
+
+.unpatrolled-image {
+  background-image: url('./assets/unpatrolled_area.jpg');
+}
+
+.card-title {
+  width: 100%;
+  text-align: center;
+  background: rgba(231, 76, 60, 0.8);
+  margin: 0;
+  padding: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.flip-card-back {
+  background: #e74c3c;
+  color: white;
+  transform: rotateY(180deg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.flip-card-back h4 {
+  font-size: 1.3rem;
+  margin: 0 0 1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 0.75rem;
+}
+
+.danger-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex: 1;
+}
+
+.danger-points li {
+  position: relative;
+  padding-left: 25px;
+  line-height: 1.4;
+  font-size: 1rem;
+}
+
+.danger-points li:before {
+  content: "!";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  background: white;
+  color: #e74c3c;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .flip-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .flip-card {
+    height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .flip-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+  }
+  
+  .flip-card {
+    height: 260px;
+  }
+  
+  .flip-card-back h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .danger-points li {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .flip-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Add additional CSS for flag flip cards */
+.flag-front .flag-visual {
+  height: 150px;
+  margin: 30px 30px 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
+
+.flag-back {
+  background: linear-gradient(135deg, #01365c, #012a47);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.flag-back h4 {
+  color: #f39c12;
+  border-bottom: 1px solid rgba(243, 156, 18, 0.3);
+  margin-bottom: 1.5rem;
+  width: 80%;
+}
+
+.flag-description {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  padding: 0 1rem;
+}
+
+.flag-card .card-title {
+  background: rgba(1, 54, 92, 0.85);
+}
+
+.flag-front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 768px) {
+  .flag-front .flag-visual {
+    height: 120px;
+    margin: 20px 20px 15px;
+  }
+  
+  .flag-description {
+    font-size: 1rem;
+    padding: 0 0.8rem;
+  }
+}
+
+/* Add additional CSS for real flag images */
+.real-flag-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  object-position: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.flag-front {
+  padding: 0;
+}
+
+.flag-front .card-title {
+  border-radius: 0;
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .real-flag-image {
+    height: 180px;
   }
 }
 </style> 

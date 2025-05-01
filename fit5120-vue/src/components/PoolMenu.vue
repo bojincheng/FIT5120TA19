@@ -6,7 +6,27 @@
       
       <div class="nav-links">
         <router-link to="/pool-safety" class="nav-link" :class="{ active: isActive('/pool-safety') }">Pool Safety Basics</router-link>
-        <router-link to="/pool-supervision" class="nav-link" :class="{ active: isActiveSupervision() }">Supervision Guidelines</router-link>
+        
+        <!-- Supervision dropdown -->
+        <div class="nav-dropdown" @mouseenter="supervisionDropdownOpen = true" @mouseleave="delayedCloseSupervisionDropdown" @click="keepSupervisionDropdownOpen">
+          <span class="nav-link dropdown-trigger" :class="{ active: isActiveSupervision() }">
+            Supervision Guidelines
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+          
+          <div class="dropdown-menu" v-show="supervisionDropdownOpen" @click.stop>
+            <router-link to="/pool-supervision" class="dropdown-item" :class="{ active: isActive('/pool-supervision') }">
+              Understanding Danger
+            </router-link>
+            <router-link to="/backyard-pool" class="dropdown-item" :class="{ active: isActive('/backyard-pool') }">
+              Backyard Pool Safety
+            </router-link>
+            <div @click="showQuizModal" class="dropdown-item">
+              Test Your Readiness
+            </div>
+          </div>
+        </div>
+        
       </div>
       
       <div class="safety-mode-selector">
@@ -56,7 +76,25 @@
       
       <div class="mobile-nav-links">
         <router-link to="/pool-safety" class="mobile-nav-link" :class="{ active: isActive('/pool-safety') }">Pool Safety Basics</router-link>
-        <router-link to="/pool-supervision" class="mobile-nav-link" :class="{ active: isActiveSupervision() }">Supervision Guidelines</router-link>
+        
+        <!-- Mobile Supervision dropdown -->
+        <div class="mobile-dropdown">
+          <div class="mobile-dropdown-header" @click="toggleMobileSupervisionDropdown">
+            <span class="mobile-nav-link" :class="{ active: isActiveSupervision() }">Supervision Guidelines</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotated': mobileSupervisionDropdownOpen }"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="mobile-dropdown-content" v-show="mobileSupervisionDropdownOpen">
+            <router-link to="/pool-supervision" class="mobile-dropdown-item" :class="{ active: isActive('/pool-supervision') }">
+              Understanding Danger
+            </router-link>
+            <router-link to="/backyard-pool" class="mobile-dropdown-item" :class="{ active: isActive('/backyard-pool') }">
+              Backyard Pool Safety
+            </router-link>
+            <div @click="showQuizModal" class="mobile-dropdown-item">
+              Test Your Readiness
+            </div>
+          </div>
+        </div>
       </div>
       
       <div class="mobile-safety-tip">
@@ -79,7 +117,11 @@ export default {
   data() {
     return {
       modeDropdownOpen: false,
-      safetyMode: 'Pool Safety'
+      supervisionDropdownOpen: false,
+      mobileSupervisionDropdownOpen: false,
+      safetyMode: 'Pool Safety',
+      closeTimeout: null,
+      dropdownClicked: false
     }
   },
   mounted() {
@@ -88,6 +130,11 @@ export default {
   },
   beforeDestroy() {
     document.removeEventListener('click', this.closeDropdownOutside);
+    
+    // Clear any pending timeouts to prevent memory leaks
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+    }
   },
   methods: {
     toggleMenu() {
@@ -97,6 +144,16 @@ export default {
       // Stop propagation to prevent document click handler from immediately closing it
       event.stopPropagation();
       this.modeDropdownOpen = !this.modeDropdownOpen;
+      this.supervisionDropdownOpen = false;
+    },
+    toggleSupervisionDropdown(event) {
+      // Keep this method for mobile support, but for desktop we're using hover
+      event.stopPropagation();
+      this.supervisionDropdownOpen = !this.supervisionDropdownOpen;
+      this.modeDropdownOpen = false;
+    },
+    toggleMobileSupervisionDropdown() {
+      this.mobileSupervisionDropdownOpen = !this.mobileSupervisionDropdownOpen;
     },
     selectMode(mode) {
       this.safetyMode = mode;
@@ -113,10 +170,14 @@ export default {
       this.$emit('mode-change', mode);
     },
     closeDropdownOutside(event) {
-      const selector = document.querySelector('.safety-mode-selector');
-      if (selector && !selector.contains(event.target)) {
+      // Handle safety mode dropdown
+      const modeSelector = document.querySelector('.safety-mode-selector');
+      if (modeSelector && !modeSelector.contains(event.target)) {
         this.modeDropdownOpen = false;
       }
+      
+      // We don't need this for supervision dropdown anymore since it's hover-based
+      // but keep it for mobile support
     },
     isActive(route) {
       // Exact path matching for all routes
@@ -124,7 +185,47 @@ export default {
     },
     isActiveSupervision() {
       // Check if the current route is either pool-supervision or backyard-pool
-      return this.$route.path === '/pool-supervision' || this.$route.path === '/backyard-pool';
+      return this.$route.path === '/pool-supervision' || this.$route.path === '/backyard-pool' || this.$route.path === '/pool-safety-quiz';
+    },
+    showQuizModal() {
+      // Emit event to show quiz modal
+      this.$emit('show-quiz');
+      
+      // Close mobile menu if open
+      if (this.menuOpen) {
+        this.toggleMenu();
+      }
+      
+      // Close dropdowns
+      this.supervisionDropdownOpen = false;
+      this.mobileSupervisionDropdownOpen = false;
+    },
+    delayedCloseSupervisionDropdown() {
+      // Clear any existing timeout to prevent multiple timeouts
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout);
+      }
+      
+      // If the dropdown was clicked, don't close it on mouseleave
+      if (this.dropdownClicked) {
+        return;
+      }
+      
+      // Set a timeout to close the dropdown after a delay
+      this.closeTimeout = setTimeout(() => {
+        this.supervisionDropdownOpen = false;
+      }, 500); // 500ms delay before closing
+    },
+    keepSupervisionDropdownOpen() {
+      // Mark the dropdown as clicked to prevent it from closing on mouseleave
+      this.dropdownClicked = true;
+      
+      // Add a one-time click handler to the document to close the dropdown when clicking elsewhere
+      document.addEventListener('click', this.closeSupervisionDropdown, { once: true });
+    },
+    closeSupervisionDropdown() {
+      this.supervisionDropdownOpen = false;
+      this.dropdownClicked = false;
     }
   }
 }
@@ -488,6 +589,179 @@ export default {
   font-size: 0.9rem;
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dropdown Menu Styles */
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.dropdown-trigger svg {
+  transition: transform 0.3s ease;
+}
+
+.dropdown-trigger:hover svg {
+  transform: translateY(2px);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 220px;
+  background: rgba(0, 61, 91, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  padding: 0.5rem;
+  z-index: 10;
+  border: 1px solid rgba(0, 225, 255, 0.3);
+  animation: fadeDown 0.2s ease-out;
+  /* Adding a small amount of space before the dropdown to prevent it from closing too quickly */
+  margin-top: 10px;
+  /* Adding a longer transition time for closing */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  /* These properties ensure smooth transition when showing/hiding the dropdown */
+  opacity: 1;
+}
+
+.dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -20px; /* Increased from -10px to create a larger buffer zone */
+  left: 0;
+  width: 100%;
+  height: 20px; /* Increased from 10px */
+  background: transparent;
+}
+
+/* New styles to create a buffer area around the dropdown */
+.nav-dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0.1s; /* Add a small delay before showing */
+}
+
+.dropdown-menu::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: -20px;
+  width: calc(100% + 40px); /* Extend 20px on each side */
+  height: 30px;
+  background: transparent;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 196, 217, 0.2);
+  color: white;
+}
+
+.dropdown-item.active {
+  background: rgba(0, 196, 217, 0.3);
+  color: white;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  background: rgba(0, 225, 255, 0.3);
+  color: white;
+  font-weight: 700;
+}
+
+.dropdown-item.active .step-number {
+  background: #00e1ff;
+}
+
+/* Mobile Dropdown Styles */
+.mobile-dropdown {
+  width: 100%;
+}
+
+.mobile-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+}
+
+.mobile-dropdown-header svg {
+  margin-right: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.mobile-dropdown-header svg.rotated {
+  transform: rotate(180deg);
+}
+
+.mobile-dropdown-content {
+  padding: 0.5rem 0;
+  background: rgba(0, 41, 61, 0.5);
+}
+
+.mobile-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.mobile-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.mobile-dropdown-item.active {
+  background: rgba(0, 196, 217, 0.15);
+  color: #00e1ff;
+}
+
+.mobile-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  background: rgba(0, 225, 255, 0.2);
+  color: white;
+  font-weight: 700;
+}
+
+.mobile-dropdown-item.active .mobile-step-number {
+  background: rgba(0, 225, 255, 0.5);
 }
 
 /* Responsive Styles */

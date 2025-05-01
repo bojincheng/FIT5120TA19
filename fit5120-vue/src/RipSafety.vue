@@ -10,29 +10,29 @@
       <div class="main-content">
         <div class="rip-progress-nav">
           <div class="progress-bar">
+            <div class="progress-step">
+              <router-link to="/beach-safety-rescue" class="step-link">
+                <div class="step-number">1</div>
+                <div class="step-label">Recognising Signs of Trouble</div>
+              </router-link>
+            </div>
+            <div class="progress-connector"></div>
             <div class="progress-step active">
-              <div class="step-number">1</div>
-              <div class="step-label">What Are Rips</div>
+              <div class="step-number">2</div>
+              <div class="step-label">Understanding Rip Currents</div>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step">
               <router-link to="/spot-rip-currents" class="step-link">
-                <div class="step-number">2</div>
+                <div class="step-number">3</div>
                 <div class="step-label">Spot Rip Currents</div>
               </router-link>
             </div>
             <div class="progress-connector"></div>
             <div class="progress-step">
               <router-link to="/survive-rip-currents" class="step-link">
-                <div class="step-number">3</div>
-                <div class="step-label">Survive Rip Currents</div>
-              </router-link>
-            </div>
-            <div class="progress-connector"></div>
-            <div class="progress-step">
-              <router-link to="/safety-tool" class="step-link">
                 <div class="step-number">4</div>
-                <div class="step-label">Safety Tools</div>
+                <div class="step-label">Survive Rip Currents</div>
               </router-link>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default {
         link.classList.remove('active');
       });
       
-      // Add active class to rip current safety links
+      // Add active class to "Facing the Risk" links
       const desktopRipLink = document.querySelector('.nav-link[href="/rip-safety"]');
       const mobileRipLink = document.querySelector('.mobile-nav-link[href="/rip-safety"]');
       
