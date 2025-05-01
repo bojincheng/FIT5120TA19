@@ -112,19 +112,19 @@
                   <div class="wave-danger-visual">
                     <img 
                       v-if="marine.wave_height > 1" 
-                      src="../assets/child_wave_danger.jpg" 
+                      :src="images.childWaveDanger" 
                       alt="Child in dangerous wave" 
                       class="wave-danger-image"
                     />
                     <img 
                       v-else-if="marine.wave_height > 0.5" 
-                      src="../assets/child_wave_moderate.jpg" 
+                      :src="images.childWaveModerate" 
                       alt="Child in moderate waves" 
                       class="wave-danger-image"
                     />
                     <img 
                       v-else 
-                      src="../assets/child_wave_safe.jpg" 
+                      :src="images.childWaveSafe" 
                       alt="Child in safe waves" 
                       class="wave-danger-image"
                     />
@@ -203,19 +203,19 @@
                   <div class="wave-danger-visual">
                     <img 
                       v-if="marine.ocean_current_velocity > 0.8" 
-                      src="../assets/dangerous_current.jpg" 
+                      :src="images.dangerousCurrent" 
                       alt="Dangerous ocean current" 
                       class="wave-danger-image"
                     />
                     <img 
                       v-else-if="marine.ocean_current_velocity > 0.3" 
-                      src="../assets/moderate_current.jpg" 
+                      :src="images.moderateCurrent" 
                       alt="Moderate ocean current" 
                       class="wave-danger-image"
                     />
                     <img 
                       v-else 
-                      src="../assets/low_current.jpg" 
+                      :src="images.lowCurrent" 
                       alt="Low ocean current" 
                       class="wave-danger-image"
                     />
@@ -470,19 +470,19 @@
                   <div class="current-visual-card">
                     <img 
                       v-if="(dataset.data[4] || 0) > 0.7" 
-                      src="../assets/dangerous_current.jpg" 
+                      :src="images.dangerousCurrent" 
                       alt="Dangerous current" 
                       class="current-image" 
                     />
                     <img 
                       v-else-if="(dataset.data[4] || 0) > 0.3" 
-                      src="../assets/moderate_current.jpg" 
+                      :src="images.moderateCurrent" 
                       alt="Moderate current" 
                       class="current-image" 
                     />
                     <img 
                       v-else 
-                      src="../assets/low_current.jpg" 
+                      :src="images.lowCurrent" 
                       alt="Low current" 
                       class="current-image" 
                     />
@@ -542,10 +542,39 @@
 </template>
 
 <script>
+// Import images
+import dangerousCurrentImage from '@/assets/dangerous_current.jpg'
+import moderateCurrentImage from '@/assets/moderate_current.jpg'
+import lowCurrentImage from '@/assets/low_current.jpg'
+import childWaveDangerImage from '@/assets/child_wave_danger.jpg'
+import childWaveModerateImage from '@/assets/child_wave_moderate.jpg'
+import childWaveSafeImage from '@/assets/child_wave_safe.jpg'
+import harshBeachImage from '@/assets/harsh_beach.jpeg'
+import calmBeachImage from '@/assets/calm_beach.jpeg'
+import moderateBeachImage from '@/assets/moderate.jpeg'
+import highwavesImage from '@/assets/highwaves.avif'
+import modWavesImage from '@/assets/mod_waves.jpg'
+import lowWavesImage from '@/assets/low_waves.jpeg'
+
 export default {
   name: 'BeachComparisonTool',
   data() {
     return {
+      // Add imported images to the data
+      images: {
+        dangerousCurrent: dangerousCurrentImage,
+        moderateCurrent: moderateCurrentImage,
+        lowCurrent: lowCurrentImage,
+        childWaveDanger: childWaveDangerImage,
+        childWaveModerate: childWaveModerateImage,
+        childWaveSafe: childWaveSafeImage,
+        harshBeach: harshBeachImage,
+        calmBeach: calmBeachImage,
+        moderateBeach: moderateBeachImage,
+        highwaves: highwavesImage,
+        modWaves: modWavesImage,
+        lowWaves: lowWavesImage
+      },
       activeTab: 'search',
       reportTab: 'conditions',
       address: '',
