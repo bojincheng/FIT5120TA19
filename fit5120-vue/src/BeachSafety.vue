@@ -2785,8 +2785,18 @@ export default {
   .swipe-instruction {
     display: block;
     margin-top: 0.5rem;
-    font-size: 0.9rem;
-    opacity: 0.8;
+    font-size: 1.2rem;
+    font-weight: 600;
+    opacity: 1;
+    color: #ffcc00;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    animation: pulse-instruction 2s infinite;
+  }
+  
+  @keyframes pulse-instruction {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
   }
   
   /* 2. Stat Cards */
