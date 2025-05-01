@@ -203,7 +203,7 @@
                   <div class="wave-danger-visual">
                     <img 
                       v-if="marine.ocean_current_velocity > 0.8" 
-                      src="../assets/dangerous_current.JPG" 
+                      src="../assets/dangerous_current.jpg" 
                       alt="Dangerous ocean current" 
                       class="wave-danger-image"
                     />
@@ -470,7 +470,7 @@
                   <div class="current-visual-card">
                     <img 
                       v-if="(dataset.data[4] || 0) > 0.7" 
-                      src="../assets/dangerous_current.JPG" 
+                      src="../assets/dangerous_current.jpg" 
                       alt="Dangerous current" 
                       class="current-image" 
                     />
