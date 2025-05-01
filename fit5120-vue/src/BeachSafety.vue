@@ -57,14 +57,14 @@
                           <!-- Info points for Asian Beach -->
                           <div class="info-point point-1 asian" style="top: 30%; left: 25%;">
                             <div class="info-number">1</div>
-                            <div class="info-tooltip left">
+                            <div class="info-tooltip right">
                               <p>Gentle waves - safe for children</p>
                             </div>
                           </div>
                           
                           <div class="info-point point-2 asian" style="top: 60%; left: 40%;">
                             <div class="info-number">2</div>
-                            <div class="info-tooltip left">
+                            <div class="info-tooltip right">
                               <p>Predictable water conditions</p>
                             </div>
                           </div>

@@ -4,7 +4,7 @@
     <div class="bg-overlay"></div>
     
     <!-- Pool Menu Component -->
-    <PoolMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" />
+    <PoolMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" @show-quiz="showQuiz = true" />
     
     <div class="content-wrapper">
       <div class="main-content">
@@ -79,6 +79,18 @@
               </div>
       </div>
     </div>
+    
+    <!-- Quiz Modal Overlay -->
+    <div class="quiz-modal" v-if="showQuiz">
+      <div class="quiz-modal-content">
+        <button class="close-button" @click="closeQuiz">×</button>
+        <div v-if="quizLoading" class="quiz-loading">
+          <div class="loading-spinner"></div>
+          <p>Loading quiz...</p>
+        </div>
+        <iframe ref="quizFrame" src="/pool-safety-quiz" class="quiz-iframe" @load="onQuizLoaded" :style="{ opacity: quizLoading ? 0 : 1 }"></iframe>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -93,7 +105,9 @@ export default {
   data() {
     return {
       menuOpen: false,
-      activeTab: 'overview'
+      activeTab: 'overview',
+      showQuiz: false,
+      quizLoading: true
     }
   },
   methods: {
@@ -105,6 +119,26 @@ export default {
       } else {
         document.body.style.overflow = '';
       }
+    },
+    closeQuiz() {
+      this.showQuiz = false;
+      // Reset scroll lock when closing quiz
+      document.body.style.overflow = '';
+      
+      // Tell the quiz iframe to close if possible
+      try {
+        const quizFrame = this.$refs.quizFrame;
+        if (quizFrame && quizFrame.contentWindow) {
+          quizFrame.contentWindow.postMessage({ type: 'close-quiz' }, '*');
+        }
+      } catch (e) {
+        console.error('Error sending message to quiz iframe:', e);
+      }
+    },
+    onQuizLoaded() {
+      this.quizLoading = false;
+      // Lock scrolling when quiz is shown
+      document.body.style.overflow = 'hidden';
     }
   }
 }
@@ -715,5 +749,90 @@ h1 {
   .tab-label {
     font-size: 0.9rem;
   }
+}
+
+/* Quiz Modal Styles */
+.quiz-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+}
+
+.quiz-modal-content {
+  background: #F5F5F5;
+  width: 95%;
+  max-width: 1200px;
+  height: 92%;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  font-size: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background: #E74C3C;
+  transform: rotate(90deg);
+}
+
+.quiz-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  transition: opacity 0.5s ease;
+}
+
+.quiz-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #e0e0e0;
+  border-top: 5px solid #0277BD;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style> 

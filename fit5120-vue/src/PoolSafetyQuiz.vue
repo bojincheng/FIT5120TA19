@@ -141,7 +141,7 @@
     <div class="quiz-container" v-if="quizActive">
       <div class="timer">
         <div class="timer-bar" :style="{ width: `${timeRemaining * (isSmallScreen ? 10 : 6.67)}%` }"></div>
-        <div class="timer-text">{{ timeRemaining }}</div>
+        <div class="timer-text">{{ timeRemaining }} seconds</div>
       </div>
       
       <div class="question">
