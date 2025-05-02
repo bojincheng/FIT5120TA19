@@ -41,7 +41,7 @@
       <div v-if="error" class="error-message">
         <div>{{ error }}</div>
         <button 
-          @click="fetchCompareBeaches" 
+          @click="retrySearch()" 
           style="margin-top: 0.75rem; background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;"
         >
           Retry
@@ -359,7 +359,7 @@
         <div v-if="error" class="error-message">
           <div>{{ error }}</div>
           <button 
-            @click="fetchCompareBeaches" 
+            @click="fetchCompareBeaches()" 
             style="margin-top: 0.75rem; background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;"
           >
             Retry
@@ -1625,7 +1625,7 @@ export default {
     
     getComparisonConclusion() {
       if (!this.compareChartData || !this.compareChartData.datasets || this.compareChartData.datasets.length < 2) {
-        return "Please select two beaches to compare.";
+        return "";
       }
       
       const homeData = this.compareChartData.datasets[0].data;
@@ -2224,6 +2224,41 @@ export default {
         return `Keep children in shallow water and within arm's reach`;
       } else {
         return `Still supervise constantly and be aware of changing conditions`;
+      }
+    },
+    // Add retrySearch method to handle retry functionality in the search tab
+    retrySearch() {
+      if (this.address) {
+        this.error = null;
+        this.loading = true;
+        
+        // Find the selected beach from suggestions if possible
+        const selectedBeach = this.suggestions.find(item => 
+          item.display_name.split(',')[0].trim() === this.address.trim()
+        );
+        
+        if (selectedBeach) {
+          const lat = parseFloat(selectedBeach.lat);
+          const lon = parseFloat(selectedBeach.lon);
+          
+          this.fetchBeachData(lat, lon)
+            .then(data => {
+              this.weather = data.weather;
+              this.marine = data.marine;
+            })
+            .catch(err => {
+              this.error = err.message;
+            })
+            .finally(() => {
+              this.loading = false;
+            });
+        } else {
+          // If no valid beach is found, just reset loading state without showing error message
+          this.loading = false;
+        }
+      } else {
+        // Just reset loading state without error message
+        this.loading = false;
       }
     }
   }
