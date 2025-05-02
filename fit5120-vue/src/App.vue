@@ -1,27 +1,17 @@
 <template>
-  <div id="app">
-    <BHeader />
-    <router-view />
-  </div>
+  <router-view></router-view>
 </template>
 
 <script>
-import BHeader from './components/BHeader.vue';
-
 export default {
-  name: 'App',
-  components: {
-    BHeader
-  }
-};
+  name: 'App'
+}
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
 }
-</style>
-
+</style> 
