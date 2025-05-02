@@ -3,15 +3,24 @@
       <h1>Welcome to Drowning Statistics</h1>
       <p>Explore drowning statistics, search for specific data, and learn more about water safety.</p>
       
-      <router-link to="/DrowningSearch">
-        <button>Go to Drowning Search</button>
+      <router-link to="/KidPoolSim">
+        <button>Go to Drowning Sim</button>
       </router-link>
+    </div>
+    <div class="simulation-wrapper">
+      <PoolSafetySimulation :width="600" :height="400" />
     </div>
   </template>
   
   <script>
+  import PoolSafetySimulation from './KidPoolSim.vue';
+
+
   export default {
-    name: 'HomePage'
+    name: 'HomePage',
+    components: {
+      PoolSafetySimulation
+    }
   };
   </script>
   
