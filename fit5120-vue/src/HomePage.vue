@@ -319,9 +319,10 @@ function navigateToPoolSafetyQuiz() {
 .header {
   text-align: center;
   position: relative;
-  z-index: 1;
+  z-index: 3;
   animation: fadeIn 0.8s ease-out;
   margin-bottom: 0.5rem;
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -349,13 +350,18 @@ h1 {
   gap: 2rem;
   margin-bottom: 1.5rem;
   padding: 0.75rem 2rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 3rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
   max-width: fit-content;
   margin-left: auto;
   margin-right: auto;
   width: auto;
+  position: sticky;
+  top: 1rem;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .step {
@@ -378,28 +384,16 @@ h1 {
   justify-content: center;
   font-weight: 700;
   font-size: 1.2rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
   border: 2px solid rgba(255, 255, 255, 0.9);
-}
-
-.step:hover .step-number {
-  transform: scale(1.1);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-  background: #f0f8ff;
 }
 
 .step span {
   font-size: 1rem;
   color: #ffffff;
   font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   text-align: center;
-}
-
-.step:hover span {
-  transform: translateY(2px);
 }
 
 .step-connector {
@@ -409,6 +403,7 @@ h1 {
   margin-top: 1.25rem;
   opacity: 0.9;
   border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .options-container {
@@ -879,6 +874,8 @@ p {
     gap: 1.5rem;
     width: 90%;
     max-width: 500px;
+    position: sticky;
+    top: 0.5rem;
   }
   
   .step-number {
@@ -980,22 +977,24 @@ p {
   }
   
   .progress-steps {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    gap: 0.75rem 1.5rem;
-    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
     margin-bottom: 1rem;
     max-width: 95%;
+    position: sticky;
+    top: 0.5rem;
   }
 
   .step {
     flex: 0 0 auto;
-    min-width: 80px;
-    margin: 0 0.25rem;
+    min-width: 70px;
+    margin: 0;
   }
-
+  
   .step-connector {
-    display: none;
+    width: 1.25rem;
   }
   
   .step-number {
@@ -1129,5 +1128,12 @@ h1, h2, h3, p, span {
   max-width: 100%;
   overflow-wrap: break-word;
   word-wrap: break-word;
+}
+
+/* Add a new active class for the steps to indicate which part of the guide the user is on */
+.step.active .step-number {
+  background: #f0f8ff;
+  color: #01579b;
+  box-shadow: 0 0 15px rgba(240, 248, 255, 0.6);
 }
 </style> 
