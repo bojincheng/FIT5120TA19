@@ -39,7 +39,7 @@
               <p>Immigrants are 5x more at risk than Australians.</p>
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="aussie-waters-heading">Familiarising Yourself with Aussie Waters</h3>
+                <h3 class="aussie-waters-heading">Step 1: Familiarising Yourself with Aussie Waters</h3>
                 <div class="line"></div>
               </div>
               <div class="beach-cards-container">
@@ -59,7 +59,7 @@
               <div class="preventing-risk">
                 <div class="title-with-lines">
                   <div class="line"></div>
-                  <h3>Preventing Risk</h3>
+                  <h3>Step 2: Preventing Risk</h3>
                   <div class="line"></div>
                 </div>
                 <div class="prevention-images">
@@ -79,7 +79,7 @@
                 <div class="facing-risk-link">
                   <div class="title-with-lines">
                     <div class="line"></div>
-                    <h3>Facing the Risk</h3>
+                    <h3>Step 3: Facing the Risk</h3>
                     <div class="line"></div>
                   </div>
                   <div class="prevention-images">
@@ -120,7 +120,7 @@
               <p>80% of child drownings happen in home pools.</p>
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="pool-risk-heading">Understanding the Risk</h3>
+                <h3 class="pool-risk-heading">Step 1: Understanding the Risk</h3>
                 <div class="line"></div>
               </div>
               <div class="pool-image-container" @click="continueToSafety('pool')">
@@ -132,7 +132,7 @@
               
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="pool-risk-heading">Preventing Risks</h3>
+                <h3 class="pool-risk-heading">Step 2: Preventing Risks</h3>
                 <div class="line"></div>
               </div>
               
@@ -145,7 +145,7 @@
               
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="pool-risk-heading">Test Your Preparedness</h3>
+                <h3 class="pool-risk-heading">Step 3: Test Your Preparedness</h3>
                 <div class="line"></div>
               </div>
               
