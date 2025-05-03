@@ -331,16 +331,15 @@ function navigateToPoolSafetyQuiz() {
 }
 
 h1 {
-  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
   margin-bottom: 1rem;
   color: #ffffff;
   font-weight: 700;
   letter-spacing: -0.01em;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  width: 100%;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 100%;
+  transform: translateX(-7%);
 }
 
 .progress-steps {
