@@ -153,19 +153,19 @@
                     
                     <div class="hover-description" v-if="marine.wave_height > 1">
                       <div class="hover-content">
-                        <p>These waves are {{ Math.round(marine.wave_height/1.2) }}× taller than a child and can easily knock them underwater</p>
+                        <p>These waves are {{ Math.round(marine.wave_height/1.2) > 1 ? Math.round(marine.wave_height/1.2) + '× taller than' : 'about the same height as' }} a 10-year-old child and can easily knock them underwater</p>
                         <p>Adults should stay in shallow water and keep children at the water's edge only</p>
                       </div>
                     </div>
                     <div class="hover-description" v-else-if="marine.wave_height > 0.5">
                       <div class="hover-content">
-                        <p>These waves can reach up to a child's chest and have enough force to unbalance them</p>
+                        <p>These waves can reach up to a 10-year-old child's chest and have enough force to unbalance them</p>
                         <p>Keep children within arm's reach at all times</p>
                       </div>
                     </div>
                     <div class="hover-description" v-else>
                       <div class="hover-content">
-                        <p>These smaller waves are generally below knee-height for an average child</p>
+                        <p>These smaller waves are generally below knee-height for a 6-year-old child</p>
                         <p>Still supervise children closely at all times</p>
                       </div>
                     </div>
@@ -244,7 +244,7 @@
               
                     <div class="hover-description" v-if="marine.ocean_current_velocity > 0.8">
                       <div class="hover-content">
-                        <p>This current is {{ Math.round(marine.ocean_current_velocity/0.3) }}× faster than a 10-year-old child can swim. They'll be swept away within seconds</p>
+                        <p>This current is {{ Math.round(marine.ocean_current_velocity/0.3) > 1 ? Math.round(marine.ocean_current_velocity/0.3) + '× faster than' : 'about the same speed as' }} a 10-year-old child can swim. They'll be swept away within seconds</p>
                         <p>Even strong adult swimmers will struggle against currents this strong</p>
                   </div>
                 </div>
@@ -461,7 +461,7 @@
                     </div>
                     <div class="wave-details-card">
                       <div class="wave-comparison">
-                        <p>These waves are <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
+                        <p>These waves are <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
                         <p>Similar to <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
                       </div>
                       <div class="impact-description">
@@ -499,7 +499,7 @@
                     </div>
                     <div v-if="(dataset.data[4] || 0) > 0" class="current-details-card">
                       <div class="current-comparison">
-                        <p>This current is <span class="highlight">{{ Math.round((dataset.data[4] || 0)/0.3) > 1 ? Math.round((dataset.data[4] || 0)/0.3) + '× faster than' : 'as fast as' }}</span> a 10-year-old child can swim</p>
+                        <p>This current is <span class="highlight">{{ Math.round((dataset.data[4] || 0)/0.3) > 1 ? Math.round((dataset.data[4] || 0)/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
                         <p>Pulls you <span class="highlight">{{ Math.round((dataset.data[4] || 0)*10) }}m offshore</span> in 10 seconds</p>
                       </div>
                       <div class="impact-description">
@@ -1655,7 +1655,11 @@ export default {
             waveComparison = `Waves at ${newName} are much taller than your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
           } else {
             const ratio = Math.round(newWaveHeight/homeWaveHeight);
-            waveComparison = `Waves at ${newName} are ${ratio > 1 ? ratio + '× taller' : 'about the same height'} as your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
+            let heightCompText = 'about the same height';
+            if (ratio > 1) {
+              heightCompText = ratio + '× taller';
+            }
+            waveComparison = `Waves at ${newName} are ${heightCompText} as your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
           }
         } else {
           waveComparison = `Waves at ${newName} are smaller than your home beach, making swimming easier.`;
@@ -1673,7 +1677,20 @@ export default {
             currentComparison = `Currents at ${newName} are much stronger than your home beach ${newCurrentSpeed > 0.8 ? '- about ' + Math.round(newCurrentSpeed/0.3) + '× faster than a 10-year-old child can swim' : '- comparable to a casual cyclist'}.`;
           } else {
             const ratio = Math.round(newCurrentSpeed/homeCurrentSpeed);
-            currentComparison = `Currents at ${newName} are ${ratio > 1 ? ratio + '× faster' : 'about the same speed'} as your home beach ${newCurrentSpeed > 0.8 ? '- about ' + Math.round(newCurrentSpeed/0.3) + '× faster than a 10-year-old child can swim' : '- comparable to a casual cyclist'}.`;
+            let speedCompText = 'about the same speed';
+            if (ratio > 1) {
+              speedCompText = ratio + '× faster';
+            }
+            let childSwimText = '- comparable to a casual cyclist';
+            if (newCurrentSpeed > 0.8) {
+              const childSwimRatio = Math.round(newCurrentSpeed/0.3);
+              if (childSwimRatio > 1) {
+                childSwimText = '- about ' + childSwimRatio + '× faster than a 10-year-old child can swim';
+              } else {
+                childSwimText = '- about the same speed as a 10-year-old child can swim';
+              }
+            }
+            currentComparison = `Currents at ${newName} are ${speedCompText} as your home beach ${childSwimText}.`;
           }
         } else {
           currentComparison = `Currents at ${newName} are gentler than your home beach, reducing the risk of being pulled offshore.`;
@@ -2188,7 +2205,11 @@ export default {
       const waveHeight = Math.max(data[2] || 0, data[3] || 0);
       if (waveHeight > 1.2) {
         const heightRatio = Math.round(waveHeight/1.2);
-        return `These waves are ${heightRatio > 1 ? heightRatio + '× taller than' : 'about the same height as'} a 10-year-old child and can easily knock them underwater`;
+        let heightText = 'about the same height as';
+        if (heightRatio > 1) {
+          heightText = heightRatio + '× taller than';
+        }
+        return `These waves are ${heightText} a 10-year-old child and can easily knock them underwater`;
       } else if (waveHeight > 0.7) {
         return `These waves can reach up to a child's chest and have enough force to unbalance them`;
       } else {
@@ -2209,7 +2230,11 @@ export default {
       const currentSpeed = data[4] || 0;
       if (currentSpeed > 0.8) {
         const speedRatio = Math.round(currentSpeed/0.3);
-        return `This current is ${speedRatio > 1 ? speedRatio + '× faster than' : 'about the same speed as'} a 10-year-old child can swim. They'll be swept away within seconds`;
+        let speedText = 'about the same speed as';
+        if (speedRatio > 1) {
+          speedText = speedRatio + '× faster than';
+        }
+        return `This current is ${speedText} a 10-year-old child can swim. They'll be swept away within seconds`;
       } else if (currentSpeed > 0.5) {
         return `This current is about 2× faster than a 10-year-old child can swim against, making it difficult for them to make progress`;
       } else {
