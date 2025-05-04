@@ -57,14 +57,14 @@
                           <!-- Info points for Asian Beach -->
                           <div class="info-point point-1 asian" style="top: 30%; left: 25%;">
                             <div class="info-number">1</div>
-                            <div class="info-tooltip left">
+                            <div class="info-tooltip right">
                               <p>Gentle waves - safe for children</p>
                             </div>
                           </div>
                           
                           <div class="info-point point-2 asian" style="top: 60%; left: 40%;">
                             <div class="info-number">2</div>
-                            <div class="info-tooltip left">
+                            <div class="info-tooltip right">
                               <p>Predictable water conditions</p>
                             </div>
                           </div>
@@ -2785,8 +2785,18 @@ export default {
   .swipe-instruction {
     display: block;
     margin-top: 0.5rem;
-    font-size: 0.9rem;
-    opacity: 0.8;
+    font-size: 1.2rem;
+    font-weight: 600;
+    opacity: 1;
+    color: #ffcc00;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    animation: pulse-instruction 2s infinite;
+  }
+  
+  @keyframes pulse-instruction {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
   }
   
   /* 2. Stat Cards */

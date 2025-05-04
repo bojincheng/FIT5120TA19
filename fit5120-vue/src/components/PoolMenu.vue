@@ -2,17 +2,17 @@
   <div class="pool-nav-container">
     <!-- Top Navigation Bar -->
     <nav class="top-nav">
-      <router-link to="/home" class="nav-brand">WaterWiseFamily</router-link>
+      <router-link to="/home" class="nav-brand" @click="scrollToTop">WaterWiseFamily</router-link>
       
       <div class="nav-links">
         <router-link to="/pool-safety" class="nav-link" :class="{ active: isActive('/pool-safety') }">Pool Safety Basics</router-link>
         
         <!-- Supervision dropdown -->
         <div class="nav-dropdown" @mouseenter="supervisionDropdownOpen = true" @mouseleave="delayedCloseSupervisionDropdown" @click="keepSupervisionDropdownOpen">
-          <span class="nav-link dropdown-trigger" :class="{ active: isActiveSupervision() }">
+          <router-link to="/pool-supervision" class="nav-link dropdown-trigger" :class="{ active: isActiveSupervision() }">
             Supervision Guidelines
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </span>
+          </router-link>
           
           <div class="dropdown-menu" v-show="supervisionDropdownOpen" @click.stop>
             <router-link to="/pool-supervision" class="dropdown-item" :class="{ active: isActive('/pool-supervision') }">
@@ -52,7 +52,7 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" :class="{ 'open': menuOpen }">
       <div class="mobile-menu-header">
-        <router-link to="/home" class="brand-logo">WaterWiseFamily</router-link>
+        <router-link to="/home" class="brand-logo" @click="scrollToTop">WaterWiseFamily</router-link>
         <div class="close-menu" @click="toggleMenu">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </div>
@@ -80,7 +80,7 @@
         <!-- Mobile Supervision dropdown -->
         <div class="mobile-dropdown">
           <div class="mobile-dropdown-header" @click="toggleMobileSupervisionDropdown">
-            <span class="mobile-nav-link" :class="{ active: isActiveSupervision() }">Supervision Guidelines</span>
+            <router-link to="/pool-supervision" class="mobile-nav-link" :class="{ active: isActiveSupervision() }">Supervision Guidelines</router-link>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotated': mobileSupervisionDropdownOpen }"><polyline points="6 9 12 15 18 9"></polyline></svg>
           </div>
           <div class="mobile-dropdown-content" v-show="mobileSupervisionDropdownOpen">
@@ -121,7 +121,9 @@ export default {
       mobileSupervisionDropdownOpen: false,
       safetyMode: 'Pool Safety',
       closeTimeout: null,
-      dropdownClicked: false
+      dropdownClicked: false,
+      supervisionDropdownCloseTimer: null,
+      quizModalOpen: false
     }
   },
   mounted() {
@@ -226,6 +228,9 @@ export default {
     closeSupervisionDropdown() {
       this.supervisionDropdownOpen = false;
       this.dropdownClicked = false;
+    },
+    scrollToTop() {
+      window.scrollTo(0, 0);
     }
   }
 }

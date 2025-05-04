@@ -245,12 +245,15 @@ export default {
   position: relative;
   width: 90%;
   max-width: 1200px;
-  height: 80%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-height: 80vh;
   z-index: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin: 0 auto;
 }
 
 .tv-frame {
@@ -264,6 +267,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .tv-screen {
@@ -275,6 +279,7 @@ export default {
   border: 8px solid #111;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
   background-color: black;
+  box-sizing: border-box;
 }
 
 .tv-knobs {
@@ -439,5 +444,89 @@ export default {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@media (max-aspect-ratio: 16/9) {
+  .tv-container {
+    width: 90%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 80vh;
+  }
+}
+
+@media (min-aspect-ratio: 16/9) {
+  .tv-container {
+    height: 80vh;
+    width: auto;
+    aspect-ratio: 16 / 9;
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .tv-container {
+    width: 95%;
+    max-height: 75vh;
+  }
+  
+  .tv-frame {
+    padding: 12px;
+    border-radius: 15px;
+  }
+  
+  .tv-screen {
+    border-width: 6px;
+    border-radius: 8px;
+  }
+  
+  .tv-knobs {
+    right: 20px;
+    gap: 10px;
+  }
+  
+  .tv-knob {
+    width: 15px;
+    height: 15px;
+  }
+  
+  .tv-base {
+    bottom: -30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tv-container {
+    width: 98%;
+    max-height: 70vh;
+  }
+  
+  .tv-frame {
+    padding: 8px;
+    border-radius: 10px;
+  }
+  
+  .tv-screen {
+    border-width: 4px;
+    border-radius: 6px;
+  }
+  
+  .tv-knobs {
+    bottom: 10px;
+    right: 15px;
+    gap: 8px;
+  }
+  
+  .tv-knob {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .tv-base {
+    bottom: -20px;
+    height: 20px;
+    width: 60%;
+  }
 }
 </style>

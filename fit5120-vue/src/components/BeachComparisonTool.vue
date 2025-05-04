@@ -33,11 +33,15 @@
         </ul>
       </div>
       
-      <div v-if="loading" class="loading-message">Loading weather & marine data...</div>
+      <div v-if="loading" class="loading-message">
+        <div class="loading-spinner"></div>
+        <p>Loading real-time beach data...</p>
+        <p class="loading-details">This may take up to 30 seconds as we retrieve current weather and marine conditions</p>
+      </div>
       <div v-if="error" class="error-message">
         <div>{{ error }}</div>
         <button 
-          @click="fetchCompareBeaches" 
+          @click="retrySearch()" 
           style="margin-top: 0.75rem; background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;"
         >
           Retry
@@ -149,19 +153,19 @@
                     
                     <div class="hover-description" v-if="marine.wave_height > 1">
                       <div class="hover-content">
-                        <p>These waves are {{ Math.round(marine.wave_height/1.2) }}× taller than a child and can easily knock them underwater</p>
+                        <p>These waves are {{ Math.round(marine.wave_height/1.2) > 1 ? Math.round(marine.wave_height/1.2) + '× taller than' : 'about the same height as' }} a 10-year-old child and can easily knock them underwater</p>
                         <p>Adults should stay in shallow water and keep children at the water's edge only</p>
                       </div>
                     </div>
                     <div class="hover-description" v-else-if="marine.wave_height > 0.5">
                       <div class="hover-content">
-                        <p>These waves can reach up to a child's chest and have enough force to unbalance them</p>
+                        <p>These waves can reach up to a 10-year-old child's chest and have enough force to unbalance them</p>
                         <p>Keep children within arm's reach at all times</p>
                       </div>
                     </div>
                     <div class="hover-description" v-else>
                       <div class="hover-content">
-                        <p>These smaller waves are generally below knee-height for an average child</p>
+                        <p>These smaller waves are generally below knee-height for a 6-year-old child</p>
                         <p>Still supervise children closely at all times</p>
                       </div>
                     </div>
@@ -174,7 +178,7 @@
                   <span class="condition-icon">🌀</span>
                   <div class="condition-title">
                     <span class="condition-name">Current Strength</span>
-                    <span class="condition-value">{{ marine.ocean_current_velocity?.toFixed(2) }} m/s</span>
+                    <span class="condition-value">{{ convertMsToKmh(marine.ocean_current_velocity).toFixed(1) }} km/h</span>
                   </div>
                 </div>
                 
@@ -187,7 +191,7 @@
                       <div class="risk-segment danger"></div>
                   </div>
                     <div class="risk-indicator" :style="{ left: getCurrentRiskPosition() }">
-                      <div class="risk-value">{{ marine.ocean_current_velocity?.toFixed(2) }} m/s</div>
+                      <div class="risk-value">{{ convertMsToKmh(marine.ocean_current_velocity).toFixed(1) }} km/h</div>
                       <div class="risk-indicator-arrow"></div>
                   </div>
                 </div>
@@ -240,19 +244,19 @@
               
                     <div class="hover-description" v-if="marine.ocean_current_velocity > 0.8">
                       <div class="hover-content">
-                        <p>This current is {{ Math.round(marine.ocean_current_velocity/0.3) }}× faster than a child can swim. They'll be swept away within seconds</p>
-                        <p>Even Olympic swimmers struggle against currents this strong</p>
+                        <p>This current is {{ Math.round(marine.ocean_current_velocity/0.3) > 1 ? Math.round(marine.ocean_current_velocity/0.3) + '× faster than' : 'about the same speed as' }} a 10-year-old child can swim. They'll be swept away within seconds</p>
+                        <p>Even strong adult swimmers will struggle against currents this strong</p>
                   </div>
                 </div>
                     <div class="hover-description" v-else-if="marine.ocean_current_velocity > 0.3">
                       <div class="hover-content">
-                        <p>This current is about 2× faster than a child can swim against, making it difficult for them to make progress</p>
+                        <p>This current is about 2× faster than a 10-year-old child can swim against, making it difficult for them to make progress</p>
                         <p>Keep children in shallow water and within arm's reach</p>
                   </div>
                   </div>
                     <div class="hover-description" v-else>
                       <div class="hover-content">
-                        <p>This current is slower than most children can swim, making conditions more manageable</p>
+                        <p>This current is slower than most 10-year-old children can swim, making conditions more manageable</p>
                         <p>Still supervise constantly and be aware of changing conditions</p>
                 </div>
               </div>
@@ -355,14 +359,18 @@
         <div v-if="error" class="error-message">
           <div>{{ error }}</div>
           <button 
-            @click="fetchCompareBeaches" 
+            @click="fetchCompareBeaches()" 
             style="margin-top: 0.75rem; background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;"
           >
             Retry
           </button>
         </div>
         
-        <div v-if="loading" class="loading-message">Loading comparison data...</div>
+        <div v-if="loading" class="loading-message">
+          <div class="loading-spinner"></div>
+          <p>Loading comparison data...</p>
+          <p class="loading-details">This may take up to 30 seconds as we retrieve and analyze conditions at both beaches</p>
+        </div>
         
         <!-- Show debug message when comparison was attempted but failed -->
         <div v-if="activeTab === 'compare' && !loading && !compareChartData && attemptedCompare && selectedBeach1 && selectedBeach2" class="debug-message">
@@ -453,7 +461,7 @@
                     </div>
                     <div class="wave-details-card">
                       <div class="wave-comparison">
-                        <p>These waves are <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
+                        <p>These waves are <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
                         <p>Similar to <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
                       </div>
                       <div class="impact-description">
@@ -466,16 +474,16 @@
                 
                 <!-- Current Strength Visual (only show if both beaches have current data and at least one is HARSH) -->
                 <div v-if="shouldShowVisualCard('current')" class="visual-current-container">
-                  <h4 class="visual-current-title">Current Strength: {{ (dataset.data[4] || 0).toFixed(1) }} m/s</h4>
+                  <h4 class="visual-current-title">Current Strength: {{ (convertMsToKmh(dataset.data[4]) || 0).toFixed(1) }} km/h</h4>
                   <div class="current-visual-card">
                     <img 
-                      v-if="(dataset.data[4] || 0) > 0.7" 
+                      v-if="(dataset.data[4] || 0) > 2.52" 
                       :src="images.dangerousCurrent" 
                       alt="Dangerous current" 
                       class="current-image" 
                     />
                     <img 
-                      v-else-if="(dataset.data[4] || 0) > 0.3" 
+                      v-else-if="(dataset.data[4] || 0) > 0.7" 
                       :src="images.moderateCurrent" 
                       alt="Moderate current" 
                       class="current-image" 
@@ -491,7 +499,7 @@
                     </div>
                     <div v-if="(dataset.data[4] || 0) > 0" class="current-details-card">
                       <div class="current-comparison">
-                        <p>This current is <span class="highlight">{{ Math.round((dataset.data[4] || 0)/0.8) > 1 ? Math.round((dataset.data[4] || 0)/0.8) + '× faster' : 'as fast as' }}</span> Olympic swimmers</p>
+                        <p>This current is <span class="highlight">{{ Math.round((dataset.data[4] || 0)/0.3) > 1 ? Math.round((dataset.data[4] || 0)/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
                         <p>Pulls you <span class="highlight">{{ Math.round((dataset.data[4] || 0)*10) }}m offshore</span> in 10 seconds</p>
                       </div>
                       <div class="impact-description">
@@ -628,6 +636,11 @@ export default {
     });
   },
   methods: {
+    convertMsToKmh(speedMs) {
+      if (speedMs === undefined || speedMs === null) return 0;
+      // Convert meters per second to kilometers per hour (1 m/s = 3.6 km/h)
+      return speedMs * 3.6;
+    },
     setReportTab(tab) {
       this.reportTab = tab;
     },
@@ -822,6 +835,7 @@ export default {
     async fetchCompareBeaches() {
       if (!this.selectedBeach1 || !this.selectedBeach2) {
         console.log('Missing beach selections - cannot compare');
+        this.error = "Please select two beaches to compare";
         return;
       }
       
@@ -861,8 +875,11 @@ export default {
         // Fetch data for first beach
         let beach1Data;
         try {
+          // Update loading status with specific beach info
+          this.error = `Retrieving data for ${this.compareBeach1Name}...`;
           beach1Data = await this.fetchBeachData(lat1, lon1);
           console.log('Beach 1 data fetched successfully');
+          this.error = null; // Clear status message
         } catch (error) {
           console.error('Error fetching beach 1 data:', error);
           throw new Error(`Failed to get data for ${this.compareBeach1Name}: ${error.message}`);
@@ -873,14 +890,23 @@ export default {
         // Fetch data for second beach
         let beach2Data;
         try {
+          // Update loading status with specific beach info
+          this.error = `Retrieving data for ${this.compareBeach2Name}...`;
           beach2Data = await this.fetchBeachData(lat2, lon2);
           console.log('Beach 2 data fetched successfully');
+          this.error = null; // Clear status message
         } catch (error) {
           console.error('Error fetching beach 2 data:', error);
           throw new Error(`Failed to get data for ${this.compareBeach2Name}: ${error.message}`);
         }
         
+        // Update loading status again
+        this.error = 'Creating comparison...';
+        
         console.log('Both beaches data fetched successfully, creating comparison chart');
+        
+        // Delay for a moment to ensure smooth UI transition
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // Create comparison chart data
         this.compareChartData = {
@@ -889,7 +915,7 @@ export default {
             'Wind Speed (km/h)', 
             'Wave Height (m)',
             'Swell Height (m)',
-            'Current Speed (m/s)',
+            'Current Speed (km/h)', // Changed from m/s to km/h
           ],
           datasets: [
             {
@@ -900,7 +926,7 @@ export default {
                 beach1Data.weather.current.wind_speed_10m || 0,
                 beach1Data.marine.wave_height || 0,
                 beach1Data.marine.swell_wave_height || 0,
-                beach1Data.marine.ocean_current_velocity || 0,
+                this.convertMsToKmh(beach1Data.marine.ocean_current_velocity) || 0, // Convert to km/h
               ]
             },
             {
@@ -911,13 +937,14 @@ export default {
                 beach2Data.weather.current.wind_speed_10m || 0,
                 beach2Data.marine.wave_height || 0,
                 beach2Data.marine.swell_wave_height || 0,
-                beach2Data.marine.ocean_current_velocity || 0,
+                this.convertMsToKmh(beach2Data.marine.ocean_current_velocity) || 0, // Convert to km/h
               ]
             }
           ]
         };
         
         console.log('Comparison chart data created successfully');
+        this.error = null; // Clear status message
       } catch (error) {
         console.error('Compare beaches error:', error);
         this.error = `Failed to compare beaches: ${error.message}`;
@@ -941,8 +968,8 @@ export default {
         console.log('Requesting weather data from:', weatherUrl);
         console.log('Requesting marine data from:', marineUrl);
         
-        // Add timeout to API requests
-        const fetchWithTimeout = (url, options = {}, timeout = 30000) => {
+        // Add timeout to API requests with increased timeout (60 seconds instead of 30)
+        const fetchWithTimeout = (url, options = {}, timeout = 60000) => {
           return Promise.race([
             fetch(url, options),
             new Promise((_, reject) => 
@@ -951,27 +978,44 @@ export default {
           ]);
         };
         
+        // Implementation of retry mechanism
+        const fetchWithRetry = async (url, options = {}, maxRetries = 2) => {
+          let lastError;
+          
+          for (let i = 0; i < maxRetries; i++) {
+            try {
+              const response = await fetchWithTimeout(url, options);
+              if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status} - ${response.statusText}`);
+              }
+              return response;
+            } catch (err) {
+              console.warn(`Attempt ${i + 1} failed for ${url}: ${err.message}`);
+              lastError = err;
+              // Add a small delay between retries
+              if (i < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+              }
+            }
+          }
+          
+          throw new Error(`Failed after ${maxRetries} attempts: ${lastError.message}`);
+        };
+        
+        // Display loading state
+        this.loading = true;
+        
         // Fetch both weather and marine data in parallel for better performance
         let weatherRes, marineRes;
         
         try {
           [weatherRes, marineRes] = await Promise.all([
-            fetchWithTimeout(weatherUrl),
-            fetchWithTimeout(marineUrl)
+            fetchWithRetry(weatherUrl),
+            fetchWithRetry(marineUrl)
           ]);
         } catch (err) {
-          console.error('API request failed with network or timeout error:', err);
+          console.error('API request failed after retries:', err);
           throw new Error(`Network issue: ${err.message}. The server might be busy, please try again later.`);
-        }
-        
-          if (!weatherRes.ok) {
-            console.error(`Weather API error: ${weatherRes.status} - ${weatherRes.statusText}`);
-          throw new Error(`Weather data unavailable (${weatherRes.status}). Please try again later.`);
-        }
-        
-        if (!marineRes.ok) {
-          console.error(`Marine API error: ${marineRes.status} - ${marineRes.statusText}`);
-          throw new Error(`Marine data unavailable (${marineRes.status}). Please try again later.`);
         }
         
         let weatherData, marineData;
@@ -1012,6 +1056,8 @@ export default {
         console.error('Beach data fetch error:', err);
         this.error = err.message;
         throw err;
+      } finally {
+        this.loading = false;
       }
     },
     async fetchSuggestions() {
@@ -1417,7 +1463,7 @@ export default {
                 </div>
                 <div class="impact-group">
                   <span class="impact-label">👤 For adults:</span>
-                  <span class="impact-text">Faster than Olympic swimmers (2.0 m/s) - will rapidly exhaust even strong swimmers</span>
+                  <span class="impact-text">About ${Math.round(currentSpeed/0.3)}× faster than a 10-year-old child can swim - will rapidly exhaust even strong swimmers</span>
                 </div>
               </div>
             </div>
@@ -1579,7 +1625,7 @@ export default {
     
     getComparisonConclusion() {
       if (!this.compareChartData || !this.compareChartData.datasets || this.compareChartData.datasets.length < 2) {
-        return "Please select two beaches to compare.";
+        return "";
       }
       
       const homeData = this.compareChartData.datasets[0].data;
@@ -1609,7 +1655,11 @@ export default {
             waveComparison = `Waves at ${newName} are much taller than your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
           } else {
             const ratio = Math.round(newWaveHeight/homeWaveHeight);
-            waveComparison = `Waves at ${newName} are ${ratio > 1 ? ratio + '× taller' : 'about the same height'} as your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
+            let heightCompText = 'about the same height';
+            if (ratio > 1) {
+              heightCompText = ratio + '× taller';
+            }
+            waveComparison = `Waves at ${newName} are ${heightCompText} as your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
           }
         } else {
           waveComparison = `Waves at ${newName} are smaller than your home beach, making swimming easier.`;
@@ -1624,10 +1674,23 @@ export default {
         if (newCurrentSpeed > homeCurrentSpeed) {
           // Check if home current speed is near zero
           if (homeCurrentSpeed < 0.1) {
-            currentComparison = `Currents at ${newName} are much stronger than your home beach ${newCurrentSpeed > 0.8 ? '- faster than Olympic swimmers can handle' : '- comparable to a casual cyclist'}.`;
+            currentComparison = `Currents at ${newName} are much stronger than your home beach ${newCurrentSpeed > 0.8 ? '- about ' + Math.round(newCurrentSpeed/0.3) + '× faster than a 10-year-old child can swim' : '- comparable to a casual cyclist'}.`;
           } else {
             const ratio = Math.round(newCurrentSpeed/homeCurrentSpeed);
-            currentComparison = `Currents at ${newName} are ${ratio > 1 ? ratio + '× faster' : 'about the same speed'} as your home beach ${newCurrentSpeed > 0.8 ? '- faster than Olympic swimmers can handle' : '- comparable to a casual cyclist'}.`;
+            let speedCompText = 'about the same speed';
+            if (ratio > 1) {
+              speedCompText = ratio + '× faster';
+            }
+            let childSwimText = '- comparable to a casual cyclist';
+            if (newCurrentSpeed > 0.8) {
+              const childSwimRatio = Math.round(newCurrentSpeed/0.3);
+              if (childSwimRatio > 1) {
+                childSwimText = '- about ' + childSwimRatio + '× faster than a 10-year-old child can swim';
+              } else {
+                childSwimText = '- about the same speed as a 10-year-old child can swim';
+              }
+            }
+            currentComparison = `Currents at ${newName} are ${speedCompText} as your home beach ${childSwimText}.`;
           }
         } else {
           currentComparison = `Currents at ${newName} are gentler than your home beach, reducing the risk of being pulled offshore.`;
@@ -2018,18 +2081,18 @@ export default {
     getCurrentRiskPosition() {
       if (!this.marine || !this.marine.ocean_current_velocity) return '16.7%';
       
-      const currentSpeed = this.marine.ocean_current_velocity;
+      const currentSpeedKmh = this.convertMsToKmh(this.marine.ocean_current_velocity);
       
       // Calculate position on a scale
-      // 0-0.3m/s: safe (0-33%)
-      // 0.3-0.7m/s: caution (33-66%)
-      // >0.7m/s: danger (66-100%)
+      // 0-1.08 km/h: safe (0-33%) [0.3 m/s * 3.6]
+      // 1.08-2.52 km/h: caution (33-66%) [0.7 m/s * 3.6]
+      // >2.52 km/h: danger (66-100%)
       
-      if (currentSpeed >= 1.2) return '90%';
-      if (currentSpeed >= 1.0) return '80%';
-      if (currentSpeed >= 0.7) return '66%';
-      if (currentSpeed >= 0.5) return '50%';
-      if (currentSpeed >= 0.3) return '33%';
+      if (currentSpeedKmh >= 4.32) return '90%'; // 1.2 m/s * 3.6
+      if (currentSpeedKmh >= 3.6) return '80%';  // 1.0 m/s * 3.6
+      if (currentSpeedKmh >= 2.52) return '66%'; // 0.7 m/s * 3.6
+      if (currentSpeedKmh >= 1.8) return '50%';  // 0.5 m/s * 3.6
+      if (currentSpeedKmh >= 1.08) return '33%'; // 0.3 m/s * 3.6
       return '16.7%';
     },
     
@@ -2086,7 +2149,7 @@ export default {
           impacts.push({
             type: 'danger',
             icon: '🌀',
-            text: `${newName} has dangerously strong rip currents that can sweep swimmers 50+ meters offshore in seconds. Even Olympic swimmers struggle in these conditions.`
+            text: `${newName} has dangerously strong rip currents that can sweep swimmers 50+ meters offshore in seconds. These currents are about ${Math.round(newCurrentSpeed/0.3)}× faster than a 10-year-old child can swim.`
           });
         } else if (newCurrentSpeed > 0.5) {
           impacts.push({
@@ -2142,7 +2205,11 @@ export default {
       const waveHeight = Math.max(data[2] || 0, data[3] || 0);
       if (waveHeight > 1.2) {
         const heightRatio = Math.round(waveHeight/1.2);
-        return `These waves are ${heightRatio > 1 ? heightRatio + '× taller than' : 'about the same height as'} a 10-year-old child and can easily knock them underwater`;
+        let heightText = 'about the same height as';
+        if (heightRatio > 1) {
+          heightText = heightRatio + '× taller than';
+        }
+        return `These waves are ${heightText} a 10-year-old child and can easily knock them underwater`;
       } else if (waveHeight > 0.7) {
         return `These waves can reach up to a child's chest and have enough force to unbalance them`;
       } else {
@@ -2163,21 +2230,60 @@ export default {
       const currentSpeed = data[4] || 0;
       if (currentSpeed > 0.8) {
         const speedRatio = Math.round(currentSpeed/0.3);
-        return `This current is ${speedRatio > 1 ? speedRatio + '× faster than' : 'about the same speed as'} a child can swim. They'll be swept away within seconds`;
+        let speedText = 'about the same speed as';
+        if (speedRatio > 1) {
+          speedText = speedRatio + '× faster than';
+        }
+        return `This current is ${speedText} a 10-year-old child can swim. They'll be swept away within seconds`;
       } else if (currentSpeed > 0.5) {
-        return `This current is about 2× faster than a child can swim against, making it difficult for them to make progress`;
+        return `This current is about 2× faster than a 10-year-old child can swim against, making it difficult for them to make progress`;
       } else {
-        return `This current is slower than most children can swim, making conditions more manageable`;
+        return `This current is slower than most 10-year-old children can swim, making conditions more manageable`;
       }
     },
     getCurrentAdviceText(data) {
       const currentSpeed = data[4] || 0;
       if (currentSpeed > 0.8) {
-        return `Even Olympic swimmers struggle against currents this strong`;
+        return `Even strong adult swimmers will struggle against these powerful currents`;
       } else if (currentSpeed > 0.5) {
         return `Keep children in shallow water and within arm's reach`;
       } else {
         return `Still supervise constantly and be aware of changing conditions`;
+      }
+    },
+    // Add retrySearch method to handle retry functionality in the search tab
+    retrySearch() {
+      if (this.address) {
+        this.error = null;
+        this.loading = true;
+        
+        // Find the selected beach from suggestions if possible
+        const selectedBeach = this.suggestions.find(item => 
+          item.display_name.split(',')[0].trim() === this.address.trim()
+        );
+        
+        if (selectedBeach) {
+          const lat = parseFloat(selectedBeach.lat);
+          const lon = parseFloat(selectedBeach.lon);
+          
+          this.fetchBeachData(lat, lon)
+            .then(data => {
+              this.weather = data.weather;
+              this.marine = data.marine;
+            })
+            .catch(err => {
+              this.error = err.message;
+            })
+            .finally(() => {
+              this.loading = false;
+            });
+        } else {
+          // If no valid beach is found, just reset loading state without showing error message
+          this.loading = false;
+        }
+      } else {
+        // Just reset loading state without error message
+        this.loading = false;
       }
     }
   }
@@ -2311,10 +2417,36 @@ export default {
   text-align: center;
   max-width: 90%;
   background: rgba(52, 152, 219, 0.2);
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 0.5rem;
   animation: pulse 1.5s infinite;
   border: 1px solid rgba(52, 152, 219, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-details {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+  font-weight: normal;
+}
+
+.loading-spinner {
+  border: 5px solid rgba(52, 152, 219, 0.3);
+  border-radius: 50%;
+  border-top: 5px solid #3498db;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .error-message {
@@ -4400,19 +4532,7 @@ export default {
 }
 
 .risk-value {
-  position: absolute;
-  top: -35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: bold;
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  z-index: 7;
+  display: none; /* Hide the numerical value */
 }
 
 @keyframes pulse {

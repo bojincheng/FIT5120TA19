@@ -2,7 +2,7 @@
   <div class="beach-nav-container">
     <!-- Top Navigation Bar -->
     <nav class="top-nav">
-      <router-link to="/home" class="nav-brand">WaterWiseFamily</router-link>
+      <router-link to="/home" class="nav-brand" @click="scrollToTop">WaterWiseFamily</router-link>
       
       <div class="nav-links">
         <router-link to="/beach-safety" class="nav-link">Australian Beach Conditions</router-link>
@@ -54,7 +54,7 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" :class="{ 'open': menuOpen }">
       <div class="mobile-menu-header">
-        <router-link to="/home" class="brand-logo">WaterWiseFamily</router-link>
+        <router-link to="/home" class="brand-logo" @click="scrollToTop">WaterWiseFamily</router-link>
         <div class="close-menu" @click="toggleMenu">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </div>
@@ -177,6 +177,10 @@ export default {
       if (navDropdown && !navDropdown.contains(event.target)) {
         // Close any other dropdowns if needed
       }
+    },
+    // Scroll to top when WaterWiseFamily is clicked
+    scrollToTop() {
+      window.scrollTo(0, 0);
     }
   }
 }

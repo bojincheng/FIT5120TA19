@@ -132,10 +132,16 @@
       </div>
     </div>
     
+    <div v-if="!quizActive && currentStep === 0" class="controls">
+      <button @click="startQuiz" class="control-button">
+        Start Safety Scenario
+      </button>
+    </div>
+    
     <div class="quiz-container" v-if="quizActive">
       <div class="timer">
         <div class="timer-bar" :style="{ width: `${timeRemaining * (isSmallScreen ? 10 : 6.67)}%` }"></div>
-        <div class="timer-text">{{ timeRemaining }}</div>
+        <div class="timer-text">{{ timeRemaining }} seconds</div>
       </div>
       
       <div class="question">
@@ -189,12 +195,6 @@
           Continue
         </button>
       </div>
-    </div>
-    
-    <div class="controls" v-if="!quizActive && currentStep === 0">
-      <button @click="startQuiz" class="control-button">
-        Start Safety Scenario
-      </button>
     </div>
   </div>
 </template>
@@ -467,22 +467,24 @@ export default {
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .container {
   max-width: none;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0;
   padding: 20px;
   font-family: Arial, sans-serif;
   color: #333;
   background-color: #f5f5f5;
-  overflow: hidden;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -495,14 +497,15 @@ h1 {
 /* Clean, minimalist scene styling */
 .scene {
   position: relative;
-  height: 35vh;
+  width: 100%;
+  max-width: 800px;
+  height: 40vh;
   min-height: 250px;
-  max-height: 350px;
+  max-height: 400px;
   border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
 }
 
 /* Backyard environment */
@@ -1222,46 +1225,45 @@ h1 {
 /* Step info */
 .step-info {
   background-color: #E3F2FD;
-  padding: 12px 15px;
+  padding: 15px;
   border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   border-left: 5px solid #0277BD;
-  max-height: 25vh;
-  overflow-y: auto;
+  width: 100%;
+  max-width: 800px;
 }
 
 .step-info h2 {
   margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #0277BD;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
 }
 
 .step-info p {
-  line-height: 1.4;
-  margin: 0 0 8px 0;
-  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  font-size: 1rem;
 }
 
 .stat-box {
-  margin-top: 10px;
-  padding: 8px 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
   background-color: #fff;
   border-radius: 5px;
   border-left: 3px solid #F44336;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 /* Quiz styling */
 .quiz-container {
   background-color: #F5F5F5;
-  padding: 15px;
+  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 20px;
 }
 
 .timer {
@@ -1325,21 +1327,21 @@ h1 {
 .options {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
-  margin-bottom: 10px;
-  flex: 1;
-  overflow-y: auto;
+  gap: 10px;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .option-button {
-  padding: 12px;
+  padding: 15px;
   background-color: white;
   border: 2px solid #0277BD;
   border-radius: 8px;
   text-align: left;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s;
+  width: 100%;
 }
 
 .option-button:hover:not(:disabled) {
@@ -1361,20 +1363,17 @@ h1 {
 }
 
 .feedback {
-  margin-top: 10px;
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  margin-top: 15px;
+  width: 100%;
 }
 
 .correct-feedback, .incorrect-feedback {
   background-color: #C8E6C9;
   color: #2E7D32;
-  padding: 12px;
+  padding: 15px;
   border-radius: 5px;
-  margin-bottom: 10px;
-  flex-shrink: 0;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .incorrect-feedback {
@@ -1383,31 +1382,30 @@ h1 {
 }
 
 .feedback h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
 }
 
 .additional-info {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 15px;
+  padding: 12px;
   background-color: #F5F5F5;
   border-left: 3px solid #0277BD;
   border-radius: 0 5px 5px 0;
-  overflow-y: auto;
-  flex: 1;
+  width: 100%;
 }
 
 .additional-info h4 {
   margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #0277BD;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .additional-info p {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .next-button {
@@ -1456,204 +1454,191 @@ h1 {
   }
   
   .container {
-    padding: 15px 25px;
-  }
-  
-  .scene {
-    height: 40vh;
+    padding: 20px 30px;
   }
 }
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
   .container {
-    padding: 10px;
-    height: 100vh;
+    padding: 15px;
   }
   
   h1 {
     font-size: 1.5rem;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
   }
   
   .scene {
-    height: 30vh;
+    height: 35vh;
     min-height: 200px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
   }
   
   .step-info {
-    padding: 10px;
-    margin-bottom: 10px;
+    padding: 12px;
+    margin-bottom: 15px;
   }
   
   .step-info h2 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
   
   .quiz-container {
-    padding: 10px;
+    padding: 15px;
   }
   
   .option-button, .next-button, .control-button {
-    font-size: 0.9rem;
-    padding: 8px 15px;
+    font-size: 0.95rem;
+    padding: 12px 15px;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 8px;
+    padding: 10px;
   }
   
   h1 {
     font-size: 1.3rem;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
   
   .scene {
-    height: 28vh;
+    height: 30vh;
     min-height: 180px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   
   .step-info h2 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+  }
+  
+  .step-info, .quiz-container {
+    padding: 10px;
   }
   
   .option-button {
-    font-size: 0.85rem;
-    padding: 8px 10px;
+    font-size: 0.9rem;
+    padding: 10px;
   }
   
   .timer {
     height: 20px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
   
   .question h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
   
   .feedback h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 }
 
 /* iPhone SE and other very small devices */
 @media (max-height: 667px) {
   .scene {
-    height: 25vh;
+    height: 28vh;
     min-height: 150px;
-  }
-  
-  .step-info {
-    max-height: 20vh;
   }
   
   h1 {
     font-size: 1.2rem;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
   }
-}
-
-/* Scene size variations */
-.small-scene {
-  height: 32vh;
-  min-height: 220px;
-}
-
-.very-small-scene {
-  height: 25vh;
-  min-height: 170px;
+  
+  .step-info, .quiz-container {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
 }
 
 /* Compact step info */
 .step-info.compact {
-  padding: 10px;
-  max-height: 20vh;
+  padding: 12px;
 }
 
 .step-info.compact h2 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.step-info.compact p {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.step-info.compact .stat-box {
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+.step-info.very-compact {
+  padding: 10px;
+}
+
+.step-info.very-compact h2 {
   font-size: 1.1rem;
   margin-bottom: 5px;
 }
 
-.step-info.compact p {
+.step-info.very-compact p {
   font-size: 0.9rem;
   margin-bottom: 5px;
-}
-
-.step-info.compact .stat-box {
-  padding: 7px;
-  font-size: 0.85rem;
-}
-
-.step-info.very-compact {
-  padding: 8px;
-  max-height: 18vh;
-}
-
-.step-info.very-compact h2 {
-  font-size: 1rem;
-  margin-bottom: 3px;
-}
-
-.step-info.very-compact p {
-  font-size: 0.8rem;
-  margin-bottom: 3px;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .step-info.very-compact .stat-box {
-  padding: 5px;
-  font-size: 0.8rem;
-  margin-top: 5px;
+  padding: 6px;
+  font-size: 0.85rem;
+  margin-top: 8px;
 }
 
-/* iPhone SE and other very small devices */
-@media (max-height: 667px) {
-  .container {
-    padding: 8px;
-  }
-  
-  .scene {
-    margin-bottom: 8px;
-  }
-  
-  .step-info {
-    margin-bottom: 8px;
-    padding: 8px;
-  }
-  
-  .quiz-container {
-    padding: 8px;
-  }
-  
-  .thinking-phase {
-    padding: 8px;
-    margin-bottom: 8px;
-  }
-  
-  .thinking-phase p {
-    margin-bottom: 5px;
-  }
-  
-  .controls {
-    margin: 5px 0;
-  }
-  
-  .feedback {
-    margin-top: 5px;
-  }
-  
-  .incorrect-feedback, .correct-feedback {
-    padding: 8px;
-  }
-  
-  .next-button {
-    margin-top: 5px;
-    padding: 8px 16px;
-  }
+/* Remove fixed heights and scrollbars from elements */
+.step-info, .quiz-container, .options, .feedback, .thinking-phase, .additional-info {
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* Button styling */
+.next-button {
+  display: block;
+  margin: 15px auto 0;
+  padding: 12px 25px;
+  background-color: #0277BD;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.next-button:hover {
+  background-color: #01579B;
+}
+
+.controls {
+  text-align: center;
+  margin: 15px 0;
+  width: 100%;
+  max-width: 800px;
+}
+
+.control-button {
+  padding: 12px 30px;
+  background-color: #0277BD;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.control-button:hover {
+  background-color: #01579B;
 }
 </style>

@@ -39,7 +39,7 @@
               <p>Immigrants are 5x more at risk than Australians.</p>
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="aussie-waters-heading">Familiarising Yourself with Aussie Waters</h3>
+                <h3 class="aussie-waters-heading">Step 1: Familiarising Yourself with Aussie Waters</h3>
                 <div class="line"></div>
               </div>
               <div class="beach-cards-container">
@@ -59,7 +59,7 @@
               <div class="preventing-risk">
                 <div class="title-with-lines">
                   <div class="line"></div>
-                  <h3>Preventing Risk</h3>
+                  <h3>Step 2: Preventing Risk</h3>
                   <div class="line"></div>
                 </div>
                 <div class="prevention-images">
@@ -79,7 +79,7 @@
                 <div class="facing-risk-link">
                   <div class="title-with-lines">
                     <div class="line"></div>
-                    <h3>Facing the Risk</h3>
+                    <h3>Step 3: Facing the Risk</h3>
                     <div class="line"></div>
                   </div>
                   <div class="prevention-images">
@@ -120,7 +120,7 @@
               <p>80% of child drownings happen in home pools.</p>
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="pool-risk-heading">Understanding the Risk</h3>
+                <h3 class="pool-risk-heading">Step 1: Understanding the Risk</h3>
                 <div class="line"></div>
               </div>
               <div class="pool-image-container" @click="continueToSafety('pool')">
@@ -132,7 +132,7 @@
               
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="pool-risk-heading">Preventing Risks</h3>
+                <h3 class="pool-risk-heading">Step 2: Preventing Risks</h3>
                 <div class="line"></div>
               </div>
               
@@ -145,14 +145,14 @@
               
               <div class="title-with-lines">
                 <div class="line"></div>
-                <h3 class="pool-risk-heading">Test Your Preparedness</h3>
+                <h3 class="pool-risk-heading">Step 3: Test Your Preparedness</h3>
                 <div class="line"></div>
               </div>
               
               <div class="pool-image-container" @click="navigateToPoolSafetyQuiz">
                 <img src="./assets/are_you_ready.jpg" alt="Test your pool safety knowledge" class="pool-condition-image">
                 <div class="image-overlay">
-                  <span></span>
+                  <span>Test Your Pool Safety Knowledge</span>
                 </div>
               </div>
             </div>
@@ -252,8 +252,18 @@ function navigateToSurviveRipCurrents() {
 }
 
 function navigateToPoolSafetyQuiz() {
-  router.push('/pool-safety-quiz').then(() => {
-    window.scrollTo(0, 0);
+  router.push('/pool-supervision').then(() => {
+    // Wait for page to load
+    setTimeout(() => {
+      // Find the component and trigger the quiz modal
+      const app = document.querySelector('.pool-supervision-page');
+      if (app) {
+        // Create and dispatch a custom event to open the quiz
+        const event = new CustomEvent('show-quiz');
+        app.dispatchEvent(event);
+      }
+      window.scrollTo(0, 0);
+    }, 300);
   });
 }
 </script>
@@ -309,9 +319,10 @@ function navigateToPoolSafetyQuiz() {
 .header {
   text-align: center;
   position: relative;
-  z-index: 1;
+  z-index: 3;
   animation: fadeIn 0.8s ease-out;
   margin-bottom: 0.5rem;
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -320,60 +331,78 @@ function navigateToPoolSafetyQuiz() {
 }
 
 h1 {
-  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
   margin-bottom: 1rem;
   color: #ffffff;
   font-weight: 700;
   letter-spacing: -0.01em;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  width: 100%;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 100%;
+  transform: translateX(-7%);
 }
 
 .progress-steps {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  position: sticky;
+  top: 1rem;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.4rem;
+  min-width: 100px;
+  padding: 0.5rem 0;
 }
 
 .step-number {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background: #ffffff;
   color: #01579b;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 .step span {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #ffffff;
-  font-weight: 500;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-align: center;
 }
 
 .step-connector {
-  width: 1.5rem;
-  height: 2px;
+  width: 2.5rem;
+  height: 3px;
   background: #ffffff;
-  margin-top: 0.875rem;
-  opacity: 0.8;
+  margin-top: 1.25rem;
+  opacity: 0.9;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .options-container {
@@ -839,6 +868,29 @@ p {
     padding: 0.75rem;
   }
 
+  .progress-steps {
+    padding: 0.75rem 1.5rem;
+    gap: 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    position: sticky;
+    top: 0.5rem;
+  }
+  
+  .step-number {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1.1rem;
+  }
+  
+  .step span {
+    font-size: 0.9rem;
+  }
+  
+  .step-connector {
+    width: 1.75rem;
+  }
+
   .options-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -869,11 +921,6 @@ p {
 
   .stat-text {
     font-size: 0.85rem;
-  }
-
-  .progress-steps {
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
   }
 
   .step-number {
@@ -929,18 +976,34 @@ p {
   }
   
   .progress-steps {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.25rem;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    max-width: 95%;
+    position: sticky;
+    top: 0.5rem;
   }
 
   .step {
-    flex: 1;
-    min-width: 80px;
+    flex: 0 0 auto;
+    min-width: 70px;
+    margin: 0;
   }
-
+  
   .step-connector {
-    display: none;
+    width: 1.25rem;
+  }
+  
+  .step-number {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+  
+  .step span {
+    font-size: 0.85rem;
   }
   
   .option-card {
@@ -1064,5 +1127,12 @@ h1, h2, h3, p, span {
   max-width: 100%;
   overflow-wrap: break-word;
   word-wrap: break-word;
+}
+
+/* Add a new active class for the steps to indicate which part of the guide the user is on */
+.step.active .step-number {
+  background: #f0f8ff;
+  color: #01579b;
+  box-shadow: 0 0 15px rgba(240, 248, 255, 0.6);
 }
 </style> 
