@@ -3837,4 +3837,55 @@ export default {
       padding: 0.5rem;
     }
   }
+  @media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .tabs-container {
+    flex-direction: column;
+  }
+
+  .tab-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .comparison-slider {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .comparison-slider img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .chart-columns {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .age-comparison {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .feature-card {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+
+  .scroll-indicator {
+    bottom: 1rem;
+  }
+
+  .key-statistic-banner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
 </style> 
