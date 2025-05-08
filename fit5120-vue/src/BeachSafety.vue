@@ -1,20 +1,39 @@
 <template>
-    <div class="beach-safety-page">
-      <div class="bg-image"></div>
-      <div class="overlay"></div>
-      
+<div class="beach-safety-page">
+    <div class="bg-image"></div>
+    <div class="overlay"></div>
+
+    <!-- Mobile-only version -->
+    <div v-if="isMobile">
+      <div class="content-section" style="margin-top: 1rem;">
+        <div class="section-header left">
+          <h2 class="section-title left beach">🏖️ Find the Right Beach for Your Family</h2>
+          <p class="section-subtitle left">Know Before You Go</p>
+          <p class="beach-intro-message">
+            Australian beaches don't have to be a mystery – understanding their unique risks before your visit can help keep your family safe.
+          </p>
+        </div>
+        <div class="section-body">
+          <div class="feature-card">
+            <div class="feature-content">
+              <h3>Australian Beach Safety Comparison Tool</h3>
+              <BeachComparisonTool />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Desktop/tablet version -->
+    <div v-else>
       <!-- Beach Menu Component -->
       <BeachMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" />
-      
       <div class="content-wrapper">
         <div class="main-content">
           <div class="title-section">
             <h1>Understanding Australian Beach Conditions</h1>
           </div>
-  
           <div class="content-section">
             <h2 class="section-title left">🌊 Understanding Beach Safety Challenges</h2>
-            
             <div class="tabs-container">
               <div class="tab-controls">
                 <button 
@@ -27,7 +46,6 @@
                   <span class="tab-label">{{ tab.label }}</span>
                 </button>
               </div>
-              
               <div class="tab-content">
                 <!-- Overview Tab -->
                 <div v-show="activeTab === 'overview'" class="tab-pane">
@@ -309,6 +327,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
         </div>
       </div>
+    </div>
   </div>
 </template>
 
@@ -3837,55 +3856,4 @@ export default {
       padding: 0.5rem;
     }
   }
-  @media (max-width: 768px) {
-  .main-content {
-    padding: 1rem;
-    flex-direction: column;
-  }
-
-  .tabs-container {
-    flex-direction: column;
-  }
-
-  .tab-controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .comparison-slider {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .comparison-slider img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .chart-columns {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .age-comparison {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .feature-card {
-    padding: 1rem;
-    margin: 0.5rem 0;
-  }
-
-  .scroll-indicator {
-    bottom: 1rem;
-  }
-
-  .key-statistic-banner {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-}
 </style> 
