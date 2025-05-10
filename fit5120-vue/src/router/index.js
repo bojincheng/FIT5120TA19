@@ -20,6 +20,7 @@ import OffshoreRescue from '../OffshoreRescue.vue'
 import BeachMission from '../BeachMission.vue'
 import UnderstandingDanger from '../UnderstandingDanger.vue'
 import PoolSafetyQuiz from '../PoolSafetyQuiz.vue'
+import BeachSafetyMobile from '../components/MobileFunctions/BeachSafetyMobile.vue'
 
 const routes = [
   {
@@ -122,6 +123,11 @@ const routes = [
     path: '/pool-safety-quiz',
     name: 'PoolSafetyQuiz',
     component: PoolSafetyQuiz
+  },
+  {
+    path: '/Beach-Safety-Mobile',
+    name: 'BeachSafetyMobile',
+    component: BeachSafetyMobile
   }
 ]
 

@@ -1,32 +1,15 @@
-<!-- <template>
-  <router-view></router-view>
-</template>
-
-<script>
-export default {
-  name: 'App'
-}
-</script>
-
-<style>
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-}
-</style>  -->
-
-# Mobile device check
+# Two routes for different device types: 
+# if the mobile device is detected, render the partial pages, else render all pages
 <template>
   <div>
-    <BeachSafety v-if="isMobile" />
+    <HomePageMobile v-if="isMobile" />
     <router-view v-else />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import BeachSafety from './BeachSafety.vue'
+import HomePageMobile from './components/MobileFunctions/HomePageMobile.vue'
 
 const isMobile = ref(false)
 
