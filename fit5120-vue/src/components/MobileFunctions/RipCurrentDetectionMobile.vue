@@ -121,9 +121,9 @@
           if (this.imageFile) {
             const formData = new FormData();
             formData.append('image', this.imageFile);
-            response = await axios.post('http://localhost:5000/process-image', formData);
+            response = await axios.post('https://fit5120ta19.onrender.com/process-image', formData);
           } else if (this.capturedImage) {
-            response = await axios.post('http://localhost:5000/process-camera-image', {
+            response = await axios.post('https://fit5120ta19.onrender.com/process-camera-image', {
               image: this.capturedImage
             });
           } else {
@@ -165,7 +165,7 @@
           this.loading = false;
         };
   
-        img.src = `http://localhost:5000${result.original}`;
+        img.src = `https://fit5120ta19.onrender.com${result.original}`;
       },
       drawDetection(ctx, prediction) {
         const x = prediction.x - prediction.width / 2;
