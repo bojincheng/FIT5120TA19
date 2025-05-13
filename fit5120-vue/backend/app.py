@@ -311,7 +311,7 @@ def process_image():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     else:
-        return jsonify({'error': 'Invalid file type'}), 400
+        return jsonify({'error': 'Unsupported file format','message': 'Only JPG and PNG formats are allowed.'}), 400
 
 # Process image from camera using URL
 @app.route('/process-camera-image', methods=['POST'])

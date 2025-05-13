@@ -11,12 +11,15 @@
         <RipCurrentDetectionMobile v-else-if="activeComponent === 'RipCurrentDetectionMobile'" />
       </div>
     </div>
+
+    <AddToHomeScreenButton/>
   </template>
   
   <script setup>
   import { ref } from 'vue'
   import BeachSafetyMobile from './BeachSafetyMobile.vue'
   import RipCurrentDetectionMobile from './RipCurrentDetectionMobile.vue'
+  import AddToHomeScreenButton from './AddToHomeScreenButton.vue'
   
   const activeComponent = ref('BeachSafety')
   </script>
