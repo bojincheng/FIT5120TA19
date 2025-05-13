@@ -2,14 +2,14 @@
     <div class="beach-safety-page">
       <div class="bg-image"></div>
       <div class="overlay"></div>
-      
-      <!-- Beach Menu Component -->
-      <BeachMenu :menuOpen="menuOpen" @toggle-menu="toggleMenu" />
-      
+
       <div class="content-wrapper">
         <div class="main-content">
           <div class="title-section">
             <h1>Understanding Australian Beach Conditions</h1>
+          </div>
+          <div class="content">
+            <HomePageMobile v-if="activeComponent === 'HomePageMobile'" />
           </div>
           
           <div class="content-section" style="margin-top: 1rem;">
@@ -44,7 +44,9 @@
   <script>
   import BeachComparisonTool from '../BeachComparisonTool.vue'
   import BeachMenu from '../BeachMenu.vue'
-  
+  import HomePageMobile from './HomePageMobile.vue'
+
+
   export default {
   name: 'BeachSafety',
   components: {

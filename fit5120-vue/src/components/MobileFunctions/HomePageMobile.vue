@@ -1,24 +1,28 @@
 <template>
     <div class="container">
       <h2>Mobile Menu</h2>
-      <ul class="menu">
+      <ul class="menu" v-if="activeComponent === 'Homepage'">
         <li @click="activeComponent = 'BeachSafetyMobile'">1. Beach Safety</li>
         <li @click="activeComponent = 'RipCurrentDetectionMobile'">2. Rip Current Detection</li>
       </ul>
   
-      <div class="content">
-        <BeachSafetyMobile v-if="activeComponent === 'BeachSafetyMobile'" />
-        <RipCurrentDetectionMobile v-else-if="activeComponent === 'RipCurrentDetectionMobile'" />
+      <div class="content" v-else>
+        <BeachSafetyMobile v-if="activeComponent === 'BeachSafetyMobile'":setActiveComponent="setActiveComponent"/>
+        <RipCurrentDetectionMobile v-else-if="activeComponent === 'RipCurrentDetectionMobile'":setActiveComponent="setActiveComponent"/>
       </div>
     </div>
+
+    <AddToHomeScreenButton />
   </template>
   
   <script setup>
   import { ref } from 'vue'
   import BeachSafetyMobile from './BeachSafetyMobile.vue'
   import RipCurrentDetectionMobile from './RipCurrentDetectionMobile.vue'
+  import AddToHomeScreenButton from './AddToHomeScreenButton.vue'
   
-  const activeComponent = ref('BeachSafety')
+  const activeComponent = ref('Homepage')
+
   </script>
   
   <style scoped>

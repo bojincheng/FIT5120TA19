@@ -2,24 +2,31 @@
 # if the mobile device is detected, render the partial pages, else render all pages
 <template>
   <div>
-    <HomePageMobile v-if="isMobile" />
+    <MobileRouterView v-if="isMobile" />
     <router-view v-else />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import HomePageMobile from './components/MobileFunctions/HomePageMobile.vue'
+import { useRouter } from 'vue-router'
+//import HomePageMobile from './components/MobileFunctions/HomePageMobile.vue'
+import MobileRouterView from './components/MobileFunctions/MobileRouterView.vue'
 
 const isMobile = ref(false)
+const router = useRouter()
 
 const checkDevice = () => {
-  isMobile.value = window.innerWidth < 768
+  isMobile.value = window.innerWidth < 768 
 }
 
 onMounted(() => {
   checkDevice()
   window.addEventListener('resize', checkDevice)
+
+  // if (window.innerWidth < 768 && !window.location.pathname.startsWith('/mobile')) {
+  //   router.replace('/mobile/home')
+  // }
 })
 
 onBeforeUnmount(() => {

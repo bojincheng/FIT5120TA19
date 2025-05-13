@@ -22,6 +22,12 @@ import UnderstandingDanger from '../UnderstandingDanger.vue'
 import PoolSafetyQuiz from '../PoolSafetyQuiz.vue'
 import BeachSafetyMobile from '../components/MobileFunctions/BeachSafetyMobile.vue'
 
+//Import mobile pages
+import MobileLayout from '../components/MobileFunctions/MobileRouterView.vue'
+import MobileHomePage from '../components/MobileFunctions/HomePageMobile.vue'
+import BeachSafetyPage from '../components/MobileFunctions/BeachSafetyMobile.vue'
+import RipCurrentDetectionPage from '../components/MobileFunctions/RipCurrentDetectionMobile.vue'
+
 const routes = [
   {
     path: '/',
@@ -128,6 +134,16 @@ const routes = [
     path: '/Beach-Safety-Mobile',
     name: 'BeachSafetyMobile',
     component: BeachSafetyMobile
+  },
+  {
+    path: '/mobile',
+    component: MobileLayout,
+    children: [
+      { path: '', redirect: '/mobile/home' },
+      { path: 'home', component: MobileHomePage },
+      { path: 'beach', component: BeachSafetyPage },
+      { path: 'rip', component: RipCurrentDetectionPage }
+    ]
   }
 ]
 
