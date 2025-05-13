@@ -1,60 +1,68 @@
+<!-- src/components/MobileFunctions/AddToHomeScreenButton.vue -->
 <template>
-  <div v-if="deferredPrompt && !installed" class="add-to-home">
-    <button @click="promptInstall">📲 Add to Home Screen</button>
+  <div v-if="showButton" class="install-banner">
+    <button @click="triggerInstall">📲 Add to Home Screen</button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-const deferredPrompt = ref(null)
-const installed = ref(false)
+const showButton = ref(false)
+let deferredPrompt = null
+
+const triggerInstall = async () => {
+  if (!deferredPrompt) return
+  deferredPrompt.prompt()
+  const { outcome } = await deferredPrompt.userChoice
+  if (outcome === 'accepted') {
+    console.log('User accepted install prompt')
+  } else {
+    console.log('User dismissed install prompt')
+  }
+  deferredPrompt = null
+  showButton.value = false
+}
 
 onMounted(() => {
-  // 
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault()
-    deferredPrompt.value = e
-  })
-
-  // 
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   window.addEventListener('appinstalled', () => {
-    installed.value = true
+    console.log('App installed')
+    showButton.value = false
   })
 })
 
-const promptInstall = async () => {
-  if (deferredPrompt.value) {
-    deferredPrompt.value.prompt()
-    const { outcome } = await deferredPrompt.value.userChoice
-    if (outcome === 'accepted') {
-      console.log('User accepted install prompt')
-    } else {
-      console.log('User dismissed install prompt')
-    }
-    deferredPrompt.value = null
-  }
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+})
+
+const handleBeforeInstallPrompt = (e) => {
+  e.preventDefault()
+  deferredPrompt = e
+  showButton.value = true
 }
 </script>
 
 <style scoped>
-.add-to-home {
+.install-banner {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   background-color: #4CAF50;
-  padding: 10px 20px;
+  color: white;
   border-radius: 50px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  padding: 10px 20px;
+  z-index: 1000;
 }
 
-.add-to-home button {
-  border: none;
+.install-banner button {
   background: none;
+  border: none;
   color: white;
-  font-size: 16px;
   font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
 }
 </style>
