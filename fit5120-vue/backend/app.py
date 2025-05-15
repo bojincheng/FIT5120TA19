@@ -287,13 +287,25 @@ def process_image():
         try:
             # Retrieve the API key from environment variables
             api_key = os.getenv('ROBOFLOW_API_KEY')
+            
+            # Get confidence and overlap parameters from request or use defaults
+            confidence = request.args.get('confidence', '0.05')
+            overlap = request.args.get('overlap', '0.5')
+            
+            # Convert string to float if needed
+            confidence = float(confidence) if isinstance(confidence, str) else confidence
+            overlap = float(overlap) if isinstance(overlap, str) else overlap
+            
+            # Ensure minimum confidence threshold for API call
+            confidence = max(confidence, 0.01)  # Ensure minimum 1% confidence
+            
             # Call the Roboflow API with the uploaded image
             response = requests.post(
                 'https://detect.roboflow.com/rip-currents/3',
                 params={
                     'api_key': api_key,
-                    'confidence': 5,
-                    'overlap': 50,
+                    'confidence': confidence,
+                    'overlap': overlap,
                     'format': 'json',
                     'stroke': 5
                 },
@@ -332,13 +344,25 @@ def process_camera_image():
     try:
         # Retrieve the API key from environment variables
         api_key = os.getenv('ROBOFLOW_API_KEY')
+        
+        # Get confidence and overlap parameters from request or use defaults
+        confidence = request.args.get('confidence', '0.05')
+        overlap = request.args.get('overlap', '0.5')
+        
+        # Convert string to float if needed
+        confidence = float(confidence) if isinstance(confidence, str) else confidence
+        overlap = float(overlap) if isinstance(overlap, str) else overlap
+        
+        # Ensure minimum confidence threshold for API call
+        confidence = max(confidence, 0.01)  # Ensure minimum 1% confidence
+        
         # Call the Roboflow API with the camera image data
         response = requests.post(
             'https://detect.roboflow.com/rip-currents/3',
             params={
                 'api_key': api_key,
-                'confidence': 5,
-                'overlap': 50,
+                'confidence': confidence,
+                'overlap': overlap,
                 'format': 'json',
                 'stroke': 5
             },
