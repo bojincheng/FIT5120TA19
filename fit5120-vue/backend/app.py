@@ -11,8 +11,7 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 import pandas as pd
-import smtplib
-from email.mime.text import MIMEText
+import imghdr
 # Load environment variables from .env file
 load_dotenv()
 app = Flask(__name__)
@@ -257,37 +256,54 @@ def get_weather_data():
         return jsonify({"error": str(e)}), 500
     
 # Epic 7 Rip Current Detection
-# Set up config for file uploads
+# Config
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
+ALLOWED_IMGHDR_TYPES = {'png', 'jpeg', 'gif', 'bmp'}  # imghdr uses 'jpeg' not 'jpg'
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Max upload size 50 MB
-# Ensure uploads directory exists
+
+# Ensure uploads folder exists
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-# Helper function to check allowed extensions
+
+# Extension check
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Content check
+def is_valid_image(file_stream):
+    file_stream.seek(0)
+    file_type = imghdr.what(None, file_stream.read())
+    file_stream.seek(0)
+    return file_type in ALLOWED_IMGHDR_TYPES
 
 # Process image upload
 @app.route('/process-image', methods=['POST'])
 def process_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No file part'}), 400
+
     file = request.files['image']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        # Read the image as base64
-        with open(file_path, 'rb') as f:
-            image_base64 = base64.b64encode(f.read()).decode('utf-8')
+
+    if file and allowed_file(file.filename) and is_valid_image(file.stream):
         try:
-            # Retrieve the API key from environment variables
+            # Read image as base64 (no saving to disk)
+            image_data = file.read()
+            image_base64 = base64.b64encode(image_data).decode('utf-8')
+            file.stream.seek(0)  # Optional reset
+
+            # Save file securely if needed
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            with open(file_path, 'wb') as f:
+                f.write(image_data)
+
+            # API call
             api_key = os.getenv('ROBOFLOW_API_KEY')
-            # Call the Roboflow API with the uploaded image
             response = requests.post(
                 'https://detect.roboflow.com/rip-currents/3',
                 params={
@@ -300,6 +316,7 @@ def process_image():
                 data=image_base64,
                 headers={"Content-Type": "application/x-www-form-urlencoded"}
             )
+
             if response.status_code == 200:
                 return jsonify({
                     'original': f'/uploads/{filename}',
@@ -307,32 +324,43 @@ def process_image():
                     'rawResponse': response.json()
                 })
             else:
-                return jsonify({'error': 'Error from Roboflow API', 'details': response.text}), 500
+                return jsonify({
+                    'error': 'Error from Roboflow API',
+                    'details': response.text
+                }), 500
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     else:
-        return jsonify({'error': 'Unsupported file format','message': 'Only JPG and PNG formats are allowed.'}), 400
+        return jsonify({
+            'error': 'Unsupported file format',
+            'message': 'Only PNG, JPG, JPEG, BMP, and GIF formats are allowed.'
+        }), 400
 
-# Process image from camera using URL
+# Process image from camera using base64 data
 @app.route('/process-camera-image', methods=['POST'])
 def process_camera_image():
     data = request.get_json()
     if 'image' not in data:
         return jsonify({'error': 'No image data URL provided'}), 400
+
     image_data_url = data['image']
     if not image_data_url.startswith('data:image'):
         return jsonify({'error': 'Invalid image data URL'}), 400
-    # Extract base64 image data
-    base64_data = image_data_url.replace('data:image/jpeg;base64,', '').replace('data:image/png;base64,', '')
-    # Save the image to a file
-    timestamp = str(int(time.time()))
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{timestamp}-camera.jpg')
-    with open(file_path, 'wb') as f:
-        f.write(base64.b64decode(base64_data))
+
     try:
-        # Retrieve the API key from environment variables
+        # Remove prefix to isolate base64
+        base64_data = image_data_url.split(',')[1]
+        image_binary = base64.b64decode(base64_data)
+
+        # Save image
+        timestamp = str(int(time.time()))
+        filename = f'{timestamp}-camera.jpg'
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        with open(file_path, 'wb') as f:
+            f.write(image_binary)
+
+        # API call
         api_key = os.getenv('ROBOFLOW_API_KEY')
-        # Call the Roboflow API with the camera image data
         response = requests.post(
             'https://detect.roboflow.com/rip-currents/3',
             params={
@@ -345,16 +373,21 @@ def process_camera_image():
             data=base64_data,
             headers={"Content-Type": "application/x-www-form-urlencoded"}
         )
+
         if response.status_code == 200:
             return jsonify({
-                'original': f'/uploads/{timestamp}-camera.jpg',
+                'original': f'/uploads/{filename}',
                 'predictions': response.json().get('predictions', []),
                 'rawResponse': response.json()
             })
         else:
-            return jsonify({'error': 'Error from Roboflow API', 'details': response.text}), 500
+            return jsonify({
+                'error': 'Error from Roboflow API',
+                'details': response.text
+            }), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 # Serve uploaded files
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
