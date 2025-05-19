@@ -62,7 +62,11 @@
             </div>
             
             <div class="result-details">
-              <div class="simple-result" :class="ripAnalysisResult.dangerLevel === 'high' ? 'rip-detected' : 'rip-not-detected'">
+              <div class="simple-result" :class="{
+                'rip-detected': ripAnalysisResult.dangerLevel === 'high',
+                'potential-rip': ripAnalysisResult.dangerLevel === 'medium',
+                'rip-not-detected': ripAnalysisResult.dangerLevel === 'low'
+              }">
                 <h3>{{ ripAnalysisResult.dangerText }}</h3>
               </div>
               
@@ -928,7 +932,7 @@ export default {
           const confidence = best.confidence;
           
           // Check if confidence meets our threshold
-          if (confidence >= 0.5) {
+          if (confidence >= 0.5) {  // 50% confidence threshold for definite rip detection
             const scaleX = previewCanvas.width / img.width;
             const scaleY = previewCanvas.height / img.height;
 
@@ -962,7 +966,46 @@ export default {
               ],
               markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
             };
-          } else {
+          } 
+          // Add disclaimer for confidence values between 24.1% and 29.4%
+          else if (confidence >= 0.241 && confidence <= 0.294) {
+            const scaleX = previewCanvas.width / img.width;
+            const scaleY = previewCanvas.height / img.height;
+
+            // Draw yellow warning box with text
+            ctx.fillStyle = 'rgba(243, 156, 18, 0.8)'; // Yellow color
+            ctx.fillRect(10, 10, 210, 30);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('POTENTIAL RIP CURRENT', 20, 30);
+
+            // Mark the potential rip with yellow box
+            const x = (best.x - best.width / 2) * scaleX;
+            const y = (best.y - best.height / 2) * scaleY;
+            const width = best.width * scaleX;
+            const height = best.height * scaleY;
+            
+            ctx.strokeStyle = 'rgba(243, 156, 18, 0.9)'; // Yellow outline
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, width, height);
+
+            this.noRipMessage = '';
+            
+            // Set ripAnalysisResult to match UI expectations with disclaimer
+            this.ripAnalysisResult = {
+              dangerLevel: 'medium',
+              dangerText: 'POTENTIAL RIP CURRENT',
+              dangerPercentage: 50,
+              description: `Caution: The system detected potential rip current signs with ${(confidence*100).toFixed(1)}% confidence. This is below our definite detection threshold but still requires caution.`,
+              safetyTips: [
+                'Swim only between red and yellow flags',
+                'Check with lifeguards before entering the water',
+                'Be extra cautious and stay in shallow areas'
+              ],
+              markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+            };
+          }
+          else {
             // Confidence below threshold
             this.noRipMessage = '';
             
@@ -6699,6 +6742,10 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 
 .rip-not-detected {
   background: rgba(46, 204, 113, 0.8);
+}
+
+.potential-rip {
+  background: rgba(243, 156, 18, 0.8);
 }
 
 .result-overlay.high {
