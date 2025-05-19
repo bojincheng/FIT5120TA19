@@ -1021,8 +1021,8 @@ export default {
             const resultElement = document.querySelector('.rip-analysis-result');
             if (resultElement) {
               console.log('Scrolling to rip analysis results');
-              resultElement.scrollIntoView({ 
-                behavior: 'smooth', 
+              resultElement.scrollIntoView({
+                behavior: 'smooth',
                 block: 'start'
               });
             } else {
@@ -1031,12 +1031,30 @@ export default {
           }, 300);
         }
       } catch (error) {
-        console.error('Processing error:', error);
-        alert('Processing error: ' + error.message);
+        let message = 'Unknown error occurred.';
+        if (error.response && error.response.data) {
+          const data = error.response.data;
+          if (data.details) {
+            try {
+              const parsedDetails = JSON.parse(data.details);
+              message = parsedDetails.message || data.error || 'Unexpected backend error.';
+            } catch {
+              message = data.details;
+            }
+          } else if (data.error) {
+            message = data.error;
+          } else {
+            message = error.message;
+          }
+        } else if (error.message) {
+          message = error.message;
+        }
+
+        alert('Processing error: ' + message);
+        this.noRipMessage = message;
         this.analyzeRipLoading = false;
       }
     },
-    
     loadAndDisplayDetection(result) {
       const img = new Image();
       img.crossOrigin = "Anonymous";

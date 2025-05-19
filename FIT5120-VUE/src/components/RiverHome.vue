@@ -164,7 +164,7 @@
     <div class="section-heading">
       <span class="section-label">Fresh Water Safety in Australia</span>
       <h2 class="section-title">The Hidden Dangers<br>in Fresh Water Environments</h2>
-      <p class="section-tagline">Strong currents, sudden drop-offs, and hidden hazards make freshwater <br>the <span class="teen-stat-trigger">deadliest environment</span> for drowning in Australia. <br>No patrols, no signs — just risk. </p>
+      <p class="section-tagline">Strong currents, sudden drop-offs, and hidden hazards make freshwater the <span class="teen-stat-trigger">deadliest environment</span> for drowning in Australia. <br>No patrols, no signs — just risk. </p>
       
       <!-- Teen statistic popup that appears on hover -->
       <div class="teen-stat-popup" :class="{ 'visible': showTeenStat }">
@@ -7565,6 +7565,7 @@ justify-content: center;
     position: absolute;
     top: 340px;  /* Positioned further lower */
     left: 20%;  /* Kept the same left position */
+    left: 70%;
     opacity: 0;
     visibility: hidden;
     z-index: 100;
