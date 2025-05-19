@@ -1021,11 +1021,13 @@ export default {
       const allSections = [elegantSection, sandySection, rescueSection].filter(Boolean);
       
       // Apply the same border radius to all sections, with increased roundness
+      // These values should match the media queries in the CSS
       const largeRadius = '50px';
       const mediumRadius = '35px';
       const smallRadius = '30px';
       
       allSections.forEach(section => {
+        // Ensure consistent border radius for both CSS and inline styles
         if (window.innerWidth < 480) {
           section.style.borderTopLeftRadius = smallRadius;
           section.style.borderTopRightRadius = smallRadius;
@@ -1036,7 +1038,12 @@ export default {
           section.style.borderTopLeftRadius = largeRadius;
           section.style.borderTopRightRadius = largeRadius;
         }
+        
+        // Ensure overflow is hidden to maintain the curved appearance
+        section.style.overflow = 'hidden';
       });
+      
+      console.log('Applied rounded corners to content sections');
     },
     addSmoothScrollPolyfill() {
       // Very simple smooth scroll polyfill for browsers that don't support scroll-behavior
@@ -1694,15 +1701,14 @@ padding-bottom: 410px; /* Increased padding-bottom (160px + 250px) */
   opacity: 1;
   margin-top: -100px; /* Adjusted from -80px to -100px to position section slightly higher */
   transform: translateZ(0); /* Enable GPU acceleration for smoother transitions */
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2); /* Add shadow on left side */
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
   padding: 100px 0 0; /* Remove horizontal padding */
-  border-radius: 0;
-  transform: none;
   overflow: hidden;
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+  border-top-left-radius: 50px;
+  border-top-right-radius: 50px;
 }
 
 .elegant-content-section.pushed-down-by-suggestions {
@@ -1723,10 +1729,10 @@ padding-bottom: 410px; /* Increased padding-bottom (160px + 250px) */
   justify-content: flex-start;
   align-items: flex-start;
   padding: 100px 0 160px; /* Increased bottom padding from 80px to 160px */
-  border-radius: 0;
-  transform: none;
   overflow: hidden;
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+  border-top-left-radius: 50px;
+  border-top-right-radius: 50px;
 }
 
 /* Smooth transition for white section with no dark background */
@@ -1757,53 +1763,44 @@ padding-bottom: 410px; /* Increased padding-bottom (160px + 250px) */
 
 /* Custom curved top edge with more pronounced curves at the edges */
 .elegant-content-section::after {
+  display: none; /* Remove the elliptical shape */
   content: '';
   position: absolute;
-  top: -2px; /* Slight overlap to avoid any gaps */
+  top: -2px;
   left: 0;
   width: 100%;
-  height: 150px; /* Increased height for more pronounced curve */
-  background-color: #ffffff;
-  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% -40%, transparent 49.5%, #fff 50%);
-  mask-image: radial-gradient(ellipse 100% 100% at 50% -40%, transparent 49.5%, #fff 50%);
+  height: 150px;
+  background-color: transparent;
   z-index: 1;
   border-top-left-radius: 40px;
   border-top-right-radius: 40px;
-  /* Ensure consistent mask across browsers */
-  -webkit-mask-size: 100% 200%;
-  mask-size: 100% 200%;
-  -webkit-mask-position: center top;
-  mask-position: center top;
 }
 
 /* Curved top edge for sandy section - enhanced curve */
 .sandy-content-section::after {
+  display: none; /* Remove the elliptical shape */
   content: '';
   position: absolute;
-  top: -2px; /* Slight overlap to avoid any gaps */
+  top: -2px;
   left: 0;
   width: 100%;
-  height: 150px; /* Increased height for more pronounced curve */
-  background-color: #B0E0E6; /* Changed to lighter blue */
-  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% -40%, transparent 49.5%, #B0E0E6 50%); /* Adjusted mask for lighter blue */
-  mask-image: radial-gradient(ellipse 100% 100% at 50% -40%, transparent 49.5%, #B0E0E6 50%); /* Adjusted mask for lighter blue */
+  height: 150px;
+  background-color: transparent;
   z-index: 1;
   border-top-left-radius: 40px;
   border-top-right-radius: 40px;
-  /* Ensure consistent mask across browsers */
-  -webkit-mask-size: 100% 200%;
-  mask-size: 100% 200%;
-  -webkit-mask-position: center top;
-  mask-position: center top;
 }
 
 @media (max-width: 768px) {
   .elegant-content-section::after,
   .sandy-content-section::after,
   .rescue-content-section::after {
-    height: 120px;
-    -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% -40%, transparent 49.5%, currentColor 50%);
-    mask-image: radial-gradient(ellipse 90% 90% at 50% -40%, transparent 49.5%, currentColor 50%);
+    display: none;
+  }
+  
+  .elegant-content-section,
+  .sandy-content-section,
+  .rescue-content-section {
     border-top-left-radius: 35px;
     border-top-right-radius: 35px;
   }
@@ -1813,9 +1810,12 @@ padding-bottom: 410px; /* Increased padding-bottom (160px + 250px) */
   .elegant-content-section::after,
   .sandy-content-section::after,
   .rescue-content-section::after {
-    height: 90px;
-    -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% -40%, transparent 49.5%, currentColor 50%);
-    mask-image: radial-gradient(ellipse 85% 85% at 50% -40%, transparent 49.5%, currentColor 50%);
+    display: none;
+  }
+  
+  .elegant-content-section,
+  .sandy-content-section,
+  .rescue-content-section {
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
   }
@@ -1979,13 +1979,13 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 
 /* Clean navbar when scrolled with subtle shadow */
 .navbar-wrapper.scrolled {
-  background: rgba(0, 0, 0, 0.15) !important; /* keep dark transparent */
-  box-shadow: none !important; /* remove white shadow */
+  background: rgba(0, 0, 0, 0.85) !important; /* Dark transparent background */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important; /* Add subtle shadow */
   backdrop-filter: blur(8px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 .navbar-wrapper.scrolled .navbar {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: transparent !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 /* keep logo colours white */
@@ -2041,7 +2041,32 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 
 .logo-link:hover {
   text-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
-}.logo-water {  font-weight: 600;  color: #ffffff;}.logo-wise {  font-weight: 700;  color: #44ccff;  text-shadow: 0 0 10px rgba(68, 204, 255, 0.5);}.logo-family {  font-weight: 300;  color: #ffffff;  opacity: 0.9;}.navbar-wrapper.scrolled .logo-water {  color: #333;}.navbar-wrapper.scrolled .logo-wise {  color: #014f86;  text-shadow: none;}.navbar-wrapper.scrolled .logo-family {  color: #333;  opacity: 0.9;}
+}
+.logo-water {  
+  font-weight: 600;  
+  color: #ffffff;
+}
+.logo-wise {  
+  font-weight: 700;  
+  color: #44ccff;  
+  text-shadow: 0 0 10px rgba(68, 204, 255, 0.5);
+}
+.logo-family {  
+  font-weight: 300;  
+  color: #ffffff;  
+  opacity: 0.9;
+}
+.navbar-wrapper.scrolled .logo-water {  
+  color: #ffffff !important;
+}
+.navbar-wrapper.scrolled .logo-wise {  
+  color: #44ccff !important;  
+  text-shadow: 0 0 10px rgba(68, 204, 255, 0.5) !important;
+}
+.navbar-wrapper.scrolled .logo-family {  
+  color: #ffffff !important;  
+  opacity: 0.9;
+}
 
 .navbar-tabs {
   display: flex;
@@ -2074,23 +2099,24 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .navbar-tab::after {
+  display: none;
   content: '';
   position: absolute;
   bottom: -1px;
   left: 0;
-  width: 100%;
-  height: 1px;
+  width: 0;
+  height: 0;
   background-color: transparent;
-  transition: all 0.3s ease;
+  transition: none;
 }
 
 .navbar-tab:hover::after {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: transparent;
 }
 
 .navbar-tab.active::after {
-  background-color: #ffffff;
-  height: 2px;
+  background-color: transparent;
+  height: 0;
 }
 
 .dropdown-arrow {
@@ -2642,47 +2668,51 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   display: none;
 }
 
-/* Enhanced navbar when scrolled */
+/* Enhanced navbar when scrolled - keeping dark theme consistent */
 .navbar-wrapper.scrolled {
-  background: rgba(255, 255, 255, 1); /* Solid white - no transparency */
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1); /* Simple border-like shadow */
-  backdrop-filter: none; /* No blur */
-  border-bottom: none; /* No border */
+  background: rgba(0, 0, 0, 0.85) !important; /* Dark transparent background */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important; /* Add subtle shadow */
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .navbar-wrapper.scrolled .navbar {
-  background: transparent;
-  border-bottom: 1px solid rgba(1, 79, 134, 0.1);
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .navbar-wrapper.scrolled .logo-link {
-  color: #014f86;
-  text-shadow: none;
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
 }
 
 .navbar-wrapper.scrolled .navbar-tab {
-  color: rgba(1, 59, 111, 0.7);
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .navbar-wrapper.scrolled .navbar-tab:hover {
-  color: #014f86;
+  color: #ffffff !important;
 }
 
 .navbar-wrapper.scrolled .navbar-tab.active {
-  color: #014f86;
-  font-weight: 600;
+  color: #ffffff !important;
+  font-weight: 600 !important;
 }
 
 .navbar-wrapper.scrolled .navbar-tab::after {
-  background-color: transparent;
+  display: none !important;
+  background-color: transparent !important;
+  height: 0 !important;
 }
 
 .navbar-wrapper.scrolled .navbar-tab:hover::after {
-  background-color: rgba(1, 59, 111, 0.4);
+  display: none !important;
+  background-color: transparent !important;
 }
 
 .navbar-wrapper.scrolled .navbar-tab.active::after {
-  background-color: #014f86;
+  display: none !important;
+  background-color: transparent !important;
 }
 
 /* Navbar search transitions */
@@ -4472,10 +4502,10 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   justify-content: flex-start;
   align-items: flex-start;
   padding: 100px 0 80px; /* No horizontal padding */
-  border-radius: 0;
-  transform: none;
   overflow: hidden; /* Changed to hidden for internal content but we'll allow rescue-showcase to overflow */
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+  border-top-left-radius: 50px;
+  border-top-right-radius: 50px;
 }
 
 /* Curved top edge for rescue section */
@@ -4492,23 +4522,17 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .rescue-content-section::after {
+  display: none; /* Remove the elliptical shape */
   content: '';
   position: absolute;
-  top: -2px; 
+  top: -2px;
   left: 0;
   width: 100%;
-  height: 150px; /* Increased height for more pronounced curve */
-  background-color: #FFE5E1;
-  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% -40%, transparent 49.5%, #FFE5E1 50%);
-  mask-image: radial-gradient(ellipse 100% 100% at 50% -40%, transparent 49.5%, #FFE5E1 50%);
+  height: 150px;
+  background-color: transparent;
   z-index: 1;
   border-top-left-radius: 40px;
   border-top-right-radius: 40px;
-  /* Ensure consistent mask across browsers */
-  -webkit-mask-size: 100% 200%;
-  mask-size: 100% 200%;
-  -webkit-mask-position: center top;
-  mask-position: center top;
 }
 
 /* Curved top edge for rescue section showing sandy color behind */
@@ -7579,64 +7603,64 @@ overflow: hidden;
 
 /* Scrolled dropdown styles */
 .navbar-wrapper.scrolled .dropdown-menu {
-  background-color: rgba(255, 255, 255, 0.99);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15), 0 0 15px rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
 }
 
 .navbar-wrapper.scrolled .menu-section-header {
-  color: #0277bd;
+  color: #44ccff;
 }
 
 .navbar-wrapper.scrolled .menu-section-header:after {
-  background: linear-gradient(to right, rgba(2, 119, 189, 0.3), rgba(2, 119, 189, 0));
+  background: linear-gradient(to right, rgba(68, 204, 255, 0.3), rgba(68, 204, 255, 0));
 }
 
 .navbar-wrapper.scrolled .menu-section-header:before {
-  color: #0277bd;
+  color: #44ccff;
 }
 
 .navbar-wrapper.scrolled .menu-divider {
-  background: linear-gradient(to right, rgba(1, 79, 134, 0.2), rgba(1, 79, 134, 0.1), rgba(1, 79, 134, 0));
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
 }
 
 .navbar-wrapper.scrolled .dropdown-item {
-  color: #014f86;
-  background-color: rgba(1, 79, 134, 0.08);
-  border: 1px solid rgba(1, 79, 134, 0.12);
+  color: white;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .navbar-wrapper.scrolled .dropdown-item:before {
-  background: linear-gradient(to bottom, #0277bd, #014f86);
+  background: linear-gradient(to bottom, #44ccff, #0077cc);
 }
 
 .navbar-wrapper.scrolled .dropdown-item:hover {
-  background-color: rgba(1, 79, 134, 0.15);
-  color: #013b6f;
+  background-color: rgba(255, 255, 255, 0.18);
+  color: white;
   transform: translateY(-3px);
-  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.3);
 }
 
 .navbar-wrapper.scrolled .highlight-item {
-  background: linear-gradient(135deg, rgba(1, 79, 134, 0.15), rgba(1, 79, 134, 0.25));
-  border: 1px solid rgba(1, 79, 134, 0.25);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 0 20px rgba(1, 79, 134, 0.07);
+  background: linear-gradient(135deg, rgba(0, 123, 194, 0.35), rgba(0, 77, 128, 0.45));
+  border: 1px solid rgba(68, 204, 255, 0.45);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35), inset 0 0 25px rgba(0, 123, 194, 0.25);
 }
 
 .navbar-wrapper.scrolled .highlight-item:after {
-  color: #1976D2;
-  text-shadow: 0 0 8px rgba(25, 118, 210, 0.4);
+  color: #44ccff;
+  text-shadow: 0 0 10px rgba(68, 204, 255, 0.8);
 }
 
 .navbar-wrapper.scrolled .highlight-item:before {
-  background: linear-gradient(to bottom, #0277bd, #014f86);
+  background: linear-gradient(to bottom, #44ccff, #0077cc);
 }
 
 .navbar-wrapper.scrolled .highlight-item:hover {
-  background: linear-gradient(135deg, rgba(1, 79, 134, 0.25), rgba(1, 79, 134, 0.35));
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 0 10px rgba(1, 79, 134, 0.15);
-  border-color: rgba(1, 79, 134, 0.4);
+  background: linear-gradient(135deg, rgba(0, 123, 194, 0.4), rgba(0, 77, 128, 0.5));
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 123, 194, 0.3);
+  border-color: rgba(68, 204, 255, 0.6);
 }
 
 .navbar-wrapper.scrolled .highlight-icon {
@@ -7676,21 +7700,5 @@ overflow: hidden;
 }
 
 /* === Ensure navbar tabs styling when scrolled === */
-/* Default subtle style for all tabs when scrolled */
-.navbar-wrapper.scrolled .navbar-tab {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
-/* Highlight only the active tab */
-.navbar-wrapper.scrolled .navbar-tab.active {
-  color: #ffffff !important;
-}
-.navbar-wrapper.scrolled .navbar-tab.active::after {
-  background-color: #ffffff !important;
-  height: 2px !important;
-}
-/* Remove underline for non-active tabs */
-.navbar-wrapper.scrolled .navbar-tab:not(.active)::after {
-  background-color: transparent !important;
-  height: 0 !important;
-}
+/* All styling for navbar tabs is now consolidated in the navbar section above */
 </style>
