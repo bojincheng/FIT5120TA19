@@ -462,8 +462,6 @@ export default {
       // Data properties for beach tool
       uploadedImage: null,
       beachSearchQuery: '',
-      homeBeach: 'Bondi Beach',
-      compareBeach: 'Manly Beach',
       // Flag to temporarily disable navbar dynamic behavior
       navbarDynamicEnabled: false, // Set to false to disable dynamic navbar
       // ScrollTrigger references
@@ -476,8 +474,8 @@ export default {
       showRipSimulation: false,
       // Rip current quiz popup
       showRipCurrentQuizPopup: false,
-      // Beach tool initial tab
-      beachToolTab: 'compare'
+      // Beach tool initial tab - setting default to ripIdentifier
+      beachToolTab: 'ripIdentifier'
     }
   },
   beforeCreate() {

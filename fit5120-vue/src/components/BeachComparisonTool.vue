@@ -219,7 +219,6 @@
             @click="fetchCompareBeaches"
             :disabled="!selectedBeach1 || !selectedBeach2 || areSameBeaches()"
             class="compare-button"
-            v-on:click.once="showButtonFeedback"
           >
             <span>{{ loading ? 'Loading...' : 'Compare Beaches' }}</span>
             <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -270,14 +269,11 @@
         </div>
         
         <!-- Success message displayed after compare while popup is shown -->
-      <div v-if="compareChartData" class="compare-success-message" @click="ensureComparePopupVisible">
+      <div v-if="compareChartData" class="compare-success-message">
         <div class="success-indicator">
           <span class="success-icon">✓</span>
           <span class="success-text">Beach comparison data loaded successfully</span>
         </div>
-        <button @click="ensureComparePopupVisible" class="view-comparison-btn">
-          View Comparison
-        </button>
         <!-- Beach report is now shown automatically -->
       </div>
             </div>
@@ -715,14 +711,6 @@ export default {
         console.log('Chart datasets:', newVal.datasets.length);
         console.log('Beach 1:', newVal.datasets[0].label);
         console.log('Beach 2:', newVal.datasets[1].label);
-        
-        // Ensure popup is shown whenever compare data is available
-        if (!this.showCompareReport) {
-          console.log('Showing compare report via watcher');
-          setTimeout(() => {
-            this.showCompareReport = true;
-          }, 200);
-        }
       }
     });
     
@@ -1235,11 +1223,10 @@ export default {
         this.error = null; // Clear status message
         
         // Automatically show the comparison report when data is loaded
-        // Set a slight delay to ensure all data is processed and guarantee popup visibility
+        // Set a slight delay to ensure all data is processed
         setTimeout(() => {
           this.showCompareReport = true;
-          console.log('Setting showCompareReport to true');
-        }, 500);
+        }, 300);
       } catch (error) {
         console.error('Compare beaches error:', error);
         this.error = `Failed to compare beaches: ${error.message}`;
@@ -1825,6 +1812,13 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
     return "CALM";
   }
 },
+    
+    getBeachCategoryClass(data) {
+      const category = this.getBeachConditionCategory(data);
+      if (category === "HARSH") return "category-harsh";
+      if (category === "MODERATE") return "category-moderate";
+      return "category-calm";
+    },
     
     getBeachConditionExplanation(data) {
       const category = this.getBeachConditionCategory(data);
@@ -2893,40 +2887,6 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
         // Just reset loading state without error message
         this.loading = false;
       }
-    },
-    
-    // Method to ensure comparison popup is visible
-    ensureComparePopupVisible() {
-      if (this.compareChartData && !this.showCompareReport) {
-        console.log('Manually ensuring compare popup is visible');
-        this.showCompareReport = true;
-      }
-    },
-    
-    // Method to show visual feedback when Compare button is clicked
-    showButtonFeedback(event) {
-      // Flash effect for the button to acknowledge click
-      const button = event.currentTarget;
-      const originalBackground = button.style.background;
-      const originalTransform = button.style.transform;
-      
-      // Apply highlight effect
-      button.style.background = 'linear-gradient(to bottom, #ffb74d, #ff9800)';
-      button.style.transform = 'scale(0.95)';
-      
-      // Return to normal after animation
-      setTimeout(() => {
-        button.style.background = originalBackground;
-        button.style.transform = originalTransform;
-      }, 300);
-      
-      // After data is loaded, ensure popup is visible
-      setTimeout(() => {
-        if (this.compareChartData && !this.showCompareReport) {
-          console.log('Showing comparison report after button feedback');
-          this.showCompareReport = true;
-        }
-      }, 2000);
     },
     
     // Event handlers for popup positioning
@@ -6382,14 +6342,14 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 .rip-upload-container {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  padding: 0.5rem;
+  padding: 0.5rem; /* Reduced from 1rem */
   margin-top: 0.5rem;
 }
 
 .upload-area {
   border: 2px dashed rgba(255, 255, 255, 0.4);
   border-radius: 10px;
-  min-height: 60px;
+  min-height: 60px; /* Reduced from 80px */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -6415,23 +6375,23 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0.5rem;
+  padding: 0.5rem; /* Reduced from 1rem */
   color: rgba(255, 255, 255, 0.8);
 }
 
 .upload-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.5rem; /* Reduced from 2rem */
+  margin-bottom: 0.25rem; /* Reduced from 0.5rem */
 }
 
 .upload-placeholder p {
-  font-size: 1.5rem;
+  font-size: 0.9rem; /* Reduced from 1rem */
   font-weight: 500;
   margin: 0 0 0.5rem 0;
 }
 
 .upload-hint {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   opacity: 0.7;
 }
 
@@ -6449,18 +6409,18 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 .rip-actions {
   display: flex;
   gap: 1rem;
-  margin-top: 0.5rem;
+  margin-top: 0.5rem; /* Reduced from 1rem */
   justify-content: center;
 }
 
 .analyze-rip-button, .remove-image-button {
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1rem; /* Reduced from 0.8rem 1.5rem */
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
-  font-size: 0.9rem;
+  font-size: 0.9rem; /* Reduced from 1rem */
   display: flex;
   align-items: center;
   justify-content: center;
