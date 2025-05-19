@@ -427,7 +427,7 @@
                 <p class="safety-stat-text">of pool safety issues involve climbable objects or propped gates.</p>
               </div>
             </div>
-            <p class="safety-content-text">Simple habits like putting away toys & checking gates can prevent accidents. Creating a safe pool environment protects children from harm.</p>
+            <p class="safety-content-text">Simple habits like putting away toys & checking gates can prevent accidents.</p>
           </div>
           <div class="safety-flag-text">
             REMOVE POOL HAZARDS
@@ -1979,10 +1979,31 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 
 /* Clean navbar when scrolled with subtle shadow */
 .navbar-wrapper.scrolled {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03); /* Soft subtle shadow */
-  backdrop-filter: none;
-  border-bottom: none;
+  background: rgba(0, 0, 0, 0.15) !important; /* keep dark transparent */
+  box-shadow: none !important; /* remove white shadow */
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.navbar-wrapper.scrolled .navbar {
+  background: rgba(0, 0, 0, 0.15) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+/* keep logo colours white */
+.navbar-wrapper.scrolled .logo-water,
+.navbar-wrapper.scrolled .logo-family,
+.navbar-wrapper.scrolled .logo-wise {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+/* keep tab colours white */
+.navbar-wrapper.scrolled .navbar-tab,
+.navbar-wrapper.scrolled .navbar-tab.active {
+  color: rgba(255, 255, 255, 0.7) !important; /* subtle, no highlight */
+}
+.navbar-wrapper.scrolled .navbar-tab::after,
+.navbar-wrapper.scrolled .navbar-tab.active::after {
+  background-color: transparent !important; /* remove underline */
+  height: 0 !important;
 }
 
 .navbar {
@@ -2034,7 +2055,7 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.2rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   font-weight: 400;
   transition: all 0.3s ease;
@@ -7646,5 +7667,24 @@ overflow: hidden;
 .rip-identifier-container .rip-simulation-header {
   background: linear-gradient(135deg, #014871, #2a84b9) !important; /* Blueish header for water theme */
   border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* === Ensure navbar tabs styling when scrolled === */
+/* Default subtle style for all tabs when scrolled */
+.navbar-wrapper.scrolled .navbar-tab {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+/* Highlight only the active tab */
+.navbar-wrapper.scrolled .navbar-tab.active {
+  color: #ffffff !important;
+}
+.navbar-wrapper.scrolled .navbar-tab.active::after {
+  background-color: #ffffff !important;
+  height: 2px !important;
+}
+/* Remove underline for non-active tabs */
+.navbar-wrapper.scrolled .navbar-tab:not(.active)::after {
+  background-color: transparent !important;
+  height: 0 !important;
 }
 </style>
