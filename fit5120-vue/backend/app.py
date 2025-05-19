@@ -11,8 +11,7 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 import pandas as pd
-import smtplib
-from email.mime.text import MIMEText
+import imghdr
 # Load environment variables from .env file
 load_dotenv()
 app = Flask(__name__)
@@ -268,7 +267,12 @@ if not os.path.exists(UPLOAD_FOLDER):
 # Helper function to check allowed extensions
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
+# Content check
+def is_valid_image(file_stream):
+    file_stream.seek(0)
+    file_type = imghdr.what(None, file_stream.read())
+    file_stream.seek(0)
+    return file_type in ALLOWED_IMGHDR_TYPES
 # Process image upload
 @app.route('/process-image', methods=['POST'])
 def process_image():
@@ -277,7 +281,7 @@ def process_image():
     file = request.files['image']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    if file and allowed_file(file.filename):
+    if file and allowed_file(file.filename) and is_valid_image(file.stream):
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
