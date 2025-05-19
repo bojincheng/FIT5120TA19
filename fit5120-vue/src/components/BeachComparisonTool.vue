@@ -59,21 +59,11 @@
             
             <div class="result-image-container">
               <img :src="ripAnalysisResult.markedImage || processedPreview || ripImage" class="result-image" alt="Analysis result" />
-              <div class="result-overlay" :class="ripAnalysisResult.dangerLevel">
-                <span class="danger-badge">{{ ripAnalysisResult.dangerText }}</span>
-              </div>
-            </div>
-            
-            <div v-if="noRipMessage" class="no-rip-message">
-              <p>{{ noRipMessage }}</p>
             </div>
             
             <div class="result-details">
-              <div class="danger-indicator" :class="ripAnalysisResult.dangerLevel">
-                <span class="danger-level">{{ ripAnalysisResult.dangerText }}</span>
-                <div class="danger-bar-container">
-                  <div class="danger-bar" :style="{ width: ripAnalysisResult.dangerPercentage + '%' }"></div>
-                </div>
+              <div class="simple-result" :class="ripAnalysisResult.dangerLevel === 'high' ? 'rip-detected' : 'rip-not-detected'">
+                <h3>{{ ripAnalysisResult.dangerText }}</h3>
               </div>
               
               <div class="result-description">
@@ -933,49 +923,86 @@ export default {
         ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
 
         if (predictions.length > 0) {
-          const best = predictions[0];
-          const scaleX = previewCanvas.width / img.width;
-          const scaleY = previewCanvas.height / img.height;
+          // Get the prediction with highest confidence
+          const best = predictions.sort((a, b) => b.confidence - a.confidence)[0];
+          const confidence = best.confidence;
+          
+          // Check if confidence meets our threshold
+          if (confidence >= 0.5) {
+            const scaleX = previewCanvas.width / img.width;
+            const scaleY = previewCanvas.height / img.height;
 
-          const x = (best.x - best.width / 2) * scaleX;
-          const y = (best.y - best.height / 2) * scaleY;
-          const width = best.width * scaleX;
-          const height = best.height * scaleY;
+            const x = (best.x - best.width / 2) * scaleX;
+            const y = (best.y - best.height / 2) * scaleY;
+            const width = best.width * scaleX;
+            const height = best.height * scaleY;
 
-          ctx.strokeStyle = 'rgba(255, 0, 0, 0.9)';
-          ctx.lineWidth = 4;
-          ctx.strokeRect(x, y, width, height);
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.9)';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, width, height);
 
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-          ctx.fillRect(x, y - 25, 120, 25);
-          ctx.fillStyle = 'white';
-          ctx.font = 'bold 16px Arial';
-          ctx.fillText("RIP CURRENT", x + 5, y - 5);
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+            ctx.fillRect(x, y - 25, 140, 25);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(`RIP DETECTED`, x + 5, y - 5);
 
+            this.noRipMessage = '';
+            
+            // Set ripAnalysisResult to match UI expectations
+            this.ripAnalysisResult = {
+              dangerLevel: 'high',
+              dangerText: 'RIP DETECTED',
+              dangerPercentage: 90,
+              description: `Strong indicators of rip currents present! The system has detected a rip current with ${(confidence*100).toFixed(0)}% confidence.`,
+              safetyTips: [
+                'Do not enter the water in these conditions',
+                'Alert lifeguards if you spot someone in trouble',
+                'If caught in a rip, float and signal for help'
+              ],
+              markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+            };
+          } else {
+            // Confidence below threshold
+            this.noRipMessage = '';
+            
+            // Draw "RIP NOT DETECTED" text in green
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.8)';
+            ctx.fillRect(10, 10, 180, 30);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('RIP NOT DETECTED', 20, 30);
+            
+            // Set ripAnalysisResult for UI with low risk
+            this.ripAnalysisResult = {
+              dangerLevel: 'low',
+              dangerText: 'RIP NOT DETECTED',
+              dangerPercentage: 25,
+              description: 'No significant rip current patterns detected with sufficient confidence.',
+              safetyTips: [
+                'Always swim between the red and yellow flags',
+                'Stay in shallow water and keep watch on children',
+                'Conditions can change quickly - check regularly'
+              ],
+              markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+            };
+          }
+        } else {
           this.noRipMessage = '';
           
-          // Set ripAnalysisResult to match UI expectations
-          this.ripAnalysisResult = {
-            dangerLevel: 'high',
-            dangerText: 'High Risk',
-            dangerPercentage: 90,
-            description: 'Strong indicators of rip currents present! The system has detected a rip current in the image.',
-            safetyTips: [
-              'Do not enter the water in these conditions',
-              'Alert lifeguards if you spot someone in trouble',
-              'If caught in a rip, float and signal for help'
-            ],
-            markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
-          };
-        } else {
-          this.noRipMessage = 'No rip current detected.';
+          // Draw "RIP NOT DETECTED" text in green
+          ctx.fillStyle = 'rgba(46, 204, 113, 0.8)';
+          ctx.fillRect(10, 10, 180, 30);
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText('RIP NOT DETECTED', 20, 30);
           
           // Set ripAnalysisResult for UI with low risk
           this.ripAnalysisResult = {
             dangerLevel: 'low',
-            dangerText: 'Low Risk',
+            dangerText: 'RIP NOT DETECTED',
             dangerPercentage: 25,
-            description: 'No clear signs of rip currents detected in this image. The water appears to have consistent wave patterns with no visible rip current channels.',
+            description: 'No clear signs of rip currents detected in this image.',
             safetyTips: [
               'Always swim between the red and yellow flags',
               'Stay in shallow water and keep watch on children',
@@ -6651,19 +6678,27 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   max-height: 300px;
 }
 
-.result-overlay {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0.5rem 1rem;
-  border-bottom-left-radius: 8px;
+.simple-result {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
 }
 
-.danger-badge {
-  color: white;
+.simple-result h3 {
+  margin: 0;
+  font-size: 1.8rem;
   font-weight: 700;
-  font-size: 1rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rip-detected {
+  background: rgba(231, 76, 60, 0.8);
+}
+
+.rip-not-detected {
+  background: rgba(46, 204, 113, 0.8);
 }
 
 .result-overlay.high {
@@ -6680,53 +6715,6 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 
 .result-details {
   margin-top: 1rem;
-}
-
-.danger-indicator {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-}
-
-.danger-level {
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.danger-indicator.high .danger-level {
-  color: #e74c3c;
-}
-
-.danger-indicator.medium .danger-level {
-  color: #f39c12;
-}
-
-.danger-indicator.low .danger-level {
-  color: #2ecc71;
-}
-
-.danger-bar-container {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.danger-bar {
-  height: 100%;
-  transition: width 0.8s ease;
-}
-
-.danger-indicator.high .danger-bar {
-  background: #e74c3c;
-}
-
-.danger-indicator.medium .danger-bar {
-  background: #f39c12;
-}
-
-.danger-indicator.low .danger-bar {
-  background: #2ecc71;
 }
 
 .result-description {
