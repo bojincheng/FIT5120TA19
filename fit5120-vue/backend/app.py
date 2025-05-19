@@ -255,6 +255,53 @@ def get_weather_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+# Epic 6 River-impact-forecasting 
+# Precipitation Forecast Endpoint
+@app.route("/precipitation", methods=["GET"])
+def get_precipitation_forecast():
+    latitude = request.args.get("latitude", type=float)
+    longitude = request.args.get("longitude", type=float)
+    if latitude is None or longitude is None:
+        return jsonify({"error": "Missing latitude or longitude"}), 400
+
+    try:
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "hourly": "precipitation",
+            "models": "best_match"
+        }
+
+        responses = openmeteo.weather_api(url, params=params)
+        response = responses[0]
+
+        hourly = response.Hourly()
+        precipitation = hourly.Variables(0).ValuesAsNumpy()
+
+        hourly_data = {
+            "date": pd.date_range(
+                start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
+                end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+                freq=pd.Timedelta(seconds=hourly.Interval()),
+                inclusive="left"
+            ).strftime("%Y-%m-%d %H:%M").tolist(),
+            "precipitation": precipitation.tolist()
+        }
+
+        return jsonify({
+            "latitude": response.Latitude(),
+            "longitude": response.Longitude(),
+            "elevation": response.Elevation(),
+            "timezone": response.Timezone(),
+            "timezone_abbr": response.TimezoneAbbreviation(),
+            "utc_offset_seconds": response.UtcOffsetSeconds(),
+            "hourly_forecast": hourly_data
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # Epic 7 Rip Current Detection
 # Config
 UPLOAD_FOLDER = './uploads'

@@ -1,30 +1,35 @@
-<template>
-    <div class="container">
-      <h2>Mobile Menu</h2>
-      <ul class="menu">
-        <li @click="activeComponent = 'BeachSafetyMobile'">1. Beach Safety</li>
-        <li @click="activeComponent = 'RipCurrentDetectionMobile'">2. Rip Current Detection</li>
-      </ul>
-  
-      <div class="content">
-        <BeachSafetyMobile v-if="activeComponent === 'BeachSafetyMobile'" />
-        <RipCurrentDetectionMobile v-else-if="activeComponent === 'RipCurrentDetectionMobile'" />
-      </div>
-    </div>
+<template> 
+  <div class="container">
+    <h2>Mobile Menu</h2>
+    <ul class="menu">
+      <li @click="activeComponent = 'BeachSafetyMobile'">1. Beach Safety</li>
+      <li @click="activeComponent = 'RipCurrentDetectionMobile'">2. Rip Current Detection</li>
+      <li @click="activeComponent = 'RiverImpactForecast'">3. River Impact Forecast</li>
+    </ul>
 
-    <AddToHomeScreenButton/>
-  </template>
+    <div class="content">
+      <BeachSafetyMobile v-if="activeComponent === 'BeachSafetyMobile'" />
+      <RipCurrentDetectionMobile v-else-if="activeComponent === 'RipCurrentDetectionMobile'" />
+      <RiverImpactForecast v-else-if="activeComponent === 'RiverImpactForecast'" />
+    </div>
+  </div>
+
+  <AddToHomeScreenButton/>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+import BeachSafetyMobile from './BeachSafetyMobile.vue'
+import RipCurrentDetectionMobile from './RipCurrentDetectionMobile.vue'
+import RiverImpactForecast from './RiverImpactForecast.vue'
+import AddToHomeScreenButton from './AddToHomeScreenButton.vue'
+
+const activeComponent = ref('BeachSafety') // Set initial view correctly
+</script>
+
   
-  <script setup>
-  import { ref } from 'vue'
-  import BeachSafetyMobile from './BeachSafetyMobile.vue'
-  import RipCurrentDetectionMobile from './RipCurrentDetectionMobile.vue'
-  import AddToHomeScreenButton from './AddToHomeScreenButton.vue'
-  
-  const activeComponent = ref('BeachSafety')
-  </script>
-  
-  <style scoped>
+<style scoped>
   .container {
     padding: 1rem;
     font-family: Arial, sans-serif;
