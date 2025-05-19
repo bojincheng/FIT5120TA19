@@ -932,7 +932,7 @@ export default {
           const confidence = best.confidence;
           
           // Check if confidence meets our threshold
-          if (confidence >= 0.5) {  // 50% confidence threshold for definite rip detection
+          if (confidence >= 0.295) {  
             const scaleX = previewCanvas.width / img.width;
             const scaleY = previewCanvas.height / img.height;
 
