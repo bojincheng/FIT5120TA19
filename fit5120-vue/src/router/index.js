@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoadingPage from '../Loading.vue'
-import LandingPage from '../Landing.vue'
+import NewLandingPage from '../NewLanding.vue'
 import HomePage from '../HomePage.vue'
 import BeachSafety from '../BeachSafety.vue'
 import PoolSafety from '../PoolSafety.vue'
+import BeachHomePage from '../components/BeachHomePage.vue'
 import PoolSupervision from '../PoolSupervision.vue'
 import BackyardPool from '../BackyardPool.vue'
 import BeachData from '../BeachData.vue'
@@ -13,19 +14,19 @@ import SurviveRipCurrents from '../SurviveRipCurrents.vue'
 import SafetyTool from '../SafetyTool.vue'
 import RipEscapeSimulation from '../RipEscapeSimulation.vue'
 import BeachSafetyPractices from '../BeachSafetyPractices.vue'
-// Import new components
 import BeachSafetyRescue from '../BeachSafetyRescue.vue'
 import WaterSafetySimulation from '../WaterSafetySimulation.vue'
 import OffshoreRescue from '../OffshoreRescue.vue'
 import BeachMission from '../BeachMission.vue'
 import UnderstandingDanger from '../UnderstandingDanger.vue'
 import PoolSafetyQuiz from '../PoolSafetyQuiz.vue'
-
+import PoolHomePage from '../components/PoolHomePage.vue'
+import RiverHomePage from '../components/RiverHome.vue'
 const routes = [
   {
     path: '/',
     name: 'Landing',
-    component: LandingPage
+    component: NewLandingPage
   },
   {
     path: '/loading',
@@ -36,6 +37,21 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: HomePage
+  },
+  {
+    path: '/beach',
+    name: 'Beach',
+    component: BeachHomePage
+  },
+  {
+    path: '/pool',
+    name: 'Pool',
+    component: PoolHomePage
+  },
+  {
+    path: '/river',
+    name: 'River',
+    component: RiverHomePage
   },
   {
     path: '/beach-safety',
@@ -97,7 +113,6 @@ const routes = [
     name: 'BeachSafetyPractices',
     component: BeachSafetyPractices
   },
-  // Add new routes for the beach safety progress path
   {
     path: '/beach-safety-rescue',
     name: 'BeachSafetyRescue',

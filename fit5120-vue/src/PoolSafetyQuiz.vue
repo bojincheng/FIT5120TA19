@@ -485,6 +485,7 @@ body {
   flex-direction: column;
   align-items: center;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 h1 {
@@ -498,14 +499,14 @@ h1 {
 .scene {
   position: relative;
   width: 100%;
-  max-width: 800px;
-  height: 40vh;
+  max-width: 1000px;
+  height: 38vh;
   min-height: 250px;
-  max-height: 400px;
-  border-radius: 10px;
+  max-height: 450px;
+  border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 /* Backyard environment */
@@ -1225,12 +1226,12 @@ h1 {
 /* Step info */
 .step-info {
   background-color: #E3F2FD;
-  padding: 15px;
+  padding: 15px 18px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   border-left: 5px solid #0277BD;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
 }
 
 .step-info h2 {
@@ -1262,8 +1263,9 @@ h1 {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   width: 100%;
-  max-width: 800px;
-  margin-bottom: 20px;
+  max-width: 1000px;
+  margin-bottom: 15px;
+  overflow-y: visible;
 }
 
 .timer {
@@ -1326,8 +1328,8 @@ h1 {
 
 .options {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 12px;
   margin-bottom: 15px;
   width: 100%;
 }
@@ -1428,8 +1430,9 @@ h1 {
 
 .controls {
   text-align: center;
-  margin: 10px 0;
-  flex-shrink: 0;
+  margin: 15px 0;
+  width: 100%;
+  max-width: 1000px;
 }
 
 .control-button {
@@ -1624,7 +1627,7 @@ h1 {
   text-align: center;
   margin: 15px 0;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
 }
 
 .control-button {
@@ -1640,5 +1643,22 @@ h1 {
 
 .control-button:hover {
   background-color: #01579B;
+}
+
+/* Added support for larger screens */
+@media (min-width: 1400px) {
+  .scene {
+    max-width: 1200px;
+    height: 40vh;
+    max-height: 500px;
+  }
+  
+  .step-info, .quiz-container {
+    max-width: 1200px;
+  }
+  
+  .options {
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  }
 }
 </style>

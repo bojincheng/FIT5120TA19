@@ -7,6 +7,28 @@
       </p>
     </div>
 
+    <!-- Key Statistics Section -->
+    <div class="key-statistics">
+      <h2>Key Drowning Statistics</h2>
+      <div class="statistics-grid">
+        <div class="statistic-card">
+          <h3>Children 0-4 years</h3>
+          <div class="large-percentage">{{ poolDrowningStats.age0to4Percentage }}%</div>
+          <p>of drowning deaths in this age group occur in swimming pools</p>
+        </div>
+        <div class="statistic-card">
+          <h3>Children 5-14 years</h3>
+          <div class="large-percentage">{{ poolDrowningStats.age5to14Percentage }}%</div>
+          <p>of drowning deaths in this age group occur in swimming pools</p>
+        </div>
+        <div class="statistic-card">
+          <h3>Teenagers 15-24 years</h3>
+          <div class="large-percentage">{{ teenFreshwaterStats.percentage }}%</div>
+          <p>of drowning deaths in teenagers occur in natural water</p>
+        </div>
+      </div>
+    </div>
+
     <h1>Drowning Statistics Search</h1>
 
     <!-- Drowning Deaths Search Section -->
@@ -110,7 +132,7 @@
             This represents
             {{ isDeathSearch ? selectedResult.deaths : selectedResult.cases }}
             {{ isDeathSearch ? "drowning deaths" : "drowning injury cases" }} — each icon stands for a real child whose life was 
-            lost or forever changed. As parents, it’s painful to imagine, but vital to acknowledge: behind every symbol is a son, 
+            lost or forever changed. As parents, it's painful to imagine, but vital to acknowledge: behind every symbol is a son, 
             a daughter, a story that ended or changed too soon. We use icons, not photos, to honor privacy and dignity — but the reality they represent is heartbreakingly real.
           </p>
         </div>
@@ -149,7 +171,22 @@ export default {
       isDeathSearch: false,
       showPopup: false,
       selectedResult: {},
+      poolDrowningStats: {
+        age0to4Percentage: 0,
+        age5to14Percentage: 0
+      },
+      teenFreshwaterStats: {
+        percentage: 0
+      }
     };
+  },
+  created() {
+    const percentages = this.calculatePoolDrowningPercentages();
+    this.poolDrowningStats.age0to4Percentage = percentages.age0to4Percentage;
+    this.poolDrowningStats.age5to14Percentage = percentages.age5to14Percentage;
+    
+    const teenStats = this.calculateTeenFreshwaterDrowningPercentage();
+    this.teenFreshwaterStats.percentage = teenStats.percentage;
   },
   methods: {
     async searchDeaths() {
@@ -159,6 +196,107 @@ export default {
     async searchInjuries() {
       this.isDeathSearch = false;
       await this.fetchData("https://fit5120ta19.onrender.com/DrowningInjurySearch", this.injurySearchCriteria);
+    },
+    calculateTeenFreshwaterDrowningPercentage() {
+      /* 
+      This method calculates the percentage of freshwater (natural water) drownings for teenagers (15-24 years)
+      using data from the drowning_deaths table.
+      
+      Raw data from the database:
+      - Age 15-24 years:
+        * Natural water drownings: 21 deaths
+        * Total drownings in age group: 30 deaths
+      */
+      
+      // Raw data values
+      const data = {
+        age15to24: {
+          naturalWaterDeaths: 21,
+          totalDeaths: 30,
+          exactPercentage: (21/30) * 100, // 70.00%
+          roundedPercentage: 70 // Already at a round number
+        }
+      };
+      
+      // Print-ready formatted strings
+      const printFormat = {
+        age15to24: {
+          statistic: `${data.age15to24.roundedPercentage}%`,
+          detailedStatistic: `${data.age15to24.naturalWaterDeaths} out of ${data.age15to24.totalDeaths} drowning deaths (${data.age15to24.exactPercentage.toFixed(1)}%)`,
+          description: `of drowning deaths in teenagers aged 15-24 years occur in natural water`,
+          fullSentence: `${data.age15to24.roundedPercentage}% of drowning deaths in teenagers aged 15-24 years occur in natural water (${data.age15to24.naturalWaterDeaths} out of ${data.age15to24.totalDeaths} deaths).`
+        }
+      };
+      
+      return {
+        // Value for display
+        percentage: data.age15to24.roundedPercentage,
+        
+        // Raw data for calculations
+        rawData: data,
+        
+        // Formatted text for printing
+        printFormat: printFormat
+      };
+    },
+    calculatePoolDrowningPercentages() {
+      /* 
+      This method calculates the percentage of pool drownings for young age groups
+      using data from the drowning_deaths table.
+      
+      Raw data from the database:
+      - Age 0-4 years:
+        * Swimming pool drownings: 7 deaths
+        * Total drownings in age group: 18 deaths
+        
+      - Age 5-14 years:
+        * Swimming pool drownings: 3 deaths
+        * Total drownings in age group: 12 deaths
+      */
+      
+      // Raw data values
+      const data = {
+        age0to4: {
+          poolDeaths: 7,
+          totalDeaths: 18,
+          exactPercentage: (7/18) * 100, // 38.89%
+          roundedPercentage: 40, // Rounded to nearest 5%
+        },
+        age5to14: {
+          poolDeaths: 3, 
+          totalDeaths: 12,
+          exactPercentage: (3/12) * 100, // 25.00%
+          roundedPercentage: 25, // Already at a 5% increment
+        }
+      };
+      
+      // Print-ready formatted strings
+      const printFormat = {
+        age0to4: {
+          statistic: `${data.age0to4.roundedPercentage}%`,
+          detailedStatistic: `${data.age0to4.poolDeaths} out of ${data.age0to4.totalDeaths} drowning deaths (${data.age0to4.exactPercentage.toFixed(1)}%)`,
+          description: `of drowning deaths in children aged 0-4 years occur in swimming pools`,
+          fullSentence: `${data.age0to4.roundedPercentage}% of drowning deaths in children aged 0-4 years occur in swimming pools (${data.age0to4.poolDeaths} out of ${data.age0to4.totalDeaths} deaths).`
+        },
+        age5to14: {
+          statistic: `${data.age5to14.roundedPercentage}%`,
+          detailedStatistic: `${data.age5to14.poolDeaths} out of ${data.age5to14.totalDeaths} drowning deaths (${data.age5to14.exactPercentage.toFixed(1)}%)`,
+          description: `of drowning deaths in children aged 5-14 years occur in swimming pools`,
+          fullSentence: `${data.age5to14.roundedPercentage}% of drowning deaths in children aged 5-14 years occur in swimming pools (${data.age5to14.poolDeaths} out of ${data.age5to14.totalDeaths} deaths).`
+        }
+      };
+      
+      return {
+        // Values for display
+        age0to4Percentage: data.age0to4.roundedPercentage,
+        age5to14Percentage: data.age5to14.roundedPercentage,
+        
+        // Raw data for calculations
+        rawData: data,
+        
+        // Formatted text for printing
+        printFormat: printFormat
+      };
     },
     async fetchData(endpoint, criteria) {
       try {
@@ -304,6 +442,61 @@ th {
 .rate-note {
   font-size: 0.9em;
   color: #555;
+}
+
+.key-statistics {
+  background-color: #f0f7fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.statistics-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.statistic-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-width: 250px;
+  border-left: 5px solid #0097a7;
+}
+
+.statistic-card h3 {
+  margin-top: 0;
+  color: #007c91;
+  font-size: 1.2em;
+}
+
+.large-percentage {
+  font-size: 3.5em;
+  font-weight: bold;
+  color: #e74c3c;
+  margin: 10px 0;
+}
+
+.statistic-card p {
+  margin: 0;
+  color: #444;
+  font-weight: 500;
+}
+
+/* Add responsiveness for mobile */
+@media (max-width: 768px) {
+  .statistics-grid {
+    flex-direction: column;
+  }
+  
+  .statistic-card {
+    min-width: auto;
+  }
 }
 </style>
 

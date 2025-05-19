@@ -1,13 +1,81 @@
 <template>
   <div class="beach-search-container">
     <div class="tab-buttons">
-      <button @click="activeTab = 'search'" :class="['tab-button', activeTab === 'search' ? 'active' : '']">Search</button>
-      <button @click="activeTab = 'compare'" :class="['tab-button', activeTab === 'compare' ? 'active' : '']">Compare</button>
+      <button @click="activeTab = 'ripIdentifier'" :class="['tab-button', activeTab === 'ripIdentifier' ? 'active' : '']">RIP IDENTIFIER</button>
+      <button @click="activeTab = 'search'" :class="['tab-button', activeTab === 'search' ? 'active' : '']">SEARCH BEACHES</button>
+      <button @click="activeTab = 'compare'" :class="['tab-button', activeTab === 'compare' ? 'active' : '']">COMPARE BEACHES</button>
     </div>
     
-    <div v-if="activeTab === 'search'" class="search-tab">
+    <!-- Add the new Rip Identifier tab content -->
+    <div v-if="activeTab === 'ripIdentifier'" class="ripIdentifier-tab">
       <div class="option-header">
-        <h3 class="option-title">🔍 Know What You're Walking Into: Check Beach Conditions</h3>
+        <h3 class="option-title">IDENTIFY RIP CURRENTS</h3>
+      </div>
+      
+      <div class="rip-upload-container">
+        <div class="upload-area" @click="triggerRipFileUpload" :class="{ 'has-image': ripImage }">
+          <input type="file" ref="ripFileInput" class="hidden-file-input" accept="image/*" @change="handleRipImageUpload" />
+          <div v-if="!ripImage" class="upload-placeholder">
+            <div class="upload-icon">📷</div>
+            <p>Click to upload a beach photo</p>
+            <span class="upload-hint">or drag and drop image here</span>
+          </div>
+          <img v-if="ripImage" :src="ripImage" alt="Beach image" class="uploaded-image" />
+        </div>
+        
+        <div class="rip-actions" v-if="ripImage">
+          <button class="analyze-rip-button" @click="analyzeRipImage" :disabled="analyzeRipLoading">
+            <span v-if="!analyzeRipLoading">Analyze for Rips</span>
+            <div v-else class="button-loader"></div>
+          </button>
+          <button class="remove-image-button" @click="removeRipImage">
+            <span>Remove Image</span>
+          </button>
+        </div>
+        
+        <div v-if="analyzeRipLoading" class="analyzing-message">
+          <div class="loading-spinner"></div>
+          <p>Analyzing beach image for rip currents...</p>
+        </div>
+        
+        <div v-if="ripAnalysisResult" class="rip-analysis-result">
+          <h4 class="result-title">Analysis Results</h4>
+          
+          <div class="result-image-container">
+            <img :src="ripAnalysisResult.markedImage || ripImage" class="result-image" alt="Analysis result" />
+            <div class="result-overlay" :class="ripAnalysisResult.dangerLevel">
+              <span class="danger-badge">{{ ripAnalysisResult.dangerText }}</span>
+            </div>
+          </div>
+          
+          <div class="result-details">
+            <div class="danger-indicator" :class="ripAnalysisResult.dangerLevel">
+              <span class="danger-level">{{ ripAnalysisResult.dangerText }}</span>
+              <div class="danger-bar-container">
+                <div class="danger-bar" :style="{ width: ripAnalysisResult.dangerPercentage + '%' }"></div>
+              </div>
+            </div>
+            
+            <div class="result-description">
+              <p>{{ ripAnalysisResult.description }}</p>
+            </div>
+            
+            <div class="safety-tips">
+              <h5>Safety Tips:</h5>
+              <ul>
+                <li v-for="(tip, index) in ripAnalysisResult.safetyTips" :key="index">{{ tip }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+
+      </div>
+    </div>
+    
+          <div v-if="activeTab === 'search'" class="search-tab">
+      <div class="option-header">
+        <h3 class="option-title">CHECK BEACH CONDITIONS</h3>
         <p class="option-description">Enter the name of any Australian beach to see:</p>
       </div>
       
@@ -17,21 +85,12 @@
           @input="debouncedSearch"
           placeholder="Search for a beach (e.g. Bondi Beach)"
           class="search-input"
+          ref="searchInput"
         />
-        <ul
-          v-if="suggestions.length"
-          class="suggestions-list"
-        >
-          <li
-            v-for="(item, index) in suggestions"
-            :key="index"
-            @click="selectSuggestion(item)"
-            class="suggestion-item"
-          >
-            {{ item.display_name }}
-          </li>
-        </ul>
       </div>
+      
+      <!-- Add spacing div that grows when suggestions are shown -->
+      <div :style="{ height: suggestions.length ? '200px' : '0', transition: 'height 0.3s ease' }" class="suggestion-spacing"></div>
       
       <div v-if="loading" class="loading-message">
         <div class="loading-spinner"></div>
@@ -48,305 +107,124 @@
         </button>
       </div>
       
-      <div v-if="weather?.current && marine" class="beach-safety-report">
-        <div class="report-header">
-          <h3 class="report-title">Beach Safety Report for {{ address }}</h3>
-          
-          <div class="safety-rating">
-            <h4>Today's Safety Level</h4>
-            <div :class="['rating-indicator', getSafetyRatingClass()]">
-              <span class="rating-label">{{ getSafetyRating() }}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="report-content">
-          <div class="report-tabs">
-            <div 
-              class="report-tab" 
-              :class="{ active: reportTab === 'conditions' }" 
-              @click="setReportTab('conditions')"
-            >
-              Condition Breakdown
-            </div>
-            <div 
-              class="report-tab" 
-              :class="{ active: reportTab === 'advice' }" 
-              @click="setReportTab('advice')"
-            >
-              Safety Advice
-            </div>
-          </div>
-          
-          <div v-if="reportTab === 'conditions'" class="condition-section">
-            <h4 class="section-title">🌊 What This Means for Your Family Today</h4>
-            
-            <div class="condition-breakdown">
-              <div class="condition-item">
-                <div class="condition-header">
-                  <span class="condition-icon">🌊</span>
-                  <div class="condition-title">
-                    <span class="condition-name">Wave Height</span>
-                    <span class="condition-value">{{ marine.wave_height?.toFixed(2) }} m</span>
-                  </div>
-                </div>
-                
-                <div class="risk-meter-container">
-                  <h4 class="risk-meter-title">Current Risk Level</h4>
-                  <div class="risk-meter">
-                    <div class="risk-segments">
-                      <div class="risk-segment safe"></div>
-                      <div class="risk-segment caution"></div>
-                      <div class="risk-segment danger"></div>
-                    </div>
-                    <div class="risk-indicator" :style="{ left: getWaveRiskPosition() }">
-                      <div class="risk-value">{{ marine.wave_height?.toFixed(2) }} m</div>
-                      <div class="risk-indicator-arrow"></div>
-                    </div>
-                  </div>
-                  <div class="risk-labels">
-                    <span class="risk-label safe">Safe</span>
-                    <span class="risk-label caution">Caution</span>
-                    <span class="risk-label danger">Dangerous</span>
-                  </div>
-                </div>
-                
-                <div class="condition-meaning">
-                  <h4 class="wave-visual-header">Wave Height Risk For Children</h4>
-                  <div class="wave-danger-visual">
-                    <img 
-                      v-if="marine.wave_height > 1" 
-                      :src="images.childWaveDanger" 
-                      alt="Child in dangerous wave" 
-                      class="wave-danger-image"
-                    />
-                    <img 
-                      v-else-if="marine.wave_height > 0.5" 
-                      :src="images.childWaveModerate" 
-                      alt="Child in moderate waves" 
-                      class="wave-danger-image"
-                    />
-                    <img 
-                      v-else 
-                      :src="images.childWaveSafe" 
-                      alt="Child in safe waves" 
-                      class="wave-danger-image"
-                    />
-                    <div class="wave-danger-overlay danger" v-if="marine.wave_height > 1">
-                      <div class="hover-prompt">
-                        <span class="hover-icon">👆</span>
-                        <span class="hover-text">Hover for details</span>
-                  </div>
-                    </div>
-                    <div class="wave-danger-overlay moderate" v-else-if="marine.wave_height > 0.5">
-                      <div class="hover-prompt">
-                        <span class="hover-icon">👆</span>
-                        <span class="hover-text">Hover for details</span>
-                      </div>
-                    </div>
-                    <div class="wave-danger-overlay safe" v-else>
-                      <div class="hover-prompt">
-                        <span class="hover-icon">👆</span>
-                        <span class="hover-text">Hover for details</span>
-                      </div>
-                    </div>
-                    
-                    <div class="hover-description" v-if="marine.wave_height > 1">
-                      <div class="hover-content">
-                        <p>These waves are {{ Math.round(marine.wave_height/1.2) > 1 ? Math.round(marine.wave_height/1.2) + '× taller than' : 'about the same height as' }} a 10-year-old child and can easily knock them underwater</p>
-                        <p>Adults should stay in shallow water and keep children at the water's edge only</p>
-                      </div>
-                    </div>
-                    <div class="hover-description" v-else-if="marine.wave_height > 0.5">
-                      <div class="hover-content">
-                        <p>These waves can reach up to a 10-year-old child's chest and have enough force to unbalance them</p>
-                        <p>Keep children within arm's reach at all times</p>
-                      </div>
-                    </div>
-                    <div class="hover-description" v-else>
-                      <div class="hover-content">
-                        <p>These smaller waves are generally below knee-height for a 6-year-old child</p>
-                        <p>Still supervise children closely at all times</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="condition-item">
-                <div class="condition-header">
-                  <span class="condition-icon">🌀</span>
-                  <div class="condition-title">
-                    <span class="condition-name">Current Strength</span>
-                    <span class="condition-value">{{ convertMsToKmh(marine.ocean_current_velocity).toFixed(1) }} km/h</span>
-                  </div>
-                </div>
-                
-                <div class="risk-meter-container">
-                  <h4 class="risk-meter-title">Current Risk Level</h4>
-                  <div class="risk-meter">
-                    <div class="risk-segments">
-                      <div class="risk-segment safe"></div>
-                      <div class="risk-segment caution"></div>
-                      <div class="risk-segment danger"></div>
-                  </div>
-                    <div class="risk-indicator" :style="{ left: getCurrentRiskPosition() }">
-                      <div class="risk-value">{{ convertMsToKmh(marine.ocean_current_velocity).toFixed(1) }} km/h</div>
-                      <div class="risk-indicator-arrow"></div>
-                  </div>
-                </div>
-                  <div class="risk-labels">
-                    <span class="risk-label safe">Safe</span>
-                    <span class="risk-label caution">Caution</span>
-                    <span class="risk-label danger">Dangerous</span>
-                </div>
-              </div>
-              
-                <div class="condition-meaning">
-                  <h4 class="wave-visual-header">Current Strength Risk For Children</h4>
-                  <div class="wave-danger-visual">
-                    <img 
-                      v-if="marine.ocean_current_velocity > 0.8" 
-                      :src="images.dangerousCurrent" 
-                      alt="Dangerous ocean current" 
-                      class="wave-danger-image"
-                    />
-                    <img 
-                      v-else-if="marine.ocean_current_velocity > 0.3" 
-                      :src="images.moderateCurrent" 
-                      alt="Moderate ocean current" 
-                      class="wave-danger-image"
-                    />
-                    <img 
-                      v-else 
-                      :src="images.lowCurrent" 
-                      alt="Low ocean current" 
-                      class="wave-danger-image"
-                    />
-                    <div class="wave-danger-overlay danger" v-if="marine.ocean_current_velocity > 0.8">
-                      <div class="hover-prompt">
-                        <span class="hover-icon">👆</span>
-                        <span class="hover-text">Hover for details</span>
-                  </div>
-                </div>
-                    <div class="wave-danger-overlay moderate" v-else-if="marine.ocean_current_velocity > 0.3">
-                      <div class="hover-prompt">
-                        <span class="hover-icon">👆</span>
-                        <span class="hover-text">Hover for details</span>
-                  </div>
-                  </div>
-                    <div class="wave-danger-overlay safe" v-else>
-                      <div class="hover-prompt">
-                        <span class="hover-icon">👆</span>
-                        <span class="hover-text">Hover for details</span>
-                </div>
-              </div>
-              
-                    <div class="hover-description" v-if="marine.ocean_current_velocity > 0.8">
-                      <div class="hover-content">
-                        <p>This current is {{ Math.round(marine.ocean_current_velocity/0.3) > 1 ? Math.round(marine.ocean_current_velocity/0.3) + '× faster than' : 'about the same speed as' }} a 10-year-old child can swim. They'll be swept away within seconds</p>
-                        <p>Even strong adult swimmers will struggle against currents this strong</p>
-                  </div>
-                </div>
-                    <div class="hover-description" v-else-if="marine.ocean_current_velocity > 0.3">
-                      <div class="hover-content">
-                        <p>This current is about 2× faster than a 10-year-old child can swim against, making it difficult for them to make progress</p>
-                        <p>Keep children in shallow water and within arm's reach</p>
-                  </div>
-                  </div>
-                    <div class="hover-description" v-else>
-                      <div class="hover-content">
-                        <p>This current is slower than most 10-year-old children can swim, making conditions more manageable</p>
-                        <p>Still supervise constantly and be aware of changing conditions</p>
-                </div>
-              </div>
-            </div>
-          </div>
-            </div>
-            </div>
-          </div>
-          
-          <div v-if="reportTab === 'advice'" class="key-advice">
-            <h4>🎯 Today's Personal Safety Advice for Your Family</h4>
-            <ul class="advice-list">
-              <li v-for="(advice, index) in getKeyAdvice()" :key="index">{{ advice }}</li>
-            </ul>
-          </div>
+      <!-- Success message displayed after search while popup is shown -->
+      <div v-if="weather?.current && marine" class="search-success-message">
+        <div class="success-indicator">
+          <span class="success-icon">✓</span>
+          <span class="success-text">Beach data loaded successfully</span>
         </div>
       </div>
     </div>
     
-    <div v-else-if="activeTab === 'compare'" class="compare-tab">
-      <div class="option-header">
-        <h3 class="option-title">🌏 How Does This Beach Compare to What You Know?</h3>
-        <p class="option-description">Australian beaches often have different conditions than beaches elsewhere. Compare an Australian beach with a familiar one from your home country.</p>
-      </div>
+          <div v-else-if="activeTab === 'compare'" class="compare-tab">
+        <div class="option-header">
+          <h3 class="option-title">COMPARE BEACHES CONDITIONS</h3>
+          <p class="option-description">Compare Australian beaches with beaches from home</p>
+        </div>
       
-      <div class="compare-wrapper">
+              <div class="compare-wrapper" :class="{ 'expanded': suggestions1.length || suggestions2.length }">
         <div class="compare-inputs">
-          <div class="compare-input-wrapper">
-            <div class="beach-label">Home Beach</div>
-            <div class="compare-input-container">
-              <div class="input-icon">🏖️</div>
-              <input
-                v-model="compareAddress1"
-                @input="debouncedSearchCompare1"
-                placeholder="Enter home beach (e.g. Bondi Beach)"
-                class="search-input"
-              />
-              <ul
-                v-if="suggestions1.length"
-                class="suggestions-list"
-              >
-                <li
-                  v-for="(item, index) in suggestions1"
-                  :key="index"
-                  @click="selectCompareSuggestion(item, 1)"
-                  class="suggestion-item"
+          <!-- Top row with both inputs side by side -->
+          <div class="compare-inputs-row">
+            <div class="compare-input-wrapper">
+              <div class="beach-label">Home Beach</div>
+              <div class="compare-input-container">
+                <div class="input-icon">🏖️</div>
+                <input
+                  v-model="compareAddress1"
+                  @input="debouncedSearchCompare1"
+                  placeholder="Enter home beach (e.g. Goa Beach)"
+                  class="search-input"
+                />
+                <ul
+                  v-if="suggestions1.length"
+                  class="suggestions-list"
                 >
-                  {{ item.display_name }}
-                </li>
-              </ul>
+                  <li
+                    v-for="(item, index) in suggestions1"
+                    :key="index"
+                    @click="selectCompareSuggestion(item, 1)"
+                    class="suggestion-item"
+                  >
+                    {{ item.display_name }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+        
+            <div class="compare-input-wrapper">
+              <div class="beach-label">New Beach</div>
+              <div class="compare-input-container">
+                <div class="input-icon">🏝️</div>
+                <input
+                  v-model="compareAddress2"
+                  @input="debouncedSearchCompare2"
+                  placeholder="Enter new beach (e.g. Bondi Beach)"
+                  class="search-input"
+                />
+                <ul
+                  v-if="suggestions2.length"
+                  class="suggestions-list"
+                >
+                  <li
+                    v-for="(item, index) in suggestions2"
+                    :key="index"
+                    @click="selectCompareSuggestion(item, 2)"
+                    class="suggestion-item"
+                  >
+                    {{ item.display_name }}
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
           
-          <div class="compare-input-wrapper">
-            <div class="beach-label">New Beach</div>
-            <div class="compare-input-container">
-              <div class="input-icon">🏝️</div>
-              <input
-                v-model="compareAddress2"
-                @input="debouncedSearchCompare2"
-                placeholder="Enter new beach (e.g. Qingdao Beach)"
-                class="search-input"
-              />
-              <ul
-                v-if="suggestions2.length"
-                class="suggestions-list"
+          <!-- Bottom row with suggestions for both inputs -->
+          <div class="suggestions-row" v-if="suggestions1.length || suggestions2.length">
+            <div class="suggestions-column" :class="{ 'active': suggestions1.length }">
+              <div 
+                :style="{ 
+                  height: suggestions1.length ? Math.min(250, suggestions1.length * 50) + 'px' : '0', 
+                  opacity: suggestions1.length ? 1 : 0,
+                  transition: 'all 0.4s ease-in-out'
+                }" 
+                class="suggestion-spacing"
               >
-                <li
-                  v-for="(item, index) in suggestions2"
-                  :key="index"
-                  @click="selectCompareSuggestion(item, 2)"
-                  class="suggestion-item"
-                >
-                  {{ item.display_name }}
-                </li>
-              </ul>
+                <div v-if="suggestions1.length" class="suggestion-indicator">
+                  <span>{{ suggestions1.length }} beaches found</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="suggestions-column" :class="{ 'active': suggestions2.length }">
+              <div 
+                :style="{ 
+                  height: suggestions2.length ? Math.min(250, suggestions2.length * 50) + 'px' : '0', 
+                  opacity: suggestions2.length ? 1 : 0,
+                  transition: 'all 0.4s ease-in-out'
+                }" 
+                class="suggestion-spacing"
+              >
+                <div v-if="suggestions2.length" class="suggestion-indicator">
+                  <span>{{ suggestions2.length }} beaches found</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        <!-- Enhance the compareBeaches button and add warning message -->
-        <button
-          @click="fetchCompareBeaches"
-          :disabled="!selectedBeach1 || !selectedBeach2 || areSameBeaches()"
-          class="compare-button"
-          style="animation: pulse 2s infinite ease-in-out;"
-        >
-          <span>{{ loading ? 'Loading...' : 'Compare Beaches' }}</span>
-          <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
+        <!-- Compare button container to ensure proper spacing -->
+        <div class="compare-button-container" :class="{ 'has-suggestions': suggestions1.length || suggestions2.length }">
+          <button
+            @click="fetchCompareBeaches"
+            :disabled="!selectedBeach1 || !selectedBeach2 || areSameBeaches()"
+            class="compare-button"
+            v-on:click.once="showButtonFeedback"
+          >
+            <span>{{ loading ? 'Loading...' : 'Compare Beaches' }}</span>
+            <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
         
         <!-- Add a warning message when same beaches are selected -->
         <div v-if="selectedBeach1 && selectedBeach2 && areSameBeaches()" class="same-beach-warning">
@@ -356,16 +234,16 @@
           <p>Please select two different beaches to compare their conditions.</p>
         </div>
         
-        <div v-if="error" class="error-message">
-          <div>{{ error }}</div>
-          <button 
+      <div v-if="error" class="error-message">
+        <div>{{ error }}</div>
+        <button 
             @click="fetchCompareBeaches()" 
-            style="margin-top: 0.75rem; background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;"
-          >
-            Retry
-          </button>
-        </div>
-        
+          style="margin-top: 0.75rem; background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;"
+        >
+          Retry
+        </button>
+      </div>
+      
         <div v-if="loading" class="loading-message">
           <div class="loading-spinner"></div>
           <p>Loading comparison data...</p>
@@ -391,15 +269,200 @@
           </div>
         </div>
         
-        <div class="comparison-chart-area" v-if="compareChartData">
-          <h3 class="chart-title">{{ compareChartData.datasets[0].label }} vs {{ compareChartData.datasets[1].label }}</h3>
-          <p class="chart-subtitle">Understanding these conditions can help keep your family safe at Australian beaches</p>
+        <!-- Success message displayed after compare while popup is shown -->
+      <div v-if="compareChartData" class="compare-success-message" @click="ensureComparePopupVisible">
+        <div class="success-indicator">
+          <span class="success-icon">✓</span>
+          <span class="success-text">Beach comparison data loaded successfully</span>
+        </div>
+        <button @click="ensureComparePopupVisible" class="view-comparison-btn">
+          View Comparison
+        </button>
+        <!-- Beach report is now shown automatically -->
+      </div>
+            </div>
+          </div>
+        </div>
+        
+  <!-- Beach search suggestions popup in portal to ensure it's outside any scrollable containers -->
+  <div v-if="activeTab === 'search' && suggestions.length" class="search-suggestions-popup-overlay">
+    <div class="search-suggestions-popup" :style="suggestionPopupStyle">
+      <ul class="suggestions-popup-list">
+        <li
+          v-for="(item, index) in suggestions"
+          :key="index"
+          @click="selectSuggestion(item)"
+          class="suggestion-popup-item"
+            >
+          {{ item.display_name }}
+        </li>
+      </ul>
+            </div>
+            </div>
+  
+  <!-- Beach safety report popup - shows the full report in a modal overlay -->
+  <div v-if="showBeachReport && weather?.current && marine" class="beach-report-popup-overlay">
+    <div class="beach-report-popup">
+      <div class="popup-header">
+        <h3 class="report-title">Beach Safety Report for {{ address }}</h3>
+        <button class="close-popup-btn" @click="showBeachReport = false">×</button>
+          </div>
           
-          <!-- Simplified Comparison Content - removed tabs -->
-          <div class="simplified-tab">
+      <div class="safety-rating">
+        <h4>Today's Safety Level</h4>
+        <div :class="['rating-indicator', getSafetyRatingClass()]">
+          <span class="rating-label">{{ getSafetyRating() }}</span>
+        </div>
+      </div>
+      
+      <div class="report-content">
+        <!-- Removed tabs since we're only showing condition breakdown -->
+        <!-- Section header removed -->
+        <div class="condition-section">
+            <div class="condition-breakdown">
+              <div class="condition-item">
+                <div class="condition-header">
+                  <div class="condition-title">
+                    <span class="condition-name">Wave Risk Level</span>
+                  </div>
+                </div>
+                
+                <div class="risk-meter-container">
+                  <div class="risk-meter">
+                    <div class="risk-segments">
+                      <div class="risk-segment safe"></div>
+                      <div class="risk-segment caution"></div>
+                      <div class="risk-segment danger"></div>
+                    </div>
+                    <div class="risk-indicator" :style="{ left: getWaveRiskPosition() }">
+                      <div class="risk-indicator-arrow"></div>
+                    </div>
+                  </div>
+                  <div class="risk-labels">
+                    <span class="risk-label safe">Safe</span>
+                    <span class="risk-label caution">Caution</span>
+                    <span class="risk-label danger">Dangerous</span>
+                  </div>
+                </div>
+                
+                <div class="condition-meaning">
+                  <div class="wave-visual-card">
+                    <img 
+                      v-if="marine.wave_height > 1.2" 
+                      src="../assets/highwaves.avif" 
+                      alt="Dangerous waves" 
+                      class="wave-image" 
+                    />
+                    <img 
+                      v-else-if="marine.wave_height > 0.3" 
+                      src="../assets/mod_waves.jpg" 
+                      alt="Moderate waves" 
+                      class="wave-image" 
+                    />
+                    <img 
+                      v-else 
+                      src="../assets/low_waves.jpeg" 
+                      alt="Calm waves" 
+                      class="wave-image" 
+                    />
+                    <div class="hover-overlay">
+                      <div class="hover-prompt">👆 Hover for details</div>
+                    </div>
+                    <div class="wave-details-card">
+                      <div class="wave-comparison">
+                        <p>These waves are <span class="highlight">{{ Math.round(marine.wave_height/1.2) > 1 ? Math.round(marine.wave_height/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ marine.wave_height >= 1 ? '10' : '6' }}-year-old child</p>
+                        <p>Similar to <span class="highlight">{{ Math.round(marine.wave_height) > 2 ? 'a bus' : (Math.round(marine.wave_height) > 1.5 ? 'a car' : (Math.round(marine.wave_height) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="condition-item">
+                <div class="condition-header">
+                  <div class="condition-title">
+                    <span class="condition-name">Current Risk Level</span>
+                  </div>
+                </div>
+                
+                <div class="risk-meter-container">
+                  <div class="risk-meter">
+                    <div class="risk-segments">
+                      <div class="risk-segment safe"></div>
+                      <div class="risk-segment caution"></div>
+                      <div class="risk-segment danger"></div>
+                  </div>
+                    <div class="risk-indicator" :style="{ left: getCurrentRiskPosition() }">
+                      <div class="risk-indicator-arrow"></div>
+                  </div>
+                </div>
+                  <div class="risk-labels">
+                    <span class="risk-label safe">Safe</span>
+                    <span class="risk-label caution">Caution</span>
+                    <span class="risk-label danger">Dangerous</span>
+                </div>
+              </div>
+              
+                <div class="condition-meaning">
+                  <div class="current-visual-card">
+                    <img 
+                      v-if="marine.ocean_current_velocity > 0.8" 
+                      :src="images.dangerousCurrent" 
+                      alt="Dangerous current" 
+                      class="current-image" 
+                    />
+                    <img 
+                      v-else-if="marine.ocean_current_velocity > 0.5 && marine.ocean_current_velocity <= 0.8" 
+                      :src="images.moderateCurrent" 
+                      alt="Strong current" 
+                      class="current-image" 
+                    />
+                    <img 
+                      v-else-if="marine.ocean_current_velocity > 0.3 && marine.ocean_current_velocity <= 0.5" 
+                      :src="images.moderateCurrent" 
+                      alt="Moderate current" 
+                      class="current-image" 
+                    />
+                    <img 
+                      v-else 
+                      :src="images.lowCurrent" 
+                      alt="Mild current" 
+                      class="current-image" 
+                    />
+                    <div class="hover-overlay">
+                      <div class="hover-prompt">👆 Hover for details</div>
+                    </div>
+                    <div class="current-details-card">
+                      <div class="current-comparison">
+                        <p>This current is <span class="highlight">{{ Math.round(marine.ocean_current_velocity/0.3) > 1 ? Math.round(marine.ocean_current_velocity/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
+                        <p v-if="marine.ocean_current_velocity > 0.5">Can quickly pull swimmers offshore in seconds</p>
+                        <p v-else>Take precautions to avoid being pulled offshore</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  <!-- Beach comparison report popup - shows the full comparison in a modal overlay -->
+  <div v-if="showCompareReport && compareChartData" class="beach-report-popup-overlay">
+    <div class="beach-report-popup">
+      <div class="popup-header">
+        <h3 class="report-title">Beach Comparison: {{ compareChartData.datasets[0].label }} vs {{ compareChartData.datasets[1].label }}</h3>
+        <button class="close-popup-btn" @click="showCompareReport = false">×</button>
+        </div>
+      
+      <div class="report-content">
+        
             <div class="comparison-conclusion">
-              <h4 class="conclusion-title">Are you prepared for {{ compareChartData.datasets[1].label }}?</h4>
-              <p class="conclusion-body" v-html="getComparisonConclusion()"></p>
+              <div class="conclusion-horizontal">
+                <h4 class="conclusion-title">Are you prepared for {{ compareChartData.datasets[1].label }}?</h4>
+                <div class="readiness-status">{{ getReadinessAnswer() }}</div>
+              </div>
             </div>
             
             <div class="beach-comparison-cards">
@@ -413,15 +476,15 @@
                     class="beach-condition-image"
                   />
                   <img 
-                    v-else-if="getBeachConditionCategory(dataset.data) === 'CALM'" 
-                    src="../assets/calm_beach.jpeg" 
-                    alt="Calm beach conditions" 
+                    v-else-if="getBeachConditionCategory(dataset.data) === 'MODERATE'" 
+                    src="../assets/moderate.jpeg" 
+                    alt="Moderate beach conditions" 
                     class="beach-condition-image"
                   />
                   <img 
                     v-else 
-                    src="../assets/moderate.jpeg" 
-                    alt="Moderate beach conditions" 
+                    src="../assets/calm_beach.jpeg" 
+                    alt="Calm beach conditions" 
                     class="beach-condition-image"
                   />
                   <div class="beach-type-ribbon">{{ i === 0 ? 'Home Beach' : 'New Beach' }}</div>
@@ -435,112 +498,107 @@
                 </div>
                 
                 <!-- Visual Wave Height Reference (only show if both beaches have wave data) -->
-                <div v-if="shouldShowVisualCard('wave')" class="visual-wave-container">
-                  <h4 class="visual-wave-title">Wave Height: {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0).toFixed(1) }}m</h4>
-                  <div class="wave-visual-card">
-                    <img 
-                      v-if="getBeachConditionCategory(dataset.data) === 'HARSH'" 
-                      src="../assets/highwaves.avif" 
-                      alt="Dangerous waves" 
-                      class="wave-image" 
-                    />
-                    <img 
-                      v-else-if="getBeachConditionCategory(dataset.data) === 'MODERATE'" 
-                      src="../assets/mod_waves.jpg" 
-                      alt="Moderate waves" 
-                      class="wave-image" 
-                    />
-                    <img 
-                      v-else 
-                      src="../assets/low_waves.jpeg" 
-                      alt="Gentle waves" 
-                      class="wave-image" 
-                    />
-                    <div class="hover-overlay">
-                      <div class="hover-prompt">👆 Hover for details</div>
-                    </div>
-                    <div class="wave-details-card">
-                      <div class="wave-comparison">
-                        <p>These waves are <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
-                        <p>Similar to <span class="highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
+                <div v-if="shouldShowVisualCard('wave')" class="compare-info-container">
+                  <div class="compare-info-header">
+                    <h4 class="compare-info-title">Wave Height: {{ getConditionTerm(dataset.data, 'wave') }}</h4>
+                  </div>
+                  <div class="compare-info-content">
+                    <div class="compare-info-image-container">
+                      <img 
+                        v-if="Math.max(dataset.data[2] || 0, dataset.data[3] || 0) > 1.2" 
+                        src="../assets/highwaves.avif" 
+                        alt="Dangerous waves" 
+                        class="compare-info-image" 
+                      />
+                      <img 
+                        v-else-if="Math.max(dataset.data[2] || 0, dataset.data[3] || 0) > 0.3" 
+                        src="../assets/mod_waves.jpg" 
+                        alt="Moderate waves" 
+                        class="compare-info-image" 
+                      />
+                      <img 
+                        v-else 
+                        src="../assets/low_waves.jpeg" 
+                        alt="Calm waves" 
+                        class="compare-info-image" 
+                      />
+                      <div class="compare-info-hover-trigger">
+                        <div class="compare-info-hover-prompt">Hover for details</div>
                       </div>
-                      <div class="impact-description">
-                        <p><span v-if="getBeachConditionCategory(dataset.data) === 'HARSH'" class="warning-text">⚠️ DANGER:</span><span v-else-if="getBeachConditionCategory(dataset.data) === 'MODERATE'" class="warning-text">⚠️ CAUTION:</span><span v-else class="safe-text">✅ SAFER:</span> {{ getWaveImpactText(dataset.data) }}</p>
-                        <p><span class="advice-text">👉</span> {{ getWaveAdviceText(dataset.data) }}</p>
+                      <div class="compare-info-overlay">
+                        <div class="compare-info-hover-details">
+                          <p>These waves are <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
+                          <p>Similar to <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <!-- Current Strength Visual (only show if both beaches have current data and at least one is HARSH) -->
-                <div v-if="shouldShowVisualCard('current')" class="visual-current-container">
-                  <h4 class="visual-current-title">Current Strength: {{ (convertMsToKmh(dataset.data[4]) || 0).toFixed(1) }} km/h</h4>
-                  <div class="current-visual-card">
-                    <img 
-                      v-if="(dataset.data[4] || 0) > 2.52" 
+            <!-- Current Strength Visual -->
+                <div v-if="shouldShowVisualCard('current')" class="compare-info-container">
+                  <div class="compare-info-header">
+                    <h4 class="compare-info-title">Current Strength: {{ getConditionTerm(dataset.data, 'current') }}</h4>
+                  </div>
+                  <div class="compare-info-content">
+                    <div class="compare-info-image-container">
+                                          <img 
+                      v-if="(dataset.data[4] || 0) > 0.8" 
                       :src="images.dangerousCurrent" 
                       alt="Dangerous current" 
-                      class="current-image" 
+                      class="compare-info-image" 
                     />
                     <img 
-                      v-else-if="(dataset.data[4] || 0) > 0.7" 
+                      v-else-if="(dataset.data[4] || 0) > 0.5 && (dataset.data[4] || 0) <= 0.8" 
+                      :src="images.moderateCurrent" 
+                      alt="Strong current" 
+                      class="compare-info-image" 
+                    />
+                    <img 
+                      v-else-if="(dataset.data[4] || 0) > 0.3 && (dataset.data[4] || 0) <= 0.5" 
                       :src="images.moderateCurrent" 
                       alt="Moderate current" 
-                      class="current-image" 
+                      class="compare-info-image" 
                     />
                     <img 
                       v-else 
                       :src="images.lowCurrent" 
-                      alt="Low current" 
-                      class="current-image" 
+                      alt="Mild current" 
+                      class="compare-info-image" 
                     />
-                    <div v-if="(dataset.data[4] || 0) > 0" class="hover-overlay">
-                      <div class="hover-prompt">👆 Hover for details</div>
-                    </div>
-                    <div v-if="(dataset.data[4] || 0) > 0" class="current-details-card">
-                      <div class="current-comparison">
-                        <p>This current is <span class="highlight">{{ Math.round((dataset.data[4] || 0)/0.3) > 1 ? Math.round((dataset.data[4] || 0)/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
-                        <p>Pulls you <span class="highlight">{{ Math.round((dataset.data[4] || 0)*10) }}m offshore</span> in 10 seconds</p>
+                      <div v-if="(dataset.data[4] || 0) > 0" class="compare-info-hover-trigger">
+                        <div class="compare-info-hover-prompt">Hover for details</div>
                       </div>
-                      <div class="impact-description">
-                        <p><span v-if="(dataset.data[4] || 0) > 0.7" class="warning-text">⚠️ DANGER:</span><span v-else-if="(dataset.data[4] || 0) > 0.3" class="warning-text">⚠️ CAUTION:</span><span v-else class="safe-text">✅ SAFER:</span> {{ getCurrentImpactText(dataset.data) }}</p>
-                        <p><span class="advice-text">👉</span> {{ getCurrentAdviceText(dataset.data) }}</p>
+                      <div v-if="(dataset.data[4] || 0) > 0" class="compare-info-overlay">
+                                                  <div class="compare-info-hover-details">
+                            <p>This current is <span class="compare-info-highlight">{{ Math.round((dataset.data[4] || 0)/0.3) > 1 ? Math.round((dataset.data[4] || 0)/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
+                            <p>Pulls you <span class="compare-info-highlight">{{ Math.round((dataset.data[4] || 0)*10) }}m offshore</span> in 10 seconds</p>
+                          </div>
                       </div>
-                    </div>
-                    <div v-else class="static-info">
-                      <p>No significant current detected</p>
-                      <p class="safe-text">✅ SAFER: Low current risk for swimmers</p>
+                      <div v-else class="compare-info-static">
+                        <p>No significant current detected</p>
+                      </div>
                     </div>
                   </div>
-                  </div>
+                </div>
                 
                 <!-- Best For Groups -->
                 <div class="best-for-groups-container">
                   <div class="recommendation-label">Suitable For:</div>
-                  <table class="suitability-table">
-                    <thead>
-                      <tr>
-                        <th>Age Group</th>
-                        <th>Safe?</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>👶 Children (under 8)</td>
-                        <td :class="getChildSafetyClass(dataset.data)">{{ getChildSafety(dataset.data) }}</td>
-                      </tr>
-                      <tr>
-                        <td>🧒 Older Kids (8-14)</td>
-                        <td :class="getOlderChildSafetyClass(dataset.data)">{{ getOlderChildSafety(dataset.data) }}</td>
-                      </tr>
-                      <tr>
-                        <td>🧑‍🦱 Adults</td>
-                        <td :class="getAdultSafetyClass(dataset.data)">{{ getAdultSafety(dataset.data) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                  <div class="suitability-wrapper">
+                    <div class="suitability-header">
+                      <div class="suitability-header-age">Age Group</div>
+                      <div class="suitability-header-safe">Safe?</div>
+                    </div>
+                    <div class="suitability-row">
+                      <div class="suitability-age">👶 Children (under 8)</div>
+                      <div class="suitability-safe" :class="getChildSafetyClass(dataset.data)">{{ getChildSafety(dataset.data) }}</div>
+                    </div>
+                    <div class="suitability-row">
+                      <div class="suitability-age">🧒 Older Kids (8-14)</div>
+                      <div class="suitability-safe" :class="getOlderChildSafetyClass(dataset.data)">{{ getOlderChildSafety(dataset.data) }}</div>
+                    </div>
+                  </div>
             </div>
           </div>
         </div>
@@ -566,6 +624,24 @@ import lowWavesImage from '../assets/low_waves.jpeg'
 
 export default {
   name: 'BeachComparisonTool',
+  props: {
+    initialTab: {
+      type: String,
+      default: 'search'
+    },
+    initialSearchValue: {
+      type: String,
+      default: ''
+    },
+    initialHomeBeach: {
+      type: String,
+      default: ''
+    },
+    initialCompareBeach: {
+      type: String,
+      default: ''
+    }
+  },
   data() {
     return {
       // Add imported images to the data
@@ -583,10 +659,17 @@ export default {
         modWaves: modWavesImage,
         lowWaves: lowWavesImage
       },
-      activeTab: 'search',
-      reportTab: 'conditions',
+      // Set default active tab to ripIdentifier
+      activeTab: 'ripIdentifier',
       address: '',
       suggestions: [],
+      suggestionPopupStyle: {
+        top: '0px',
+        left: '0px',
+        width: '300px',
+        display: 'none'
+      },
+      showBeachReport: false,
       loading: false,
       error: null,
       weather: null,
@@ -605,6 +688,11 @@ export default {
       compareBeach1Name: '',
       compareBeach2Name: '',
       attemptedCompare: false, // Flag to track if comparison was attempted
+      showCompareReport: false, // Flag to control compare popup visibility
+      // Rip Identifier tab data
+      ripImage: null,
+      analyzeRipLoading: false,
+      ripAnalysisResult: null,
       weatherCodeMap: {
         0: 'Clear sky', 
         1: 'Mainly clear', 
@@ -627,22 +715,173 @@ export default {
         console.log('Chart datasets:', newVal.datasets.length);
         console.log('Beach 1:', newVal.datasets[0].label);
         console.log('Beach 2:', newVal.datasets[1].label);
+        
+        // Ensure popup is shown whenever compare data is available
+        if (!this.showCompareReport) {
+          console.log('Showing compare report via watcher');
+          setTimeout(() => {
+            this.showCompareReport = true;
+          }, 200);
+        }
       }
     });
     
     // Add watcher for activeTab
     this.$watch('activeTab', (newVal) => {
       console.log('Active tab changed to:', newVal);
+      // Hide popups when changing tabs
+      this.suggestionPopupStyle.display = 'none';
+      this.showBeachReport = false;
+      this.showCompareReport = false;
     });
+    
+    // Add watcher for suggestions array to reposition popup when suggestions change
+    this.$watch('suggestions', (newVal) => {
+      if (newVal.length > 0 && this.activeTab === 'search') {
+        this.positionSearchSuggestionsPopup();
+      } else {
+        this.suggestionPopupStyle.display = 'none';
+      }
+    });
+
+    // Handle window resize to reposition popup
+    window.addEventListener('resize', this.handleWindowResize);
+    
+    // Handle clicks outside the popup to close it
+    document.addEventListener('click', this.handleOutsideClick);
+
+    // Initialize with props if provided
+    this.initializeFromProps();
+  },
+  
+  beforeDestroy() {
+    // Clean up event listeners
+    window.removeEventListener('resize', this.handleWindowResize);
+    document.removeEventListener('click', this.handleOutsideClick);
   },
   methods: {
-    convertMsToKmh(speedMs) {
-      if (speedMs === undefined || speedMs === null) return 0;
-      // Convert meters per second to kilometers per hour (1 m/s = 3.6 km/h)
-      return speedMs * 3.6;
+    // Initialize component with props values
+    initializeFromProps() {
+      // Set active tab if provided
+      if (this.initialTab) {
+        if (this.initialTab === 'search' || this.initialTab === 'compare' || this.initialTab === 'ripIdentifier') {
+          this.activeTab = this.initialTab;
+        }
+      }
+      
+      // Set search value if provided
+      if (this.initialSearchValue) {
+        this.address = this.initialSearchValue;
+        // Trigger search if we have a value
+        this.debouncedSearch();
+      }
+      
+      // Set compare values if provided
+      if (this.initialHomeBeach) {
+        this.compareAddress1 = this.initialHomeBeach;
+        this.debouncedSearchCompare1();
+      }
+      
+      if (this.initialCompareBeach) {
+        this.compareAddress2 = this.initialCompareBeach;
+        this.debouncedSearchCompare2();
+      }
+      
+      // If we have both beaches for comparison, trigger the compare
+      if (this.initialHomeBeach && this.initialCompareBeach && this.activeTab === 'compare') {
+        // Wait for debounced search to complete
+        setTimeout(() => {
+          if (this.selectedBeach1 && this.selectedBeach2) {
+            this.fetchCompareBeaches();
+          }
+        }, 1000);
+      }
     },
-    setReportTab(tab) {
-      this.reportTab = tab;
+    
+    // Rip Identifier Methods
+    triggerRipFileUpload() {
+      this.$refs.ripFileInput.click();
+    },
+    
+    handleRipImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.ripImage = e.target.result;
+          this.ripAnalysisResult = null; // Clear previous results
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    
+    removeRipImage() {
+      this.ripImage = null;
+      this.ripAnalysisResult = null;
+      this.$refs.ripFileInput.value = ''; // Reset file input
+    },
+    
+    analyzeRipImage() {
+      // Mock analysis - in a real implementation, this would call an API
+      this.analyzeRipLoading = true;
+      
+      // Simulate API call with timeout
+      setTimeout(() => {
+        this.analyzeRipLoading = false;
+        
+        // Generate mock analysis result
+        const randomValue = Math.random();
+        let dangerLevel, dangerText, dangerPercentage, description, safetyTips;
+        
+        if (randomValue < 0.33) {
+          dangerLevel = 'low';
+          dangerText = 'Low Risk';
+          dangerPercentage = 25;
+          description = 'No clear signs of rip currents in this image. The water appears to have consistent wave patterns with no visible dark channels or disruptions.';
+          safetyTips = [
+            'Always swim between the red and yellow flags',
+            'Stay in shallow water and keep watch on children',
+            'Conditions can change quickly - check regularly'
+          ];
+        } else if (randomValue < 0.66) {
+          dangerLevel = 'medium';
+          dangerText = 'Medium Risk';
+          dangerPercentage = 60;
+          description = 'Possible rip current indicators visible. Note the darker patches of water and gaps in the breaking waves which may indicate rip currents.';
+          safetyTips = [
+            'Avoid swimming near darker water channels',
+            'Stay in waist-deep water maximum',
+            'Keep children within arm\'s reach at all times'
+          ];
+        } else {
+          dangerLevel = 'high';
+          dangerText = 'High Risk';
+          dangerPercentage = 90;
+          description = 'Strong indicators of rip currents present! Multiple dark channels visible between breaking waves, with water flowing outward from the shore.';
+          safetyTips = [
+            'Do not enter the water in these conditions',
+            'Alert lifeguards if you spot someone in trouble',
+            'If caught in a rip, float and signal for help'
+          ];
+        }
+        
+        this.ripAnalysisResult = {
+          dangerLevel,
+          dangerText,
+          dangerPercentage,
+          description,
+          safetyTips,
+          // In a real implementation, this would be a processed image
+          markedImage: this.ripImage
+        };
+      }, 2000);
+    },
+    
+    convertMsToKmh(speedMs) {
+      if (speedMs === undefined || speedMs === null || isNaN(speedMs)) return 0;
+      // Convert meters per second to kilometers per hour (1 m/s = 3.6 km/h)
+      const result = speedMs * 3.6;
+      return isNaN(result) ? 0 : result; // Double check for NaN after conversion
     },
     getSafetyRating() {
       if (!this.marine || !this.weather) return 'Unknown';
@@ -651,9 +890,13 @@ export default {
       const currentVelocity = this.marine.ocean_current_velocity || 0;
       const swellHeight = this.marine.swell_wave_height || 0;
       
-      if (waveHeight > 1.5 || currentVelocity > 1.2 || swellHeight > 1.8) {
+      // Calculate effective wave height
+      const effectiveHeight = Math.max(waveHeight, swellHeight);
+      
+      // Align with getBeachConditionCategory thresholds for consistency
+      if (currentVelocity > 0.5 || effectiveHeight > 1.2) {
         return '🔴 High Risk – Not Safe for Children';
-      } else if (waveHeight > 0.8 || currentVelocity > 0.7 || swellHeight > 1.2) {
+      } else if (currentVelocity > 0.3 || effectiveHeight > 0.7) {
         return '🟠 Moderate Risk – Caution Required';
       } else {
         return '🟢 Lower Risk – Good for Families';
@@ -667,9 +910,13 @@ export default {
       const currentVelocity = this.marine.ocean_current_velocity || 0;
       const swellHeight = this.marine.swell_wave_height || 0;
       
-      if (waveHeight > 1.5 || currentVelocity > 1.2 || swellHeight > 1.8) {
+      // Calculate effective wave height
+      const effectiveHeight = Math.max(waveHeight, swellHeight);
+      
+      // Align with getBeachConditionCategory thresholds for consistency
+      if (currentVelocity > 0.5 || effectiveHeight > 1.2) {
         return 'rating-high';
-      } else if (waveHeight > 0.8 || currentVelocity > 0.7 || swellHeight > 1.2) {
+      } else if (currentVelocity > 0.3 || effectiveHeight > 0.7) {
         return 'rating-moderate';
       } else {
         return 'rating-low';
@@ -681,10 +928,15 @@ export default {
       
       const waveHeight = this.marine.wave_height || 0;
       const currentVelocity = this.marine.ocean_current_velocity || 0;
+      const swellHeight = this.marine.swell_wave_height || 0;
       
-      if (waveHeight > 1.5 || currentVelocity > 1.2) {
+      // Calculate effective wave height
+      const effectiveHeight = Math.max(waveHeight, swellHeight);
+      
+      // Align with getBeachConditionCategory thresholds for consistency
+      if (currentVelocity > 0.5 || effectiveHeight > 1.2) {
         return 'Dangerous conditions - high waves and strong currents make swimming unsafe for children and inexperienced swimmers.';
-      } else if (waveHeight > 0.8 || currentVelocity > 0.7) {
+      } else if (currentVelocity > 0.3 || effectiveHeight > 0.7) {
         return 'Exercise caution - conditions may be challenging for children and inexperienced swimmers. Stay between the flags.';
       } else {
         return 'Generally favorable conditions, but always supervise children and swim between the flags.';
@@ -695,11 +947,11 @@ export default {
       if (!this.marine || !this.weather) return '❓';
       
       const waveHeight = this.marine.wave_height || 0;
-      const currentVelocity = this.marine.ocean_current_velocity || 0;
+      const currentSpeed = this.marine.ocean_current_velocity || 0;
       
-      if (waveHeight > 0.8 || currentVelocity > 0.5) {
+      if (waveHeight > 0.8 || currentSpeed > 0.5) {
         return '❌';
-      } else if (waveHeight > 0.5 || currentVelocity > 0.3) {
+      } else if (waveHeight > 0.5 || currentSpeed > 0.3) {
         return '⚠️';
       } else {
         return '✅';
@@ -908,43 +1160,86 @@ export default {
         // Delay for a moment to ensure smooth UI transition
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Create comparison chart data
+        // Create comparison chart data with safeguards for undefined/null values
+        const beach1CurrentSpeed = beach1Data.marine.ocean_current_velocity !== undefined && 
+                                  beach1Data.marine.ocean_current_velocity !== null ? 
+                                  beach1Data.marine.ocean_current_velocity : 0;
+        
+        const beach2CurrentSpeed = beach2Data.marine.ocean_current_velocity !== undefined && 
+                                  beach2Data.marine.ocean_current_velocity !== null ? 
+                                  beach2Data.marine.ocean_current_velocity : 0;
+        
+        // Add detailed logging for comparison
+        console.log('===== COMPARE BEACHES DATA =====');
+        console.log(`Beach 1 (${this.compareBeach1Name}): Wave height: ${beach1Data.marine.wave_height} m, Current: ${beach1CurrentSpeed} m/s (${this.convertMsToKmh(beach1CurrentSpeed).toFixed(2)} km/h)`);
+        console.log(`Beach 2 (${this.compareBeach2Name}): Wave height: ${beach2Data.marine.wave_height} m, Current: ${beach2CurrentSpeed} m/s (${this.convertMsToKmh(beach2CurrentSpeed).toFixed(2)} km/h)`);
+        
+        // Calculate and log beach 1 category
+        const beach1DataArray = [
+          0, // Temperature - not used for categorization 
+          0, // Wind speed - not used for categorization anymore
+          beach1Data.marine.wave_height || 0,
+          beach1Data.marine.swell_wave_height || 0,
+          beach1CurrentSpeed
+        ];
+        const beach1Category = this.getBeachConditionCategory(beach1DataArray);
+        console.log(`Beach 1 (${this.compareBeach1Name}) category: ${beach1Category}`);
+        
+        // Calculate and log beach 2 category
+        const beach2DataArray = [
+          0, // Temperature - not used for categorization
+          0, // Wind speed - not used for categorization anymore
+          beach2Data.marine.wave_height || 0,
+          beach2Data.marine.swell_wave_height || 0,
+          beach2CurrentSpeed
+        ];
+        const beach2Category = this.getBeachConditionCategory(beach2DataArray);
+        console.log(`Beach 2 (${this.compareBeach2Name}) category: ${beach2Category}`);
+        console.log('==============================');
+                                  
         this.compareChartData = {
           labels: [
             'Temperature (°C)', 
             'Wind Speed (km/h)', 
             'Wave Height (m)',
             'Swell Height (m)',
-            'Current Speed (km/h)', // Changed from m/s to km/h
+            'Current Speed (m/s)', // Display in m/s for consistency with calculations
           ],
           datasets: [
             {
               label: this.compareBeach1Name,
               backgroundColor: 'rgba(54, 162, 235, 0.7)',
-              data: [
-                beach1Data.weather.current.temperature_2m || 0,
-                beach1Data.weather.current.wind_speed_10m || 0,
-                beach1Data.marine.wave_height || 0,
-                beach1Data.marine.swell_wave_height || 0,
-                this.convertMsToKmh(beach1Data.marine.ocean_current_velocity) || 0, // Convert to km/h
-              ]
+                              data: [
+                  beach1Data.weather.current.temperature_2m || 0,
+                  beach1Data.weather.current.wind_speed_10m || 0,
+                  beach1Data.marine.wave_height || 0,
+                  beach1Data.marine.swell_wave_height || 0,
+                  beach1CurrentSpeed, // Keep in m/s for getBeachConditionCategory
+                ]
             },
             {
               label: this.compareBeach2Name,
               backgroundColor: 'rgba(255, 99, 132, 0.7)',
-              data: [
-                beach2Data.weather.current.temperature_2m || 0,
-                beach2Data.weather.current.wind_speed_10m || 0,
-                beach2Data.marine.wave_height || 0,
-                beach2Data.marine.swell_wave_height || 0,
-                this.convertMsToKmh(beach2Data.marine.ocean_current_velocity) || 0, // Convert to km/h
-              ]
+                              data: [
+                  beach2Data.weather.current.temperature_2m || 0,
+                  beach2Data.weather.current.wind_speed_10m || 0,
+                  beach2Data.marine.wave_height || 0,
+                  beach2Data.marine.swell_wave_height || 0,
+                  beach2CurrentSpeed, // Keep in m/s for getBeachConditionCategory
+                ]
             }
           ]
         };
         
         console.log('Comparison chart data created successfully');
         this.error = null; // Clear status message
+        
+        // Automatically show the comparison report when data is loaded
+        // Set a slight delay to ensure all data is processed and guarantee popup visibility
+        setTimeout(() => {
+          this.showCompareReport = true;
+          console.log('Setting showCompareReport to true');
+        }, 500);
       } catch (error) {
         console.error('Compare beaches error:', error);
         this.error = `Failed to compare beaches: ${error.message}`;
@@ -1030,7 +1325,12 @@ export default {
         
         try {
           marineData = await marineRes.json();
-          console.log('Marine data received successfully');
+          console.log('Marine data received successfully:', marineData);
+          
+          // Log specific marine data values for debugging
+          console.log(`Wave height: ${marineData.wave_height} m`);
+          console.log(`Swell height: ${marineData.swell_wave_height} m`);
+          console.log(`Ocean current velocity: ${marineData.ocean_current_velocity} m/s`);
         } catch (err) {
           console.error('Failed to parse marine data:', err);
           throw new Error('Marine data format error. Please try again later.');
@@ -1045,6 +1345,12 @@ export default {
         if (marineData.wave_height === undefined) {
           console.error('Invalid marine data structure:', marineData);
           throw new Error('Marine data is missing required fields');
+        }
+        
+        // Ensure current velocity is not undefined or null
+        if (marineData.ocean_current_velocity === undefined || marineData.ocean_current_velocity === null) {
+          console.warn('Ocean current velocity is missing, defaulting to 0');
+          marineData.ocean_current_velocity = 0;
         }
         
         console.log('Beach data successfully fetched and validated');
@@ -1063,6 +1369,7 @@ export default {
     async fetchSuggestions() {
       if (this.address.length < 2) {
         this.suggestions = [];
+        this.suggestionPopupStyle.display = 'none';
         return;
       }
       
@@ -1073,7 +1380,7 @@ export default {
           searchQuery += ' beach';
         }
         
-        const base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&countrycodes=au`;
+        const base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=15&countrycodes=au`;
         const res = await fetch(base, { headers: { 'User-Agent': 'BeachApp/1.0' } });
         
         if (!res.ok) {
@@ -1082,14 +1389,82 @@ export default {
         
         const results = await res.json();
         
-        // Filter results to only include those with "beach" in the name
-        this.suggestions = results.filter(item => 
-          item.display_name.toLowerCase().includes('beach')
-        );
+        // Log raw results for debugging
+        console.log(`Found ${results.length} raw results for "${searchQuery}"`);
+        
+        // Filter using our new isActualBeach method
+        this.suggestions = results.filter(item => this.isActualBeach(item));
+        
+        console.log(`Filtered to ${this.suggestions.length} actual beaches`);
+        
+        // Check if we found any valid beach results
+        if (this.suggestions.length === 0) {
+          console.log('No beach results found for:', searchQuery);
+          // Try to log for debugging specific problematic inputs
+          if (searchQuery.toLowerCase().includes('beach')) {
+            console.log('Location may be a town/city named Beach, not an actual beach');
+          }
+          
+          // Show a helpful error message to the user
+          this.error = "No beaches found. Try using the beach name followed by state (e.g., 'Bondi Beach NSW')";
+        } else {
+          // Clear error message if we found results
+          this.error = null;
+        }
+      
+        // Position the popup if we have results
+        this.positionSearchSuggestionsPopup();
       } catch (e) {
         console.error('Search error:', e);
         this.error = `Failed to search: ${e.message}`;
         this.suggestions = [];
+        this.suggestionPopupStyle.display = 'none';
+      }
+    },
+    
+    positionSearchSuggestionsPopup() {
+      // Only proceed if we have suggestions and the search input ref exists
+      if (this.suggestions.length === 0 || !this.$refs.searchInput) {
+        this.suggestionPopupStyle.display = 'none';
+        return;
+      }
+      
+      // Get the position of the search input
+      const searchInput = this.$refs.searchInput;
+      const rect = searchInput.getBoundingClientRect();
+      
+      // Get window dimensions for positioning context
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // Calculate popup width based on the input width
+      const popupWidth = Math.min(rect.width, windowWidth - 40);
+      
+      // Calculate popup position
+      let popupLeft = Math.max(20, rect.left);
+      let popupTop = rect.bottom + 5;
+      
+      // Check if popup would extend beyond bottom of viewport
+      const estimatedPopupHeight = Math.min(350, this.suggestions.length * 60);
+      if (popupTop + estimatedPopupHeight > windowHeight) {
+        // Position above the input if it would go off-screen below
+        popupTop = Math.max(10, rect.top - estimatedPopupHeight - 10);
+      }
+      
+      // Set the position and dimensions of the popup
+      this.suggestionPopupStyle = {
+        top: `${popupTop}px`,
+        left: `${popupLeft}px`,
+        width: `${popupWidth}px`,
+        display: 'block',
+        maxWidth: `${windowWidth - 40}px`,
+        maxHeight: `${windowHeight * 0.7}px`, // Limit height to 70% of viewport
+        zIndex: '9999' // Ensure popup appears above the spacing div
+      };
+      
+      // Force browser reflow to ensure animations work properly
+      if (document.querySelector('.suggestion-spacing')) {
+        document.querySelector('.suggestion-spacing').getBoundingClientRect();
       }
     },
     async fetchCompareSuggestions(index) {
@@ -1116,10 +1491,10 @@ export default {
         let base;
         if (index === 1) {
           // For home beach, search worldwide
-          base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`;
+          base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=15`;
         } else {
           // For new beach, limit to Australia
-          base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&countrycodes=au`;
+          base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=15&countrycodes=au`;
         }
         
         const res = await fetch(base, { headers: { 'User-Agent': 'BeachApp/1.0' } });
@@ -1130,11 +1505,30 @@ export default {
         
         const results = await res.json();
         
-        // Filter results to only include those with "beach" in the name
-        const filteredResults = results.filter(item => 
-          item.display_name.toLowerCase().includes('beach')
-        );
+        // Log raw results
+        console.log(`Found ${results.length} raw results for compare "${searchQuery}"`);
         
+        // Apply filtering with our new method
+        const filteredResults = results.filter(item => this.isActualBeach(item));
+        
+        console.log(`Filtered to ${filteredResults.length} actual beaches`);
+        
+        // Check if we found any valid beach results
+        if (filteredResults.length === 0) {
+          console.log('No beach results found for:', searchQuery);
+          // Try to log for debugging specific problematic inputs
+          if (searchQuery.toLowerCase().includes('beach')) {
+            console.log('Location may be a town/city named Beach, not an actual beach');
+          }
+          
+          // Show a helpful error message to the user
+          const beachType = index === 1 ? "home" : "comparison";
+          this.error = `No ${beachType} beaches found. Try using beach name followed by location (e.g., 'Bondi Beach NSW')`;
+        } else {
+          // Clear error message if we found results
+          this.error = null;
+        }
+      
         if (index === 1) {
           this.suggestions1 = filteredResults;
         } else {
@@ -1154,6 +1548,8 @@ export default {
     selectSuggestion(item) {
       this.address = item.display_name.split(',')[0];
       this.suggestions = [];
+      this.suggestionPopupStyle.display = 'none';
+      this.showBeachReport = false; // Reset beach report popup visibility
       
       const lat = parseFloat(item.lat);
       const lon = parseFloat(item.lon);
@@ -1165,6 +1561,30 @@ export default {
         .then(data => {
           this.weather = data.weather;
           this.marine = data.marine;
+          
+          // Add debug logging for search beach feature
+          console.log('===== SEARCH BEACH DATA =====');
+          console.log(`Beach name: ${this.address}`);
+          console.log(`Wave height: ${this.marine.wave_height} m`);
+          console.log(`Current speed: ${this.marine.ocean_current_velocity} m/s`);
+          
+          // Calculate and log the beach condition category
+          const beachData = [
+            0, // Temperature - not used for categorization
+            0, // Wind speed - not used for categorization anymore
+            this.marine.wave_height || 0,
+            this.marine.swell_wave_height || 0,
+            this.marine.ocean_current_velocity || 0
+          ];
+          const category = this.getBeachConditionCategory(beachData);
+          console.log(`Beach condition category: ${category}`);
+          console.log(`Category thresholds: Wave height > 1.2m or Current > 0.5 m/s = HARSH`);
+          console.log(`                      Wave height > 0.3m or Current > 0.3 m/s = MODERATE`);
+          console.log(`                      Otherwise = CALM`);
+          console.log('===========================');
+          
+          // Automatically show the beach report when data is loaded
+          this.showBeachReport = true;
         })
         .catch(err => {
           this.error = err.message;
@@ -1205,6 +1625,79 @@ export default {
       this.searchCompareTimeout2 = setTimeout(() => {
         this.fetchCompareSuggestions(2);
       }, 500);
+    },
+    
+    // New helper function to detect if a location is an actual beach
+    isActualBeach(item) {
+      // If we have specific beach classification data, rely on that
+      if ((item.class === 'natural' && item.type === 'beach') || 
+          (item.category === 'natural' && item.type === 'beach')) {
+        return true;
+      }
+        
+      // Convert display name to lowercase for case-insensitive matching
+      const displayName = item.display_name.toLowerCase();
+      
+      // REJECT conditions - return false immediately for these cases
+      
+      // 1. Reject if it starts with "Beach," as this is likely a town/place named "Beach"
+      if (displayName.match(/^beach,/)) {
+        console.log(`Rejected: Starts with "Beach,": ${displayName}`);
+        return false;
+      }
+      
+      // 2. Reject administrative entities like counties or states with "Beach" in the name
+      if (item.type === 'administrative' || 
+          item.type === 'city' || 
+          item.type === 'town' || 
+          item.type === 'county' || 
+          item.type === 'suburb') {
+        console.log(`Rejected: Administrative area with Beach in name: ${displayName}`);
+        return false;
+      }
+      
+      // 3. Reject streets, roads, etc.
+      if (displayName.includes(' street') || 
+          displayName.includes(' road') || 
+          displayName.includes(' avenue') || 
+          displayName.includes(' building')) {
+        console.log(`Rejected: Street/road with Beach in name: ${displayName}`);
+        return false;
+      }
+      
+      // ACCEPT conditions - these strongly indicate a real beach
+      
+      // Check beach patterns that indicate it's an actual beach
+      const hasBeachInName = displayName.includes('beach');
+      
+      // If it's a proper beach, these patterns are common:
+      // "Something Beach" - "Bondi Beach", "Manly Beach", etc.
+      if (displayName.match(/\w+\s+beach/) && !displayName.match(/^beach\s+\w+/)) {
+        console.log(`Accepted: Has pattern like "Name Beach": ${displayName}`);
+        return true;
+      }
+      
+      // Look for coastal terms which help identify real beaches
+      const hasCoastalTerms = 
+        displayName.includes('coast') || 
+        displayName.includes('bay') || 
+        displayName.includes('ocean') || 
+        displayName.includes('sea') || 
+        displayName.includes('shore') ||
+        displayName.includes('cove') ||
+        displayName.includes('point') ||
+        displayName.includes('sand') ||
+        displayName.includes('water');
+      
+      // Accept if it has beach in name and coastal context
+      if (hasBeachInName && hasCoastalTerms) {
+        console.log(`Accepted: Has beach in name + coastal terms: ${displayName}`);
+        return true;
+      }
+      
+      // Reject by default for safety
+      console.log(`Rejected by default: ${displayName}`);
+      return false;
     },
     // Family Safety Assessment Methods
     getRipCurrentRisk(currentSpeed) {
@@ -1288,34 +1781,50 @@ export default {
     },
     // Beach condition categorization methods
     getBeachConditionCategory(data) {
-      const currentSpeed = data[4] || 0;
-      const waveHeight = data[2] || 0;
-      const swellHeight = data[3] || 0;
-      const windSpeed = data[1] || 0;
-      
-      // Calculate effective wave height
-      const effectiveHeight = Math.max(waveHeight, swellHeight);
-      
-      // Major risk factors
-      if (currentSpeed > 0.5 || effectiveHeight > 1.2 || windSpeed > 25) {
-        return "HARSH";
-      } 
-      // Moderate risk factors
-      else if (currentSpeed > 0.3 || effectiveHeight > 0.7 || windSpeed > 15) {
-        return "MODERATE";
-      } 
-      // Low risk factors
-      else {
-        return "CALM";
-      }
-    },
+  const currentSpeed = data[4] || 0;
+  const waveHeight = data[2] || 0;
+  const swellHeight = data[3] || 0;
+  
+  // Calculate effective wave height
+  const effectiveHeight = Math.max(waveHeight, swellHeight);
+  
+  // Add validation logging
+  const category = this.calculateBeachCategory(currentSpeed, effectiveHeight);
+  
+  // Log when a beach is classified as HARSH
+  if (category === "HARSH") {
+    console.log('HARSH Beach detected:');
+    console.log(`- Current Speed: ${currentSpeed} m/s (threshold > 0.5)`);
+    console.log(`- Wave Height: ${waveHeight} m`);
+    console.log(`- Swell Height: ${swellHeight} m`);
+    console.log(`- Effective Height: ${effectiveHeight} m (threshold > 1.2)`);
     
-    getBeachCategoryClass(data) {
-      const category = this.getBeachConditionCategory(data);
-      if (category === "HARSH") return "category-harsh";
-      if (category === "MODERATE") return "category-moderate";
-      return "category-calm";
-    },
+    // Determine the trigger factor
+    if (currentSpeed > 0.5) {
+      console.log('- Triggered by: Strong current');
+    } else if (effectiveHeight > 1.2) {
+      console.log('- Triggered by: Large waves');
+    }
+  }
+  
+  return category;
+},
+
+// Helper method to calculate beach category
+calculateBeachCategory(currentSpeed, effectiveHeight) {
+  // Major risk factors - using explicit threshold checks for clarity
+  if (currentSpeed > 0.5 || effectiveHeight > 1.2) {
+    return "HARSH";
+  } 
+  // Moderate risk factors
+  else if (currentSpeed > 0.3 || effectiveHeight > 0.7) {
+    return "MODERATE";
+  } 
+  // Low risk factors
+  else {
+    return "CALM";
+  }
+},
     
     getBeachConditionExplanation(data) {
       const category = this.getBeachConditionCategory(data);
@@ -1757,12 +2266,89 @@ export default {
     },
     
     calculateSafetyScore(data) {
-      const currentScore = (data[4] || 0) * 3; // Current has highest weight
-      const waveScore = Math.max(data[2] || 0, data[3] || 0) * 2; // Effective wave height
-      const windScore = ((data[1] || 0) > 15 ? (data[1] || 0) / 10 : 0); // Wind only factors above 15km/h
+      const currentSpeed = data[4] || 0;
+      const waveHeight = Math.max(data[2] || 0, data[3] || 0);
       
-      return currentScore + waveScore + windScore;
+      // Calculate current score with non-linear scaling for more accuracy
+      let currentScore = 0;
+      if (currentSpeed > 0.8) currentScore = currentSpeed * 4; // Dangerous currents weighted heavily
+      else if (currentSpeed > 0.5) currentScore = currentSpeed * 3; // Strong currents
+      else if (currentSpeed > 0.3) currentScore = currentSpeed * 2; // Moderate currents
+      else currentScore = currentSpeed; // Mild currents
+      
+      // Calculate wave score with non-linear scaling
+      let waveScore = 0;
+      if (waveHeight > 1.2) waveScore = waveHeight * 3; // Dangerous waves weighted heavily
+      else if (waveHeight > 0.7) waveScore = waveHeight * 2; // Moderate waves
+      else waveScore = waveHeight; // Calm waves
+      
+      // Log individual scores for debugging
+      console.log(`Wave Height: ${waveHeight}m → Score: ${waveScore.toFixed(2)}`);
+      console.log(`Current Speed: ${currentSpeed}m/s → Score: ${currentScore.toFixed(2)}`);
+      
+      return currentScore + waveScore;
     },
+    
+    calculateSafetyDifference() {
+      if (!this.compareChartData || !this.compareChartData.datasets || this.compareChartData.datasets.length < 2) {
+        return 0;
+      }
+      
+      const homeData = this.compareChartData.datasets[0].data;
+      const newData = this.compareChartData.datasets[1].data;
+      const homeName = this.compareChartData.datasets[0].label;
+      const newName = this.compareChartData.datasets[1].label;
+      
+      const homeSafetyScore = this.calculateSafetyScore(homeData);
+      const newSafetyScore = this.calculateSafetyScore(newData);
+      const diff = newSafetyScore - homeSafetyScore;
+      
+      // Add detailed logging to understand the calculation
+      console.log('===== BEACH SAFETY CALCULATION =====');
+      console.log(`Home Beach (${homeName}): Safety Score = ${homeSafetyScore.toFixed(2)}`);
+      console.log(`New Beach (${newName}): Safety Score = ${newSafetyScore.toFixed(2)}`);
+      console.log(`Safety Difference: ${diff.toFixed(2)}`);
+      console.log(`Readiness Answer: ${diff > 2 ? 'Not Likely' : 
+                  (diff > 1 ? 'Somewhat Prepared' : 
+                  (diff > 0.3 ? 'Mostly Prepared' : 
+                  (diff >= -0.5 ? 'Yes, Prepared' : 'Very Well Prepared')))}`);
+      console.log('==================================');
+      
+      return diff;
+    },
+    
+    getReadinessAnswer() {
+      const diff = this.calculateSafetyDifference();
+      
+      if (diff > 2) {
+        return "Not Likely";
+      } else if (diff > 1) {
+        return "Somewhat Prepared";
+      } else if (diff > 0.3) {
+        return "Mostly Prepared";
+      } else if (diff >= -0.5) {
+        return "Yes, Prepared";
+      } else {
+        // If home beach is significantly more dangerous than new beach
+        return "Very Well Prepared";
+      }
+    },
+    
+    getConditionTerm(data, type) {
+  if (type === 'wave') {
+    const waveHeight = Math.max(data[2] || 0, data[3] || 0);
+    if (waveHeight > 1.2) return "Dangerous";
+    if (waveHeight > 0.3 && waveHeight <= 1.2) return "Moderate";
+    return "Calm";
+  } else if (type === 'current') {
+    const currentSpeed = data[4] || 0;
+    if (currentSpeed > 0.8) return "Dangerous";
+    if (currentSpeed > 0.5 && currentSpeed <= 0.8) return "Strong";
+    if (currentSpeed > 0.3 && currentSpeed <= 0.5) return "Moderate";
+    return "Mild";
+  }
+  return "Unknown";
+},
     
     getComparativeAdvantages(betterData, worseData) {
       return "";
@@ -2062,38 +2648,60 @@ export default {
     },
     getWaveRiskPosition() {
       if (!this.marine || !this.marine.wave_height) return '16.7%';
+      const h = this.marine.wave_height;
       
-      const waveHeight = this.marine.wave_height;
+      // 0-0.3 m: safe (0-33%)
+      // 0.3-1.2 m: caution (33-66%) 
+      // >1.2 m: danger (66-100%)
       
-      // Calculate position on a scale
-      // 0-0.5m: safe (0-33%)
-      // 0.5-1.0m: caution (33-66%)
-      // >1.0m: danger (66-100%)
+      if (h > 1.2) {
+        // Position within the danger segment (66-100%)
+        if (h >= 1.8) return '90%';  // Far into danger zone
+        if (h >= 1.5) return '80%';  // Deep in danger zone
+        return '70%';  // Start of danger zone
+      } 
+      else if (h > 0.7) {
+        // Position within the upper caution segment (50-66%)
+        return '58%';  // Between middle and danger
+      }
+      else if (h > 0.3) {
+        // Position within the lower caution segment (33-50%)
+        return '42%';  // Between safe and middle
+      }
       
-      if (waveHeight >= 1.5) return '90%';
-      if (waveHeight >= 1.0) return '75%';
-      if (waveHeight >= 0.8) return '66%';
-      if (waveHeight >= 0.5) return '50%';
-      if (waveHeight >= 0.3) return '33%';
-      return '16.7%';
+      // Safe segment
+      if (h > 0.2) return '25%';     // Upper safe zone
+      return '16.7%';                // Lower safe zone
     },
     
     getCurrentRiskPosition() {
       if (!this.marine || !this.marine.ocean_current_velocity) return '16.7%';
       
-      const currentSpeedKmh = this.convertMsToKmh(this.marine.ocean_current_velocity);
+      const currentSpeed = this.marine.ocean_current_velocity;
       
       // Calculate position on a scale
-      // 0-1.08 km/h: safe (0-33%) [0.3 m/s * 3.6]
-      // 1.08-2.52 km/h: caution (33-66%) [0.7 m/s * 3.6]
-      // >2.52 km/h: danger (66-100%)
+      // 0-0.3 m/s: safe (0-33%)
+      // 0.3-0.8 m/s: caution (33-66%) 
+      // >0.8 m/s: danger (66-100%)
       
-      if (currentSpeedKmh >= 4.32) return '90%'; // 1.2 m/s * 3.6
-      if (currentSpeedKmh >= 3.6) return '80%';  // 1.0 m/s * 3.6
-      if (currentSpeedKmh >= 2.52) return '66%'; // 0.7 m/s * 3.6
-      if (currentSpeedKmh >= 1.8) return '50%';  // 0.5 m/s * 3.6
-      if (currentSpeedKmh >= 1.08) return '33%'; // 0.3 m/s * 3.6
-      return '16.7%';
+      if (currentSpeed > 0.8) {
+        // Position within the danger segment (66-100%)
+        if (currentSpeed >= 1.2) return '90%';  // Far into danger zone
+        if (currentSpeed >= 1.0) return '80%';  // Deep in danger zone
+        return '70%';  // Start of danger zone
+      } 
+      else if (currentSpeed > 0.5) {
+        // Position within the upper caution segment (50-66%)
+        return '58%';  // Between middle and danger
+      }
+      else if (currentSpeed > 0.3) {
+        // Position within the lower caution segment (33-50%)
+        return '42%';  // Between safe and middle
+      }
+      
+      // Safe segment
+      if (currentSpeed > 0.2) return '25%';     // Upper safe zone
+      return '16.7%';                           // Lower safe zone
     },
     
     getSafetyImpactSummary() {
@@ -2285,6 +2893,95 @@ export default {
         // Just reset loading state without error message
         this.loading = false;
       }
+    },
+    
+    // Method to ensure comparison popup is visible
+    ensureComparePopupVisible() {
+      if (this.compareChartData && !this.showCompareReport) {
+        console.log('Manually ensuring compare popup is visible');
+        this.showCompareReport = true;
+      }
+    },
+    
+    // Method to show visual feedback when Compare button is clicked
+    showButtonFeedback(event) {
+      // Flash effect for the button to acknowledge click
+      const button = event.currentTarget;
+      const originalBackground = button.style.background;
+      const originalTransform = button.style.transform;
+      
+      // Apply highlight effect
+      button.style.background = 'linear-gradient(to bottom, #ffb74d, #ff9800)';
+      button.style.transform = 'scale(0.95)';
+      
+      // Return to normal after animation
+      setTimeout(() => {
+        button.style.background = originalBackground;
+        button.style.transform = originalTransform;
+      }, 300);
+      
+      // After data is loaded, ensure popup is visible
+      setTimeout(() => {
+        if (this.compareChartData && !this.showCompareReport) {
+          console.log('Showing comparison report after button feedback');
+          this.showCompareReport = true;
+        }
+      }, 2000);
+    },
+    
+    // Event handlers for popup positioning
+    handleWindowResize() {
+      // When window is resized, reposition the popup if it's visible
+      if (this.activeTab === 'search' && this.suggestions.length > 0 && this.suggestionPopupStyle.display === 'block') {
+        this.positionSearchSuggestionsPopup();
+      }
+    },
+    
+    handleOutsideClick(event) {
+      // Handle search suggestions popup
+      if (this.suggestionPopupStyle.display === 'block') {
+        // Get references to the search input and popup
+        const searchInput = this.$refs.searchInput;
+        const popup = document.querySelector('.search-suggestions-popup');
+        
+        // If the click is outside both the search input and popup, close the popup
+        if (searchInput && popup && 
+            !searchInput.contains(event.target) && 
+            !popup.contains(event.target)) {
+          this.suggestions = []; // Clear suggestions to fully hide the popup
+          this.suggestionPopupStyle.display = 'none';
+        }
+      }
+      
+      // Handle beach report popup - close when clicking on the overlay (not on the content)
+      if (this.showBeachReport) {
+        const reportPopup = document.querySelector('.beach-report-popup');
+        const reportOverlay = document.querySelector('.beach-report-popup-overlay');
+        
+        // If we clicked directly on the overlay (not on the popup content), close it
+        if (reportOverlay && reportPopup && 
+            event.target === reportOverlay && 
+            !reportPopup.contains(event.target)) {
+          this.showBeachReport = false;
+        }
+      }
+      
+      // Handle beach comparison popup - close when clicking on the overlay (not on the content)
+      if (this.showCompareReport) {
+        const comparePopups = document.querySelectorAll('.beach-report-popup');
+        const compareOverlays = document.querySelectorAll('.beach-report-popup-overlay');
+        
+        // Find the comparison popup (the last one if multiple exist)
+        const comparePopup = comparePopups[comparePopups.length - 1];
+        const compareOverlay = compareOverlays[compareOverlays.length - 1];
+        
+        // If we clicked directly on the overlay (not on the popup content), close it
+        if (compareOverlay && comparePopup && 
+            event.target === compareOverlay && 
+            !comparePopup.contains(event.target)) {
+          this.showCompareReport = false;
+        }
+      }
     }
   }
 }
@@ -2295,21 +2992,21 @@ export default {
 .beach-search-container {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 0.75rem;
-  padding: 1.5rem 1rem;
-  margin-top: 1rem;
+  padding: 1rem 1rem;
+  margin-top: 0.25rem;
   backdrop-filter: blur(5px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  width: 90%;
+  width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  max-width: 90%;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
 
 .option-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   text-align: center;
-  max-width: 90%;
+  max-width: 80%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -2322,31 +3019,34 @@ export default {
 }
 
 .option-description {
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
 }
 
 .tab-buttons {
   display: flex;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
   width: 100%;
-  max-width: 90%;
+  max-width: 98%;
   margin-left: auto;
   margin-right: auto;
+  justify-content: center;
 }
 
 .tab-button {
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.75rem;
   background: transparent;
   color: rgba(255, 255, 255, 0.7);
   border: none;
   cursor: pointer;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.2rem;
   transition: all 0.3s ease;
   position: relative;
+  margin: 0 0.5rem;
 }
 
 .tab-button.active {
@@ -2365,8 +3065,8 @@ export default {
 
 .search-input-container {
   position: relative;
-  margin-bottom: 1rem;
-  max-width: 90%;
+  margin-bottom: 0.75rem;
+  max-width: 60%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -2466,8 +3166,8 @@ export default {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 1.5rem;
   padding: 0;
-  margin: 2rem auto;
-  max-width: 90%;
+  margin: 1rem auto;
+  max-width: 80%;
   overflow: hidden;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2481,40 +3181,45 @@ export default {
 }
 
 .report-title {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #f39c12;
-  margin-bottom: 1.25rem;
+  margin: 0;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Safety Rating Card */
 .safety-rating {
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 1rem;
-  padding: 1.25rem;
-  margin: 0 auto 1rem;
-  max-width: 90%;
-  transform: translateY(-1.5rem);
+  border-radius: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  margin: 0.5rem auto;
+  max-width: 50%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .safety-rating h4 {
-  font-size: 1.3rem;
-  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  margin: 0;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .rating-indicator {
   display: inline-block;
-  padding: 0.6rem 1.5rem;
+  padding: 0.4rem 1.25rem;
   border-radius: 2rem;
   font-weight: 700;
-  font-size: 1.2rem;
-  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
@@ -2552,79 +3257,86 @@ export default {
 }
 
 .report-content {
-  padding: 0 1.5rem 1.5rem;
+  padding: 0.25rem 2rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.report-tabs {
-  display: flex;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 2rem;
+.report-section-header {
+  text-align: center;
+  margin-bottom: 1rem;
   position: sticky;
   top: 0;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
   z-index: 2;
-  border-radius: 1rem 1rem 0 0;
-}
-
-.report-tab {
-  flex: 1;
-  text-align: center;
-  padding: 1rem;
-  cursor: pointer;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.report-tab.active {
-  color: #f39c12;
-}
-
-.report-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #f39c12;
+  border-radius: 0.75rem 0.75rem 0 0;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.25rem 0;
 }
 
 /* Condition Cards */
 .condition-section {
-  padding: 1rem 0;
+  padding: 0.25rem 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .section-title {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: #f39c12;
-  margin-bottom: 1.25rem;
+  margin: 0.25rem 0 0.25rem 0;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  padding: 0.25rem 0;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.compact-title {
+  font-size: 1.15rem;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.5rem;
+  background: rgba(243, 156, 18, 0.15);
+  border-radius: 4px;
+  display: inline-block;
 }
 
 .condition-breakdown {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0;
   padding: 0 1rem;
+  flex: 1;
+  overflow: hidden;
 }
 
 .condition-item {
   background: linear-gradient(135deg, rgba(20, 30, 48, 0.7), rgba(36, 59, 85, 0.8));
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(100, 180, 255, 0.15);
   transition: all 0.3s ease;
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   position: relative;
+  min-height: 0;
+  max-height: 100%;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
 }
 
 .condition-item:hover {
@@ -2645,17 +3357,17 @@ export default {
 
 .condition-header {
   background: rgba(0, 20, 40, 0.5);
-  padding: 1rem;
+  padding: 0.4rem 0.75rem;
   display: flex;
   align-items: center;
   border-bottom: 1px solid rgba(100, 180, 255, 0.1);
 }
 
 .condition-icon {
-  font-size: 2.2rem;
-  margin-right: 1.2rem;
-  width: 45px;
-  height: 45px;
+  font-size: 1.8rem;
+  margin-right: 0.75rem;
+  width: 35px;
+  height: 35px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2665,30 +3377,32 @@ export default {
 
 .condition-title {
   flex: 1;
+  text-align: center;
 }
 
 .condition-name {
   display: block;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: 700;
+  font-size: 1.15rem;
   color: rgba(255, 255, 255, 0.95);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.1rem;
 }
 
 .condition-value {
   display: block;
   font-weight: 700;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   color: #f39c12;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .condition-meaning {
-  flex: 1;
   display: flex;
   flex-direction: column;
   padding: 0;
   background: rgba(15, 25, 40, 0.5);
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .condition-for-group {
@@ -2851,30 +3565,33 @@ export default {
   color: #2ecc71;
   font-weight: 700;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
   font-size: 1.5rem;
+  padding-right: 15px;
 }
 
 .safety-caution {
   color: #f39c12;
   font-weight: 700;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
   font-size: 1.5rem;
+  padding-right: 15px;
 }
 
 .safety-not-safe {
   color: #e74c3c;
   font-weight: 700;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
   font-size: 1.5rem;
+  padding-right: 15px;
 }
 
 /* Key Advice Card */
@@ -2897,11 +3614,11 @@ export default {
 
 .advice-list {
   list-style-type: none;
-  padding: 1.5rem;
+  padding: 1.5rem 2.5rem;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
 }
 
 .advice-list li {
@@ -3000,8 +3717,8 @@ export default {
   }
   
   .tab-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
   }
   
   .compare-inputs {
@@ -3063,11 +3780,11 @@ export default {
   }
   
   .option-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   .option-description {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .condition-icon {
@@ -3088,19 +3805,88 @@ export default {
 /* Compare tab styles */
 .compare-wrapper {
   width: 100%;
-  max-width: 90%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 .compare-inputs {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 20px;
-  margin-bottom: 2rem;
-  max-width: 90%;
+  margin-bottom: 1.5rem;
+  width: 100%;
   margin-left: auto;
   margin-right: auto;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.compare-inputs-row {
+  display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+}
+
+.suggestions-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  width: 100%;
+  margin-top: 5px;
+  min-height: 50px;
+}
+
+.suggestions-column {
+  flex: 1;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.suggestions-column.active {
+  opacity: 1;
+}
+
+.expanded .compare-inputs {
+  padding: 1.5rem 1.5rem 2rem 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile styles for compare beaches section */
+@media (max-width: 768px) {
+  .compare-inputs-row {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .compare-input-wrapper {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .suggestions-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .suggestions-column {
+    opacity: 1;
+  }
+  
+  .compare-wrapper.expanded {
+    min-height: 350px;
+    padding-bottom: 20px;
+  }
+  
+  .compare-button {
+    margin-top: 25px;
+    width: 80%;
+  }
 }
 
 .compare-input-wrapper {
@@ -3110,6 +3896,7 @@ export default {
   flex-direction: column;
   height: 70px;
   max-width: 48%;
+  width: 100%;
 }
 
 .beach-label {
@@ -3121,33 +3908,90 @@ export default {
   text-align: center;
   width: fit-content;
   margin: 0;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 5;
-  font-size: 0.9rem;
-  line-height: 1.1;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .compare-input-container {
   position: relative;
-  background: #000000;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0 0.5rem 0.5rem 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
-  height: 70px;
-  margin-top: 1px;
+  height: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 999; /* Increased z-index to ensure proper stacking but lower than suggestions */
 }
 
-.input-icon {
-  position: absolute;
-  top: 50%;
-  left: 1rem;
-  transform: translateY(-50%);
-  font-size: 1.8rem;
-  color: rgba(255, 255, 255, 0.8);
-  z-index: 1;
+.compare-button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 15px;
+  transition: margin 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.compare-button-container.has-suggestions {
+  margin-top: 25px;
+}
+
+.compare-button {
+  width: 50%;
+  margin: 0 auto;
+  padding: 0.6rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite ease-in-out;
+  box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+  position: relative;
+  z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .compare-inputs {
+    flex-direction: column;
+    gap: 30px;
+    padding: 1.2rem;
+  }
+  
+  .compare-tab .suggestions-list {
+    width: 100%;
+    left: 0;
+  }
+  
+  .compare-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 5px;
+  }
+  
+  .compare-input-container {
+    height: 70px;
+  }
+  
+  .beach-label {
+    margin-left: 0;
+  }
+  
+  .compare-button {
+    width: 80%;
+    margin: 10px auto 0;
+  }
 }
 
 .compare-tab .search-input {
@@ -3170,23 +4014,14 @@ export default {
   color: rgba(255, 255, 255, 0.5);
 }
 
-.compare-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 40%;
-  padding: 0.75rem 1.5rem;
-  background: #f39c12;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin: 1.25rem auto 2rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+.input-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 1;
 }
 
 .compare-button:hover {
@@ -3211,11 +4046,12 @@ export default {
   background: rgba(0, 0, 0, 0.95);
   border-radius: 0.7rem;
   margin-top: 0.6rem;
-  z-index: 20;
+  z-index: 9999; /* Significantly increased z-index to ensure it appears on top */
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(243, 156, 18, 0.3);
   left: -5%;
+  top: 100%; /* Position it directly below the input */
 }
 
 .compare-tab .suggestion-item {
@@ -3264,12 +4100,7 @@ export default {
   margin-bottom: 0.75rem;
 }
 
-.chart-subtitle {
-  text-align: center;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 2rem;
-}
+
 
 .safety-comparison {
   display: grid;
@@ -3668,13 +4499,17 @@ export default {
 }
 
 .beach-title {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #f39c12;
-  margin: 0.5rem 0 1rem;
+  margin: 0.3rem 0 0.75rem;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .beach-category {
@@ -3857,14 +4692,22 @@ export default {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+.conclusion-horizontal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .conclusion-title {
   font-size: 1.4rem;
   font-weight: 600;
   color: #f39c12;
-  margin-bottom: 1rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(243, 156, 18, 0.3);
-  padding-bottom: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  flex: 1;
+  text-align: left;
 }
 
 .conclusion-body {
@@ -3874,13 +4717,24 @@ export default {
   text-align: center;
 }
 
+.readiness-status {
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: right;
+  margin: 0;
+  padding: 0 1rem;
+  color: #f8f9fa;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  min-width: 180px;
+}
+
 /* Beach image styles */
 .beach-image-container {
   width: 100%;
-  height: 180px;
+  height: 140px;
   overflow: hidden;
   border-radius: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   position: relative;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3991,7 +4845,7 @@ export default {
 .beach-comparison-card {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   flex: 1;
   text-align: left;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -4002,8 +4856,8 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 650px;
-  width: 45%;
+  min-height: 580px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -4043,42 +4897,38 @@ export default {
 }
 
 .category-badge {
-  font-size: 1.4rem;
-  font-weight: 800;
+  font-size: 2.6rem;
+  font-weight: 900;
   display: inline-block;
-  padding: 0.6rem 2.5rem;
-  border-radius: 2rem;
-  margin: 0 auto 1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
-  letter-spacing: 2px;
+  padding: 0.5rem 1.5rem;
+  margin: 0 auto;
+  letter-spacing: 3px;
   text-align: center;
-  min-width: 160px;
   text-transform: uppercase;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  animation: glow 2s infinite alternate;
 }
 
 .category-harsh .category-badge {
-  background-color: #e74c3c;
-  color: white;
+  color: #ff5a4a;
+  text-shadow: 0 2px 5px rgba(231, 76, 60, 0.7);
 }
 
 .category-moderate .category-badge {
-  background-color: #f39c12;
-  color: white;
+  color: #ffae30;
+  text-shadow: 0 2px 5px rgba(243, 156, 18, 0.7);
 }
 
 .category-calm .category-badge {
-  background-color: #2ecc71;
-  color: white;
+  color: #46e88c;
+  text-shadow: 0 2px 5px rgba(46, 204, 113, 0.7);
 }
 
 .beach-condition-category {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 0.8rem;
-  padding: 1.5rem;
   margin-bottom: 1.2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   height: auto;
-  min-height: 180px; /* Increased for longer descriptions */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4096,7 +4946,7 @@ export default {
 .beach-comparison-card {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   flex: 1;
   text-align: left;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -4107,8 +4957,8 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 650px; /* Increased for more consistent heights */
-  width: 45%;
+  min-height: 580px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -4117,7 +4967,7 @@ export default {
   justify-content: space-between;
   gap: 2rem;
   margin-bottom: 2rem;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 @media (max-width: 768px) {
@@ -4132,7 +4982,18 @@ export default {
   }
   
   .beach-condition-category {
-    min-height: 150px;
+    margin-bottom: 1rem;
+  }
+  
+  .beach-report-popup {
+    height: 85vh;
+    max-height: 85vh;
+    width: 98%;
+    padding: 0;
+  }
+  
+  .report-content {
+    padding: 0.25rem 1rem 1rem;
   }
 }
 
@@ -4429,16 +5290,16 @@ export default {
 .risk-meter-container {
   position: relative;
   width: 95%;
-  margin: 15px auto;
-  padding: 5px 0 35px;
+  margin: 5px auto 10px;
+  padding: 2px 0 15px;
 }
 
 .risk-meter-title {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 8px;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 6px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
@@ -4520,13 +5381,14 @@ export default {
 }
 
 .risk-indicator-arrow {
+  display: none; /* Hide the triangle arrow */
   position: relative;
   width: 0;
   height: 0;
   margin: 0 auto;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 14px solid #333;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 16px solid #333;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
   z-index: 6;
 }
@@ -4550,32 +5412,35 @@ export default {
 .risk-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  margin-top: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
   padding: 0 10px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .risk-label.safe {
   color: #2ecc71;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
 }
 
 .risk-label.caution {
   color: #f39c12;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
 }
 
 .risk-label.danger {
   color: #e74c3c;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
 }
 
 .wave-danger-visual {
   position: relative;
   width: 100%;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -4584,10 +5449,11 @@ export default {
 
 .wave-danger-image {
   width: 100%;
-  height: 200px;
+  height: 140px;
   object-fit: cover;
   display: block;
   transition: transform 0.3s ease;
+  margin-bottom: 0;
 }
 
 .wave-danger-visual:hover .wave-danger-image {
@@ -4660,6 +5526,7 @@ export default {
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .wave-danger-visual:hover .hover-description {
@@ -4667,10 +5534,12 @@ export default {
 }
 
 .hover-content {
-  padding: 1.5rem;
+  padding: 1rem;
   color: white;
   text-align: center;
   max-width: 90%;
+  font-size: 0.95rem;
+  line-height: 1.3;
 }
 
 .hover-content h4 {
@@ -4686,13 +5555,14 @@ export default {
 }
 
 .wave-visual-header {
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #f39c12;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
   text-align: center;
   position: relative;
   z-index: 1;
+  padding: 0.1rem;
 }
 
 @keyframes point-up {
@@ -4709,7 +5579,7 @@ export default {
 .wave-danger-visual {
   position: relative;
   width: 100%;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -5024,34 +5894,43 @@ export default {
   border-radius: 0.75rem;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 220px;
 }
 
 .visual-wave-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #f39c12;
-  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffae30;
+  margin-bottom: 0.5rem;
   text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.5px;
 }
 
 .wave-visual-card, .current-visual-card {
   position: relative;
   border-radius: 0.75rem;
-  overflow: hidden;
+  overflow: hidden !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  height: 200px;
+  height: 420px; /* Increased from 180px */
+  margin-bottom: 0;
+  contain: strict;
+  max-height: 4200px; /* Increased from 180px */
 }
 
 .wave-image, .current-image {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.3s ease;
+  min-height: 120px;
+  transform-origin: center center;
 }
 
 .wave-visual-card:hover .wave-image,
 .current-visual-card:hover .current-image {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .hover-overlay {
@@ -5065,18 +5944,23 @@ export default {
   align-items: center;
   justify-content: center;
   transition: opacity 0.3s ease;
+  bottom: 0;
 }
 
 .hover-prompt {
   background: rgba(0, 0, 0, 0.8);
-  padding: 0.5rem 1.2rem;
+  padding: 0.6rem 1.4rem;
   border-radius: 2rem;
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
-  border: 2px solid rgba(243, 156, 18, 0.6);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(243, 156, 18, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   animation: pulse 2s infinite;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
+  position: absolute;
+  bottom: 15px;
 }
 
 @keyframes pulse {
@@ -5100,15 +5984,21 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  padding: 1.5rem;
-  background: rgba(0, 0, 0, 0.9);
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.95);
   border-radius: 0.75rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(0);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  overflow-y: auto;
+  overflow: hidden;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  bottom: 0;
+  z-index: 5;
+  max-height: 100%;
 }
 
 .wave-visual-card:hover .wave-details-card,
@@ -5124,20 +6014,30 @@ export default {
 }
 
 .wave-comparison, .current-comparison {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
+  line-height: 1.4;
+  margin-bottom: 0;
+  width: 100%;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
 }
 
 .wave-comparison p, .current-comparison p {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
+  margin-top: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .highlight {
-  color: #f39c12;
-  font-weight: 700;
-  font-size: 1.2rem;
+  color: #ffae30;
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 0 2px;
 }
 
 .impact-description {
@@ -5173,12 +6073,13 @@ export default {
 
 @media (max-width: 768px) {
   .wave-visual-card, .current-visual-card {
-    height: 220px;
+    height: 250px; /* This remains 250px, could be adjusted if needed */
+    max-height: 250px; /* This remains 250px */
   }
   
   .wave-details-card, .current-details-card {
-    font-size: 1rem;
-    padding: 1rem;
+    font-size: 0.9rem;
+    padding: 0.75rem;
   }
   
   .hover-prompt {
@@ -5199,14 +6100,17 @@ export default {
   border-radius: 0.75rem;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 220px;
 }
 
 .visual-current-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #f39c12;
-  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffae30;
+  margin-bottom: 0.5rem;
   text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 768px) {
@@ -5217,14 +6121,14 @@ export default {
 }
 
 .beach-title {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #f39c12;
-  margin: 0.5rem 0 1rem;
+  margin: 0.3rem 0 0.75rem;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.75rem;
-  height: 50px; /* Fixed height for consistent alignment */
+  padding-bottom: 0.5rem;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -5232,10 +6136,10 @@ export default {
 
 .beach-image-container {
   width: 100%;
-  height: 180px; /* Fixed height */
+  height: 140px;
   overflow: hidden;
   border-radius: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   position: relative;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -5245,68 +6149,127 @@ export default {
 .best-for-groups-container {
   margin-top: auto; /* Push to bottom of card */
   padding-top: 1rem;
-}
-
-.suitability-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  background-color: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) inset;
 }
 
-.suitability-table th {
-  padding: 0.6rem;
+.suitability-wrapper {
+  width: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
   background-color: rgba(0, 0, 0, 0.3);
-  color: #f39c12;
-  font-weight: 600;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to bottom, #0a0a0a, rgba(20, 20, 20, 0.9));
 }
 
-.suitability-table td {
-  padding: 0.7rem 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+.suitability-header {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  padding: 0.75rem 0;
+}
+
+.suitability-header-age {
+  flex: 0 0 70%;
+  padding-left: 1rem;
+  color: #ffae30;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1.1rem;
   text-align: left;
 }
 
-.suitability-table td:last-child {
-  text-align: center;
-  width: 30%;
-  font-size: 1.2rem;
+.suitability-header-safe {
+  flex: 0 0 30%;
+  padding-right: 2rem;
+  color: #ffae30;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1.1rem;
+  text-align: right;
 }
 
-.suitability-table tr:last-child td {
+.suitability-row {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: center;
+}
+
+.suitability-row:last-child {
   border-bottom: none;
 }
 
-.recommendation-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #f39c12;
-  margin-bottom: 0.5rem;
-  text-align: center;
+.suitability-age {
+  flex: 0 0 70%;
+  padding: 0.9rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-align: left;
+}
+
+.suitability-safe {
+  flex: 0 0 30%;
+  padding-right: 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .safety-safe {
   color: #2ecc71;
-  font-weight: 700;
-  text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+  text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
 }
 
 .safety-caution {
   color: #f39c12;
-  font-weight: 700;
-  text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+  text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
 }
 
 .safety-not-safe {
   color: #e74c3c;
+  text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+}
+
+.recommendation-label {
+  font-size: 1.4rem;
   font-weight: 700;
-  text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+  color: #ffae30;
+  margin-bottom: 1rem;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.safety-safe {
+  color: #2ecc71;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(46, 204, 113, 0.7);
+  font-size: 1.7rem;
+}
+
+.safety-caution {
+  color: #f39c12;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(243, 156, 18, 0.7);
+  font-size: 1.7rem;
+}
+
+.safety-not-safe {
+  color: #ff5a4a;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+  font-size: 1.7rem;
 }
 
 .comparison-tabs {
@@ -5379,7 +6342,7 @@ export default {
 .beach-comparison-card {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   flex: 1;
   text-align: left;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -5390,7 +6353,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 620px; /* Increased min-height for consistency */
+  min-height: 700px; /* Increased min-height to accommodate larger cards */
   max-width: 500px;
   margin: 0 auto;
 }
@@ -5409,5 +6372,931 @@ export default {
 
 .static-info p {
   margin: 0.3rem 0;
+}
+
+/* Styles for the Rip Identifier tab */
+.ripIdentifier-tab {
+  padding: 1rem;
+}
+
+.rip-upload-container {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  min-height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.upload-area:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.upload-area.has-image {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.upload-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.upload-placeholder p {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+}
+
+.upload-hint {
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.uploaded-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 350px;
+}
+
+.rip-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+.analyze-rip-button, .remove-image-button {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+}
+
+.analyze-rip-button {
+  background: linear-gradient(135deg, #1a6aa5, #25a0c8);
+  color: white;
+  box-shadow: 0 4px 8px rgba(37, 160, 200, 0.3);
+}
+
+.analyze-rip-button:hover {
+  background: linear-gradient(135deg, #155d91, #2196c1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 160, 200, 0.4);
+}
+
+.analyze-rip-button:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.remove-image-button {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.remove-image-button:hover {
+  background: rgba(231, 76, 60, 0.3);
+  transform: translateY(-2px);
+}
+
+.button-loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+.analyzing-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: white;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.rip-analysis-result {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.result-title {
+  color: #f39c12;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.result-image-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.result-image {
+  width: 100%;
+  object-fit: contain;
+  display: block;
+  max-height: 300px;
+}
+
+.result-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem 1rem;
+  border-bottom-left-radius: 8px;
+}
+
+.danger-badge {
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.result-overlay.high {
+  background: rgba(231, 76, 60, 0.8);
+}
+
+.result-overlay.medium {
+  background: rgba(243, 156, 18, 0.8);
+}
+
+.result-overlay.low {
+  background: rgba(46, 204, 113, 0.8);
+}
+
+.result-details {
+  margin-top: 1rem;
+}
+
+.danger-indicator {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.danger-level {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.danger-indicator.high .danger-level {
+  color: #e74c3c;
+}
+
+.danger-indicator.medium .danger-level {
+  color: #f39c12;
+}
+
+.danger-indicator.low .danger-level {
+  color: #2ecc71;
+}
+
+.danger-bar-container {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.danger-bar {
+  height: 100%;
+  transition: width 0.8s ease;
+}
+
+.danger-indicator.high .danger-bar {
+  background: #e74c3c;
+}
+
+.danger-indicator.medium .danger-bar {
+  background: #f39c12;
+}
+
+.danger-indicator.low .danger-bar {
+  background: #2ecc71;
+}
+
+.result-description {
+  margin-bottom: 1rem;
+  color: white;
+  line-height: 1.5;
+}
+
+.safety-tips {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.safety-tips h5 {
+  color: #f39c12;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.safety-tips ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.safety-tips li {
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.safety-tips li:last-child {
+  margin-bottom: 0;
+}
+
+.rip-education {
+  margin-top: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.rip-education h4 {
+  color: #f39c12;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.rip-indicators {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.rip-indicator-item {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.rip-indicator-item:hover {
+  transform: translateY(-5px);
+}
+
+.indicator-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.rip-indicator-item p {
+  padding: 0.8rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .rip-indicators {
+    flex-direction: column;
+  }
+  
+  .rip-indicator-item {
+    width: 100%;
+  }
+  
+  .rip-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .analyze-rip-button, .remove-image-button {
+    width: 100%;
+  }
+}
+
+.side-panel {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.side-panel h3 {
+  color: #f39c12;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.side-panel p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.side-panel ul {
+  list-style-type: none;
+  padding-left: 1.5rem;
+}
+
+.side-panel li {
+  margin-bottom: 0.75rem;
+  color: white;
+}
+
+.side-panel li:before {
+  content: "•";
+  color: #f39c12;
+  font-weight: bold;
+  display: inline-block;
+  width: 1rem;
+  margin-left: -1rem;
+}
+
+/* Beach search suggestions popup overlay */
+.search-suggestions-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Beach search suggestions popup */
+.search-suggestions-popup {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(243, 156, 18, 0.3);
+  z-index: 10000;
+  max-height: 350px;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.2s ease-out;
+  pointer-events: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.suggestions-popup-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.suggestion-popup-item {
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2px;
+}
+
+.suggestion-popup-item:hover {
+  background: rgba(243, 156, 18, 0.2);
+  padding-left: 1.5rem;
+  transform: translateX(2px);
+}
+
+.suggestion-popup-item:active {
+  background: rgba(243, 156, 18, 0.3);
+  transform: scale(0.98);
+}
+
+.suggestion-popup-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-popup-item:before {
+  content: '🔍';
+  margin-right: 0.8rem;
+  opacity: 0.9;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.suggestion-popup-item:hover:before {
+  transform: scale(1.2);
+}
+
+/* Beach report popup styles */
+.beach-report-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 10px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom scrollbar for popups */
+.report-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.report-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.report-content::-webkit-scrollbar-thumb {
+  background: rgba(243, 156, 18, 0.5);
+  border-radius: 10px;
+}
+
+.report-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(243, 156, 18, 0.8);
+}
+
+
+
+.beach-report-popup {
+  background: linear-gradient(135deg, rgba(15, 25, 40, 0.95), rgba(30, 40, 60, 0.95));
+  border-radius: 16px;
+  width: 95%;
+  max-width: 1400px;
+  height: 80vh;
+  max-height: 80vh;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(243, 156, 18, 0.4);
+  position: relative;
+  animation: slideUp 0.4s ease-out;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.popup-header {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.close-popup-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-popup-btn:hover {
+  background: rgba(231, 76, 60, 0.8);
+  transform: rotate(90deg);
+}
+
+/* Success message after search */
+.search-success-message {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.success-indicator {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.5);
+  color: #2ecc71;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  gap: 0.5rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.success-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: rgba(46, 204, 113, 0.3);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.success-text {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Compare success message and button */
+.compare-success-message {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.view-comparison-btn {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.view-comparison-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rating-high {
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.rating-moderate {
+  color: #f39c12;
+  border: 1px solid #f39c12;
+}
+
+.rating-low {
+  color: #2ecc71;
+  border: 1px solid #2ecc71;
+}
+
+@keyframes glow {
+  0% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+  100% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 0 0 30px rgba(255, 255, 255, 0.5); }
+}
+
+/* === Overrides to ensure wave/current cards fill container === */
+.condition-meaning {
+  flex: 1;
+  min-height: 0; /* allow child flex items to dictate height */
+}
+
+.wave-visual-card,
+.current-visual-card {
+  flex: 1;
+  height: 100%;
+  min-height: 120px;
+}
+
+.wave-image,
+.current-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Add new styles for the redesigned compare info containers */
+.compare-info-container {
+  margin-bottom: 2rem;
+  background: rgba(10, 20, 30, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.compare-info-header {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.compare-info-icon {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.compare-info-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f39c12;
+  margin: 0;
+}
+
+.compare-info-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.compare-info-image-container {
+  position: relative;
+  width: 100%;
+  height: 180px; /* Increased from 160px to give more room */
+  overflow: hidden;
+  contain: strict; /* Improve layout stability */
+}
+
+.compare-info-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%; /* Position image to show more of the lower part */
+  display: block;
+  transition: transform 0.3s ease; /* Smooth transition for hover effects */
+}
+
+/* Add a subtle scale effect on hover, but keep it small to avoid overflow issues */
+.compare-info-image-container:hover .compare-info-image {
+  transform: scale(1.03);
+}
+
+.compare-info-hover-trigger {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s ease;
+}
+
+.compare-info-hover-prompt {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
+  font-weight: 600;
+  border: 2px solid rgba(243, 156, 18, 0.7);
+}
+
+.compare-info-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.compare-info-image-container:hover .compare-info-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.compare-info-image-container:hover .compare-info-hover-trigger {
+  opacity: 0;
+}
+
+.compare-info-hover-details {
+  width: 100%;
+  text-align: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.compare-info-details {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.compare-info-details p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.compare-info-highlight {
+  color: #f39c12;
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.suggestion-spacing {
+  width: 100%;
+  transition: all 0.4s ease-in-out;
+  margin-top: 5px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  padding: 8px 0;
+}
+
+.suggestion-indicator {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-style: italic;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  margin: 5px auto;
+  max-width: 80%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.compare-wrapper {
+  transition: all 0.3s ease-in-out;
+  padding-bottom: 10px;
+  min-height: 170px; /* Base height */
+}
+
+.compare-wrapper.expanded {
+  margin-bottom: 20px;
+  height: auto;
+  min-height: 230px; /* Expanded height when suggestions are showing */
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.compare-input-wrapper {
+  transition: all 0.5s ease-in-out;
+  position: relative;
+  flex: 1;
+  max-width: 48%;
+  width: 100%;
+}
+
+/* This class is no longer used */
+
+@media (max-width: 768px) {
+  .suggestion-spacing {
+    max-height: 230px !important;
+  }
+  
+  .compare-input-wrapper.has-suggestions {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .suggestion-spacing {
+    max-height: 250px !important;
+  }
+}
+
+.compare-info-static {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+}
+
+.compare-info-static p {
+  margin: 0;
+}
+
+.compare-info-hover-details p {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Media query adjustments for mobile */
+@media (max-width: 768px) {
+  .compare-info-container {
+    margin-bottom: 1.5rem;
+  }
+  
+  .compare-info-image-container {
+    height: 180px;
+  }
+  
+  .compare-info-hover-details p {
+    font-size: 1rem;
+  }
+  
+  .compare-info-highlight {
+    font-size: 1.05rem;
+  }
 }
 </style> 

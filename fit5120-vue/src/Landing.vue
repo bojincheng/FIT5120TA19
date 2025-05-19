@@ -1,8 +1,8 @@
 <template>
   <div class="landing-container">
     <div class="video-background">
-      <video autoplay loop muted playsinline>
-        <source src="/videos/landing_background.mp4" type="video/mp4">
+      <video ref="backgroundVideo" autoplay loop muted playsinline>
+        <source src="/videos/3192100-hd_1920_1080_30fps.mp4" type="video/mp4">
       </video>
       <div class="overlay"></div>
     </div>
@@ -18,7 +18,7 @@
             <span class="arrow">→</span>
           </button>
           <div class="button-description">
-            <span class="headphones-icon">🎧</span> For first-time users (headphones recommended)
+            <span class="headphones-icon">🎧</span> <span>For first-time users (headphones recommended)</span>
           </div>
         </div>
         
@@ -41,6 +41,15 @@
 <script>
 export default {
   name: 'LandingPage',
+  mounted() {
+    // Get reference to the video element
+    const video = this.$refs.backgroundVideo;
+    
+    if (video) {
+      // Set playback rate to slower motion
+      video.playbackRate = 0.5;
+    }
+  },
   methods: {
     navigateToExperience() {
       // For new users, navigate to the loading page for the full experience
@@ -97,7 +106,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.65) 100%);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.55) 100%);
   z-index: 1;
 }
 
@@ -126,13 +135,15 @@ export default {
 }
 
 .title-animation {
-  animation: fadeInUp 1s ease-out forwards;
+  animation: fadeSlideIn 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
   opacity: 0;
+  transform: translateY(30px);
 }
 
 .subtitle-animation {
-  animation: fadeInUp 1s ease-out 0.3s forwards;
+  animation: fadeSlideIn 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s forwards;
   opacity: 0;
+  transform: translateY(30px);
 }
 
 .message-container h1 {
@@ -162,15 +173,18 @@ export default {
 .highlight {
   color: #4ecdc4;
   position: relative;
+  padding-bottom: 2px;
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(78, 205, 196, 0.4);
 }
 
 .highlight::after {
   content: '';
   position: absolute;
-  bottom: -5px;
+  bottom: -2px;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 2px;
   background-color: #4ecdc4;
   transform: scaleX(0);
   transform-origin: left;
@@ -184,8 +198,9 @@ export default {
   align-items: center;
   width: 100%;
   max-width: 400px;
-  animation: fadeIn 1.5s ease-out 0.8s forwards;
+  animation: fadeSlideUp 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.6s forwards;
   opacity: 0;
+  transform: translateY(40px);
 }
 
 .button-wrapper {
@@ -204,10 +219,14 @@ export default {
   justify-content: center;
   gap: 0.5rem;
   height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .headphones-icon {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 .main-button, .secondary-button {
@@ -232,16 +251,16 @@ export default {
 }
 
 .main-button {
-  background: linear-gradient(45deg, #ff3333, #ff6666);
+  background: linear-gradient(45deg, #1e3c72, #2a5298);
   color: white;
   border: none;
-  box-shadow: 0 8px 25px rgba(255, 68, 68, 0.4);
+  box-shadow: 0 8px 25px rgba(42, 82, 152, 0.4);
 }
 
 .main-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(255, 68, 68, 0.6);
-  background: linear-gradient(45deg, #ff4444, #ff7777);
+  box-shadow: 0 12px 30px rgba(42, 82, 152, 0.6);
+  background: linear-gradient(45deg, #2a5298, #3a63b8);
 }
 
 .secondary-button {
@@ -288,23 +307,48 @@ export default {
   animation: float 8s ease-in-out infinite reverse;
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeSlideIn {
+  0% { 
+    opacity: 0; 
+    transform: translateY(30px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes fadeSlideUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(40px);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
 }
 
 @keyframes expandLine {
-  to { transform: scaleX(1); }
+  0% { transform: scaleX(0); }
+  70% { transform: scaleX(1.05); }
+  100% { transform: scaleX(1); }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
+}
+
+@keyframes fadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 768px) {
@@ -321,5 +365,17 @@ export default {
   .buttons-container {
     gap: 1.5rem;
   }
+}
+
+.first-time-wrapper {
+  animation: fadeScale 0.8s ease-out 2.2s forwards;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.button-wrapper:not(.first-time-wrapper) {
+  animation: fadeScale 0.8s ease-out 2.6s forwards;
+  opacity: 0;
+  transform: scale(0.95);
 }
 </style> 

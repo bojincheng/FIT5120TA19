@@ -7,13 +7,14 @@
           <button id="incorrectTab" :class="['scenario-tab', { active: currentScenario === 'incorrect' }]" @click="switchScenario('incorrect')">
             Incorrect Response
           </button>
-          <button id="correctTab" :class="['scenario-tab', { active: currentScenario === 'correct' }]" @click="switchScenario('correct')">
+          <button id="correctTab" :class="['scenario-tab', { active: currentScenario === 'correct', highlight: highlightCorrectTab }]" @click="switchScenario('correct')">
             Correct Response
           </button>
         </div>
         
-        <div id="storyTitle" class="story-title">
-          <h2 id="titleText">{{ currentStepTitle }}</h2>
+        <!-- Prompt to try correct response -->
+        <div v-if="highlightCorrectTab && currentScenario === 'incorrect'" class="try-correct-prompt">
+          Now try the correct response!
         </div>
         
         <div id="correctIndicator" :class="['approach-indicator', 'correct', { visible: showCorrectIndicator, pulse: pulseCorrectIndicator }]">
@@ -40,9 +41,15 @@
           </button>
           
           <button id="nextStepBtn" class="button next-step" title="Next Step" @click="nextStep">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
+            <template v-if="currentStep === 0">
+              <span class="button-text">Start</span>
+            </template>
+            <template v-else>
+              <span class="button-text">Next</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="next-icon">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </template>
           </button>
           
           <button id="fullscreenBtn" class="button" title="Fullscreen" @click="toggleFullscreen">
@@ -83,6 +90,7 @@
         showIncorrectIndicator: false,
         pulseCorrectIndicator: false,
         pulseIncorrectIndicator: false,
+        highlightCorrectTab: false,
         ctx: null,
         
         // Step-based animation variables
@@ -100,31 +108,10 @@
         // Swimmer position tracking for smooth transitions
         currentSwimmerPos: { x: 0, y: 0 },
         targetSwimmerPos: { x: 0, y: 0 },
-        
-        // Step titles for each scenario
-        correctStepTitles: [
-          "Starting at the Beach",
-          "Caught in a Rip Current",
-          "Swimming Parallel to Shore",
-          "Safely Returning to Beach"
-        ],
-        incorrectStepTitles: [
-          "Starting at the Beach",
-          "Caught in a Rip Current",
-          "Swimming Against the Current",
-          "Exhausted and Pulled Further Out"
-        ]
       };
     },
     computed: {
-      // Get the current step title based on scenario and step
-      currentStepTitle() {
-        if (this.currentScenario === 'correct') {
-          return this.correctStepTitles[this.currentStep];
-        } else {
-          return this.incorrectStepTitles[this.currentStep];
-        }
-      }
+      // No longer needed computed properties since we removed the story title
     },
     mounted() {
       // Initialize canvas
@@ -225,9 +212,22 @@
           this.currentStep++;
           this.updateIndicators();
           this.startTransition();
+          
+          // Check if we reached the last step of incorrect scenario
+          if (this.currentStep === this.totalSteps - 1 && this.currentScenario === 'incorrect') {
+            // Highlight the correct tab after a short delay
+            setTimeout(() => {
+              this.highlightCorrectTab = true;
+            }, 1500);
+          }
         } else {
           // Loop back to beginning when reaching the end
           this.resetSimulation();
+          
+          // If we're completing the incorrect scenario, highlight the correct tab
+          if (this.currentScenario === 'incorrect') {
+            this.highlightCorrectTab = true;
+          }
         }
       },
       
@@ -358,6 +358,9 @@
       // Switch scenario
       switchScenario(scenario) {
         this.currentScenario = scenario;
+        
+        // Turn off highlighting when switching scenarios
+        this.highlightCorrectTab = false;
         
         // Reset animation
         this.resetSimulation();
@@ -628,67 +631,63 @@
             swimDirection = 2; // trying to swim up/toward shore
             isStruggling = true;
             
-            // Show realization
-            ctx.fillStyle = "#FFFFFF";
-            ctx.beginPath();
-            ctx.ellipse(swimmerX + 40, swimmerY - 30, 30, 20, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(swimmerX + 15, swimmerY - 15);
-            ctx.lineTo(swimmerX + 25, swimmerY - 25);
-            ctx.lineTo(swimmerX + 10, swimmerY - 25);
-            ctx.fill();
-            
-            // Draw arrow in thinking bubble
+            // Remove thought bubble, just keep the arrow
+            // Draw horizontal arrow pointing left
             ctx.strokeStyle = "#10b981";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(swimmerX + 30, swimmerY - 30);
-            ctx.lineTo(swimmerX + 50, swimmerY - 30);
+            ctx.moveTo(swimmerX + 35, swimmerY - 30);
+            ctx.lineTo(swimmerX, swimmerY - 30);
             ctx.stroke();
             
+            // Arrow head pointing left
             ctx.beginPath();
-            ctx.moveTo(swimmerX + 45, swimmerY - 35);
-            ctx.lineTo(swimmerX + 50, swimmerY - 30);
-            ctx.lineTo(swimmerX + 45, swimmerY - 25);
+            ctx.moveTo(swimmerX + 10, swimmerY - 40);
+            ctx.lineTo(swimmerX, swimmerY - 30);
+            ctx.lineTo(swimmerX + 10, swimmerY - 20);
             ctx.stroke();
+            
+            // Add compact text label above swimmer with background for better readability
+            this.drawTextWithBackground(ctx, "Don't swim against the current", swimmerX, swimmerY - 50, "#10b981");
             break;
             
           case 2: // Swimming parallel to shore
             swimDirection = -1; // swimming left
             isStruggling = false;
             
-            // Draw correct approach indicator
+            // Draw subtle highlight around swimmer
             ctx.fillStyle = "rgba(16, 185, 129, 0.1)";
             ctx.beginPath();
-            ctx.ellipse(swimmerX, swimmerY, 100, 50, 0, 0, Math.PI * 2);
+            ctx.ellipse(swimmerX, swimmerY, 60, 30, 0, 0, Math.PI * 2);
             ctx.fill();
             
             // Correct direction arrow
             ctx.strokeStyle = "#10b981";
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(swimmerX - 60, swimmerY);
-            ctx.lineTo(swimmerX - 20, swimmerY);
+            ctx.moveTo(swimmerX - 40, swimmerY);
+            ctx.lineTo(swimmerX - 15, swimmerY);
             ctx.stroke();
             
             // Arrow head
             ctx.beginPath();
-            ctx.moveTo(swimmerX - 60, swimmerY);
-            ctx.lineTo(swimmerX - 45, swimmerY - 10);
-            ctx.lineTo(swimmerX - 45, swimmerY + 10);
+            ctx.moveTo(swimmerX - 40, swimmerY);
+            ctx.lineTo(swimmerX - 30, swimmerY - 8);
+            ctx.lineTo(swimmerX - 30, swimmerY + 8);
             ctx.closePath();
             ctx.fillStyle = "#10b981";
             ctx.fill();
+            
+            // Add compact text label near the swimmer with background
+            this.drawTextWithBackground(ctx, "Swim Parallel to Shore", swimmerX - 20, swimmerY - 15, "#10b981");
             break;
             
           case 3: // Swimming back to shore
             swimDirection = 2; // swimming up/toward shore
             isStruggling = false;
             
-            // Draw path arrow
-            ctx.strokeStyle = "#10b981";
+            // Draw path arrow (lighter, less intrusive)
+            ctx.strokeStyle = "rgba(16, 185, 129, 0.7)";
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
@@ -703,8 +702,11 @@
             ctx.lineTo(ripCenterX - width * 0.3 - 10, shoreLineY + height * 0.05 + 10);
             ctx.lineTo(ripCenterX - width * 0.3 + 10, shoreLineY + height * 0.05 + 15);
             ctx.closePath();
-            ctx.fillStyle = "#10b981";
+            ctx.fillStyle = "rgba(16, 185, 129, 0.7)";
             ctx.fill();
+            
+            // Add compact text label near the swimmer with background
+            this.drawTextWithBackground(ctx, "Return to Shore", swimmerX, swimmerY - 15, "#10b981");
             break;
             
           default:
@@ -743,74 +745,77 @@
             swimDirection = 2; // trying to swim up/toward shore
             isStruggling = true;
             
-            // Show realization
-            ctx.fillStyle = "#FFFFFF";
+            // Remove thought bubble, just draw a warning indicator
+            // Arrow pointing down indicating danger
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.ellipse(adjustedX + 40, swimmerY - 30, 30, 20, 0, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(adjustedX, swimmerY - 40);
+            ctx.lineTo(adjustedX, swimmerY - 15);
+            ctx.stroke();
             
+            // Arrow head
             ctx.beginPath();
-            ctx.moveTo(adjustedX + 15, swimmerY - 15);
-            ctx.lineTo(adjustedX + 25, swimmerY - 25);
-            ctx.lineTo(adjustedX + 10, swimmerY - 25);
-            ctx.fill();
-            
-            // Draw question mark in thinking bubble
+            ctx.moveTo(adjustedX - 10, swimmerY - 30);
+            ctx.lineTo(adjustedX, swimmerY - 15);
+            ctx.lineTo(adjustedX + 10, swimmerY - 30);
+            ctx.closePath();
             ctx.fillStyle = "#ef4444";
-            ctx.font = "bold 20px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText("?", adjustedX + 40, swimmerY - 30);
-            ctx.textAlign = "start";
-            ctx.textBaseline = "alphabetic";
+            ctx.fill();
+            
+            // Add compact text label above swimmer with background for better readability
+            this.drawTextWithBackground(ctx, "Caught in Rip", adjustedX, swimmerY - 50, "#ef4444");
             break;
             
           case 2: // Swimming against the current
             swimDirection = 2; // trying to swim up/toward shore
             isStruggling = true;
             
-            // Draw wrong approach indicator
+            // Draw smaller indicator around swimmer
             ctx.fillStyle = "rgba(239, 68, 68, 0.15)";
             ctx.beginPath();
-            ctx.arc(adjustedX, swimmerY, 70, 0, Math.PI * 2);
+            ctx.arc(adjustedX, swimmerY, 50, 0, Math.PI * 2);
             ctx.fill();
             
-            // Wrong direction arrow
+            // Wrong direction arrow - smaller and closer to swimmer
             ctx.strokeStyle = "#ef4444";
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(adjustedX, swimmerY - 60);
-            ctx.lineTo(adjustedX, swimmerY - 20);
+            ctx.moveTo(adjustedX, swimmerY - 40);
+            ctx.lineTo(adjustedX, swimmerY - 15);
             ctx.stroke();
             
             // Arrow head
             ctx.beginPath();
-            ctx.moveTo(adjustedX, swimmerY - 60);
-            ctx.lineTo(adjustedX - 10, swimmerY - 45);
-            ctx.lineTo(adjustedX + 10, swimmerY - 45);
+            ctx.moveTo(adjustedX, swimmerY - 40);
+            ctx.lineTo(adjustedX - 8, swimmerY - 30);
+            ctx.lineTo(adjustedX + 8, swimmerY - 30);
             ctx.closePath();
             ctx.fillStyle = "#ef4444";
             ctx.fill();
             
-            // Add exhaustion indicators (sweat drops)
-            for (let i = 0; i < 5; i++) {
+            // Add compact text label near swimmer with background for better readability
+            this.drawTextWithBackground(ctx, "Don't swim against current", adjustedX, swimmerY - 45, "#ef4444");
+            
+            // Add exhaustion indicators (fewer, more subtle sweat drops)
+            for (let i = 0; i < 3; i++) {
               const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1;
-              const distance = 30 + Math.random() * 20;
+              const distance = 30 + Math.random() * 15;
               const dropX = adjustedX + Math.cos(angle) * distance;
               const dropY = swimmerY - Math.sin(angle) * distance;
               
               // Draw sweat drop
-              ctx.fillStyle = "rgba(200, 240, 255, 0.8)";
+              ctx.fillStyle = "rgba(200, 240, 255, 0.6)";
               ctx.beginPath();
-              ctx.arc(dropX, dropY, 3 + Math.random() * 2, 0, Math.PI * 2);
+              ctx.arc(dropX, dropY, 2 + Math.random() * 2, 0, Math.PI * 2);
               ctx.fill();
               
               // Draw drop trail
               ctx.beginPath();
-              ctx.moveTo(dropX, dropY - 5);
+              ctx.moveTo(dropX, dropY - 4);
               ctx.lineTo(dropX, dropY);
-              ctx.strokeStyle = "rgba(200, 240, 255, 0.6)";
-              ctx.lineWidth = 2;
+              ctx.strokeStyle = "rgba(200, 240, 255, 0.5)";
+              ctx.lineWidth = 1.5;
               ctx.stroke();
             }
             break;
@@ -819,11 +824,14 @@
             swimDirection = 2; // still trying to swim up/toward shore
             isStruggling = true;
             
-            // Danger indicator
+            // Smaller danger indicator
             ctx.fillStyle = "rgba(239, 68, 68, 0.1)";
             ctx.beginPath();
-            ctx.arc(adjustedX, swimmerY, 100, 0, Math.PI * 2);
+            ctx.arc(adjustedX, swimmerY, 70, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Add text label showing exhaustion with background for better readability
+            this.drawTextWithBackground(ctx, "Exhausted & Pulled Out", adjustedX, swimmerY - 45, "#ef4444");
             break;
             
           default:
@@ -833,6 +841,62 @@
         
         // Draw the swimmer
         this.drawSwimmer(ctx, adjustedX, swimmerY, time, swimDirection, isStruggling);
+      },
+      
+      // Helper function to draw text with background for better readability
+      drawTextWithBackground(ctx, text, x, y, color) {
+        const fontSize = 20;
+        ctx.font = `bold ${fontSize}px Arial`;
+        
+        // Measure text width for background
+        const textWidth = ctx.measureText(text).width;
+        const padding = 8;
+        
+        // Draw background
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+        ctx.fillRect(
+          x - textWidth/2 - padding, 
+          y - fontSize - padding, 
+          textWidth + padding * 2, 
+          fontSize + padding * 2
+        );
+        
+        // Draw border
+        let borderColor = color;
+        if (color === "#10b981") {
+          borderColor = "#4ade80";
+        }
+        
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(
+          x - textWidth/2 - padding, 
+          y - fontSize - padding, 
+          textWidth + padding * 2, 
+          fontSize + padding * 2
+        );
+        
+        // Draw text with shadow for better contrast
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        let textColor = color;
+        if (color === "#10b981") {
+          textColor = "#4ade80";
+        }
+        
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(text, x, y);
+        
+        // Reset shadow
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
       },
       
       // Draw a swimmer
@@ -940,19 +1004,7 @@
           ctx.lineTo(x + baseSize * 1.2 + struggleOffset2, y - baseSize * 0.8 - struggleOffset1);
           ctx.stroke();
           
-          // Add splashing effect around swimmer when struggling
-          for (let i = 0; i < 12; i++) {
-            const splashAngle = Math.random() * Math.PI * 2;
-            const splashDist = baseSize * (1 + Math.random() * 2);
-            const splashX = x + Math.cos(splashAngle) * splashDist;
-            const splashY = y + Math.sin(splashAngle) * splashDist;
-            const splashSize = baseSize * (0.1 + Math.random() * 0.2);
-            
-            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-            ctx.beginPath();
-            ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          // Remove splashing effect around swimmer when struggling
         } else if (swimDirection === -1) {
           // Swimming left
           ctx.beginPath();
@@ -1025,19 +1077,7 @@
           ctx.stroke();
         }
         
-        // Water splash effects around swimmer
-        if (isStruggling || Math.abs(swimDirection) > 0) {
-          for (let i = 0; i < 5; i++) {
-            const splashX = x + (Math.random() - 0.5) * baseSize * 3;
-            const splashY = y + (Math.random() - 0.5) * baseSize * 2;
-            const splashSize = Math.random() * baseSize * 0.3 + baseSize * 0.1;
-            
-            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-            ctx.beginPath();
-            ctx.arc(splashX, splashY, splashSize, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
+        // Remove water splash effects around swimmer
       },
       
       // Helper function to draw waves
@@ -1065,6 +1105,8 @@
           
           ctx.stroke();
         }
+        
+        // Remove foam particles near shoreline
       },
       
       // Helper function to draw rip current flow
@@ -1077,40 +1119,65 @@
         const arrowCount = 3;
         const arrowSpacing = height * 0.2;
         
+        // Calculate rip current box edges
+        const ripEdgeLeft = ripCenterX - ripWidth/2;
+        const ripEdgeRight = ripCenterX + ripWidth/2;
+        
         for (let i = 0; i < arrowCount; i++) {
           const y = shoreLineY + arrowSpacing * (i + 1);
           const arrowLength = 40;
           
-          // Draw arrow shaft
+          // Draw arrow shaft (positioned at the left edge of rip current)
           ctx.strokeStyle = "#ef4444";
           ctx.lineWidth = 3;
           ctx.beginPath();
-          ctx.moveTo(ripCenterX, y - arrowLength/2);
-          ctx.lineTo(ripCenterX, y + arrowLength/2);
+          ctx.moveTo(ripEdgeLeft + 15, y - arrowLength/2);
+          ctx.lineTo(ripEdgeLeft + 15, y + arrowLength/2);
           ctx.stroke();
           
           // Draw arrow head
           ctx.fillStyle = "#ef4444";
           ctx.beginPath();
-          ctx.moveTo(ripCenterX, y + arrowLength/2);
-          ctx.lineTo(ripCenterX - 10, y + arrowLength/2 - 15);
-          ctx.lineTo(ripCenterX + 10, y + arrowLength/2 - 15);
+          ctx.moveTo(ripEdgeLeft + 15, y + arrowLength/2);
+          ctx.lineTo(ripEdgeLeft + 15 - 10, y + arrowLength/2 - 15);
+          ctx.lineTo(ripEdgeLeft + 15 + 10, y + arrowLength/2 - 15);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Add second arrow at right edge
+          // Draw arrow shaft
+          ctx.strokeStyle = "#ef4444";
+          ctx.beginPath();
+          ctx.moveTo(ripEdgeRight - 15, y - arrowLength/2);
+          ctx.lineTo(ripEdgeRight - 15, y + arrowLength/2);
+          ctx.stroke();
+          
+          // Draw arrow head
+          ctx.fillStyle = "#ef4444";
+          ctx.beginPath();
+          ctx.moveTo(ripEdgeRight - 15, y + arrowLength/2);
+          ctx.lineTo(ripEdgeRight - 15 - 10, y + arrowLength/2 - 15);
+          ctx.lineTo(ripEdgeRight - 15 + 10, y + arrowLength/2 - 15);
           ctx.closePath();
           ctx.fill();
         }
         
-        // Draw flow particles
+        // Draw flow particles without foam bubbles
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 1.5;
         
-        for (let i = 0; i < 8; i++) {
-          const xOffset = ((i - 4) / 4) * (ripWidth * 0.8);
+        // Keep flow visualization without foam particles
+        const particleDensity = 12;
+        const flowRows = 5;
+        
+        for (let i = 0; i < particleDensity; i++) {
+          const xOffset = ((i - particleDensity/2) / (particleDensity/2)) * (ripWidth * 0.8);
           const x = ripCenterX + xOffset;
           const flowSpeed = 1.5 - Math.abs(xOffset) / (ripWidth * 0.4); // Faster in center
           
           // Create multiple particles flowing down the current
-          for (let j = 0; j < 3; j++) {
-            const flowOffset = (time * flowSpeed + j * 0.33) % 1;
+          for (let j = 0; j < flowRows; j++) {
+            const flowOffset = (time * flowSpeed + j * (1/flowRows)) % 1;
             const yStart = shoreLineY + flowOffset * (height - shoreLineY);
             const yEnd = Math.min(yStart + 20, height);
             
@@ -1119,7 +1186,8 @@
             const narrowingFactor = 1 - progress * 0.4;
             const adjustedX = ripCenterX + xOffset * narrowingFactor;
             
-            const alpha = 0.7 - flowOffset * 0.5;
+            // Vary alpha for more dynamic appearance
+            const alpha = 0.7 - flowOffset * 0.5 + Math.sin(time * 2 + j) * 0.1;
             
             // Draw flow particle
             ctx.globalAlpha = alpha;
@@ -1127,6 +1195,8 @@
             ctx.moveTo(adjustedX, yStart);
             ctx.lineTo(adjustedX, yEnd);
             ctx.stroke();
+            
+            // Remove small foam particles
           }
         }
         
@@ -1175,8 +1245,8 @@
   
   .container-small {
     position: relative;
-    width: 800px;
-    height: 500px;
+    width: 1024px;
+    height: 640px;
     overflow: hidden;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -1195,66 +1265,45 @@
   .scenario-tabs {
     position: absolute;
     top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 20px;
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 12px;
     z-index: 20;
     background: rgba(0,0,0,0.5);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    padding: 8px;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     width: auto;
-    min-width: 300px;
+    min-width: 220px;
   }
   
   .scenario-tab {
-    flex: 1;
-    padding: 10px 15px;
+    width: 100%;
+    padding: 12px 18px;
     background-color: rgba(255,255,255,0.1);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
     white-space: nowrap;
     text-align: center;
   }
   
   .scenario-tab.active {
     background-color: var(--primary);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    border: 2px solid var(--primary-dark);
   }
   
-  .story-title {
-    position: absolute;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 20px;
-    background: rgba(0,0,0,0.7);
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    width: 80%;
+  .scenario-tab.highlight {
+    position: relative;
     z-index: 10;
-    border-left: 4px solid var(--primary);
-    transition: all 0.3s ease;
-  }
-  
-  .story-title h2 {
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0;
-    line-height: 1.4;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: all 0.3s ease;
+    border: 2px solid var(--success);
   }
   
   .step-indicator {
@@ -1308,8 +1357,8 @@
     background-color: rgba(255,255,255,0.1);
     color: white;
     border: none;
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -1320,27 +1369,42 @@
   
   .button:hover {
     background-color: rgba(255,255,255,0.2);
-    transform: translateY(-2px);
   }
   
   .button:active {
-    transform: translateY(0);
+    /* No transform */
   }
   
   .button svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .button-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+  
+  .next-icon {
     width: 16px;
     height: 16px;
+    margin-left: 6px;
   }
   
   .button.next-step {
     background-color: var(--primary);
-    width: 48px;
-    height: 48px;
+    width: auto;
+    height: 56px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .button.next-step:hover {
     background-color: var(--primary-dark);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
   }
   
   .area-label {
@@ -1373,38 +1437,38 @@
     bottom: 130px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 8px 16px;
-    border-radius: 30px;
+    padding: 6px 12px;
+    border-radius: 20px;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
     z-index: 15;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     opacity: 0;
     transition: opacity 0.3s ease;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 80%;
+    max-width: 70%;
   }
   
   .approach-indicator.correct {
-    background-color: rgba(16, 185, 129, 0.2);
+    background-color: rgba(16, 185, 129, 0.15);
     color: var(--success);
-    border: 2px solid var(--success);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    border: 1px solid var(--success);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
   }
   
   .approach-indicator.incorrect {
-    background-color: rgba(239, 68, 68, 0.2);
+    background-color: rgba(239, 68, 68, 0.15);
     color: var(--danger);
-    border: 2px solid var(--danger);
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    border: 1px solid var(--danger);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
   }
   
   .approach-indicator.visible {
@@ -1421,6 +1485,54 @@
     animation: pulse 2s infinite ease-in-out;
   }
   
+  /* Prompt styles */
+  .try-correct-prompt {
+    position: absolute;
+    top: 120px;
+    right: 20px;
+    background-color: rgba(16, 185, 129, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: bounce-in 0.5s ease;
+    z-index: 25;
+  }
+  
+  .prompt-arrow {
+    width: 20px;
+    height: 20px;
+    animation: pulse-arrow 1s infinite;
+  }
+  
+  @keyframes pulse-arrow {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(5px);
+    }
+  }
+  
+  @keyframes bounce-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(-10px);
+    }
+    70% {
+      transform: scale(1.05) translateY(0);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
   /* Responsive adjustments */
   @media (max-width: 850px) {
     .container-small {
@@ -1430,9 +1542,9 @@
     
     .scenario-tabs {
       top: 15px;
-      width: 90%;
-      min-width: unset;
-      flex-direction: row;
+      right: 15px;
+      width: auto;
+      min-width: 180px;
       gap: 6px;
       padding: 6px;
     }
@@ -1444,17 +1556,11 @@
       white-space: normal;
     }
   
-    .story-title {
-      top: 70px;
-      width: 90%;
-      padding: 8px 15px;
+    .step-dot {
+      width: 10px;
+      height: 10px;
     }
-  
-    .story-title h2 {
-      font-size: 14px;
-      white-space: normal;
-    }
-  
+    
     .approach-indicator {
       bottom: 120px;
       font-size: 12px;
@@ -1473,13 +1579,19 @@
     }
     
     .button.next-step {
-      width: 42px;
+      width: auto;
       height: 42px;
+      padding: 0 16px;
     }
     
-    .step-dot {
-      width: 10px;
-      height: 10px;
+    .button-text {
+      font-size: 14px;
+    }
+    
+    .next-icon {
+      width: 12px;
+      height: 12px;
+      margin-left: 4px;
     }
   }
   </style>
