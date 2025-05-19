@@ -989,9 +989,9 @@ export default {
         return;
       }
       
-      // Always update isScrolled for other components that might need it
+      // Always keep isScrolled as false to maintain the dark transparent navbar
       const wasScrolled = this.isScrolled;
-      this.isScrolled = currentScrollPosition > scrollThreshold;
+      this.isScrolled = false;
       
       // Determine if the navbar should be shown or hidden based on scroll direction
       // Show navbar when scrolling up, hide when scrolling down (beyond threshold)
@@ -1979,31 +1979,31 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 
 /* Clean navbar when scrolled with subtle shadow */
 .navbar-wrapper.scrolled {
-  background: rgba(0, 0, 0, 0.85) !important; /* Dark transparent background */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important; /* Add subtle shadow */
-  backdrop-filter: blur(8px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 1); /* Solid white background */
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1); /* Simple border-like shadow */
+  backdrop-filter: none; /* No blur */
+  border-bottom: none; /* No border */
 }
 .navbar-wrapper.scrolled .navbar {
-  background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: transparent;
+  border-bottom: 1px solid rgba(1, 79, 134, 0.1);
 }
-/* keep logo colours white */
+/* Logo colors for light theme */
 .navbar-wrapper.scrolled .logo-water,
 .navbar-wrapper.scrolled .logo-family,
 .navbar-wrapper.scrolled .logo-wise {
-  color: #ffffff !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  color: #333;
+  text-shadow: none;
 }
-/* keep tab colours white */
+/* Tab colors for light theme */
 .navbar-wrapper.scrolled .navbar-tab,
 .navbar-wrapper.scrolled .navbar-tab.active {
-  color: rgba(255, 255, 255, 0.7) !important; /* subtle, no highlight */
+  color: rgba(1, 59, 111, 0.7); /* darker blue for light bg */
 }
 .navbar-wrapper.scrolled .navbar-tab::after,
 .navbar-wrapper.scrolled .navbar-tab.active::after {
-  background-color: transparent !important; /* remove underline */
-  height: 0 !important;
+  background-color: transparent; /* remove underline */
+  height: 0;
 }
 
 .navbar {
@@ -2057,14 +2057,14 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   opacity: 0.9;
 }
 .navbar-wrapper.scrolled .logo-water {  
-  color: #ffffff !important;
+  color: #333;
 }
 .navbar-wrapper.scrolled .logo-wise {  
-  color: #44ccff !important;  
-  text-shadow: 0 0 10px rgba(68, 204, 255, 0.5) !important;
+  color: #014f86;  
+  text-shadow: none;
 }
 .navbar-wrapper.scrolled .logo-family {  
-  color: #ffffff !important;  
+  color: #333;  
   opacity: 0.9;
 }
 
@@ -2668,51 +2668,50 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   display: none;
 }
 
-/* Enhanced navbar when scrolled - keeping dark theme consistent */
+/* Enhanced navbar when scrolled - light theme */
 .navbar-wrapper.scrolled {
-  background: rgba(0, 0, 0, 0.85) !important; /* Dark transparent background */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important; /* Add subtle shadow */
-  backdrop-filter: blur(8px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 1); /* Solid white */
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1); /* Simple border-like shadow */
+  backdrop-filter: none; /* No blur */
+  border-bottom: none; /* No border */
 }
 
 .navbar-wrapper.scrolled .navbar {
-  background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: transparent;
+  border-bottom: 1px solid rgba(1, 79, 134, 0.1);
 }
 
 .navbar-wrapper.scrolled .logo-link {
-  color: #ffffff !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  color: #014f86;
+  text-shadow: none;
 }
 
 .navbar-wrapper.scrolled .navbar-tab {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: rgba(1, 59, 111, 0.7);
 }
 
 .navbar-wrapper.scrolled .navbar-tab:hover {
-  color: #ffffff !important;
+  color: #014f86;
 }
 
 .navbar-wrapper.scrolled .navbar-tab.active {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+  color: #014f86;
+  font-weight: 600;
 }
 
 .navbar-wrapper.scrolled .navbar-tab::after {
-  display: none !important;
-  background-color: transparent !important;
-  height: 0 !important;
+  display: none;
+  background-color: transparent;
 }
 
 .navbar-wrapper.scrolled .navbar-tab:hover::after {
-  display: none !important;
-  background-color: transparent !important;
+  display: none;
+  background-color: transparent;
 }
 
 .navbar-wrapper.scrolled .navbar-tab.active::after {
-  display: none !important;
-  background-color: transparent !important;
+  display: none;
+  background-color: transparent;
 }
 
 /* Navbar search transitions */
@@ -7700,5 +7699,22 @@ overflow: hidden;
 }
 
 /* === Ensure navbar tabs styling when scrolled === */
-/* All styling for navbar tabs is now consolidated in the navbar section above */
+/* Default subtle style for all tabs when scrolled */
+.navbar-wrapper.scrolled .navbar-tab {
+  color: rgba(1, 59, 111, 0.7);
+}
+/* Highlight only the active tab */
+.navbar-wrapper.scrolled .navbar-tab.active {
+  color: #014f86;
+  font-weight: 600;
+}
+/* No underlines for any tabs */
+.navbar-wrapper.scrolled .navbar-tab::after,
+.navbar-wrapper.scrolled .navbar-tab.active::after,
+.navbar-wrapper.scrolled .navbar-tab:not(.active)::after {
+  display: none;
+  background-color: transparent;
+  height: 0;
+  width: 0;
+}
 </style>
