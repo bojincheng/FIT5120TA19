@@ -739,14 +739,7 @@ h1 {
   cursor: not-allowed;
 }
 
-.options-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  width: 100%;
-  margin-bottom: 1.5rem;
-  perspective: 1000px;
-}
+.options-container {  display: grid;  grid-template-columns: repeat(2, minmax(0, 1fr));  gap: 1.5rem;  width: 100%;  margin-bottom: 1.5rem;  perspective: 1000px;  max-width: 100%;  overflow-x: hidden;}
 
 .option-wrapper {
   display: flex;

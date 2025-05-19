@@ -289,7 +289,7 @@ def process_image():
             api_key = os.getenv('ROBOFLOW_API_KEY')
             
             # Get confidence and overlap parameters from request or use defaults
-            confidence = request.args.get('confidence', '0.05')
+            confidence = request.args.get('confidence', '0.5')
             overlap = request.args.get('overlap', '0.5')
             
             # Convert string to float if needed
@@ -346,7 +346,7 @@ def process_camera_image():
         api_key = os.getenv('ROBOFLOW_API_KEY')
         
         # Get confidence and overlap parameters from request or use defaults
-        confidence = request.args.get('confidence', '0.05')
+        confidence = request.args.get('confidence', '0.5')
         overlap = request.args.get('overlap', '0.5')
         
         # Convert string to float if needed

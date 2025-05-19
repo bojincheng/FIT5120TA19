@@ -1,25 +1,121 @@
 <template>
   <div class="beach-home-container" :class="{ 'immediate-display': isDirectTransition }">
     <!-- Custom Navigation Bar -->
-    <div class="navbar-wrapper" :class="{ 'scrolled': isScrolled && navbarDynamicEnabled }">
+    <div class="navbar-wrapper" :class="{ 'scrolled': isScrolled && navbarDynamicEnabled, 'hidden': isNavbarHidden }">
       <nav class="navbar">
         <div class="navbar-content">
           <!-- Logo on left -->
           <div class="navbar-logo">
-            <router-link to="/" class="logo-link">WaterWiseFamily</router-link>
+            <router-link to="/" class="logo-link">
+              <span class="logo-water">Water</span><span class="logo-wise">Wise</span><span class="logo-family">Family</span>
+            </router-link>
           </div>
           
-          <!-- Navigation tabs in middle -->
+          <!-- Navigation tabs in middle -->          
           <div class="navbar-tabs">
-            <router-link 
-              v-for="tab in tabs" 
-              :key="tab.path" 
-              :to="tab.path" 
-              class="navbar-tab" 
-              active-class="active"
-            >
-              <span class="tab-text">{{ tab.name }}</span>
-            </router-link>
+            <!-- Beach tab with dropdown -->
+            <div class="navbar-tab-dropdown">
+              <router-link 
+                to="/beach" 
+                class="navbar-tab" 
+                active-class="active"
+              >
+                <span class="tab-text">BEACH</span>
+                <span class="dropdown-arrow">▼</span>
+              </router-link>
+              <div class="dropdown-menu">
+                <div class="menu-section">
+                  <div class="menu-section-header">Interactive Features</div>
+                  <a href="#" @click.prevent="showRipIdentifierPopup = true; document.body.style.overflow = 'hidden';" class="dropdown-item highlight-item">
+                    <span class="highlight-icon">✹</span>
+                    Rip Current Identifier
+                  </a>
+                  <a href="#" @click.prevent="showRipCurrentQuiz" class="dropdown-item highlight-item">
+                    <span class="highlight-icon">✹</span>
+                    Rip Safety Quiz
+                  </a>
+                </div>
+                
+                <div class="menu-divider"></div>
+                
+                <div class="menu-section">
+                  <div class="menu-section-header">Safety Information</div>
+                  <a href="#" @click.prevent="navigateToSection('sandy-content-section')" class="dropdown-item">
+                    Lowering Your Risk
+                  </a>
+                  <a href="#" @click.prevent="navigateToSection('rescue-content-section')" class="dropdown-item">
+                    Emergency Response
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pool tab with dropdown -->
+            <div class="navbar-tab-dropdown">
+              <router-link 
+                to="/pool" 
+                class="navbar-tab" 
+                active-class="active"
+              >
+                <span class="tab-text">POOL</span>
+                <span class="dropdown-arrow">▼</span>
+              </router-link>
+              <div class="dropdown-menu">
+                <div class="menu-section">
+                  <div class="menu-section-header">Interactive Features</div>
+                  <a href="#" @click.prevent="openQuizPopup" class="dropdown-item highlight-item">
+                    <span class="highlight-icon">✹</span>
+                    Pool Safety Quiz
+                  </a>
+                </div>
+                
+                <div class="menu-divider"></div>
+                
+                <div class="menu-section">
+                  <div class="menu-section-header">Safety Information</div>
+                  <router-link to="/pool#heroSection" class="dropdown-item highlight-item">
+                    <span class="highlight-icon">✹</span>
+                    Fence Regulations
+                  </router-link>
+                  <router-link to="/pool#keySteps" class="dropdown-item">
+                    Steps to a Safer Pool
+                  </router-link>
+                </div>
+              </div>
+            </div>
+            
+            <!-- River tab with dropdown -->
+            <div class="navbar-tab-dropdown">
+              <router-link 
+                to="/river" 
+                class="navbar-tab" 
+                active-class="active"
+              >
+                <span class="tab-text">RIVER</span>
+                <span class="dropdown-arrow">▼</span>
+              </router-link>
+              <div class="dropdown-menu">
+                <div class="menu-section">
+                  <div class="menu-section-header">Interactive Features</div>
+                  <a href="#" @click.prevent="showRiverSafetyQuiz" class="dropdown-item highlight-item">
+                    <span class="highlight-icon">✹</span>
+                    River Simulation
+                  </a>
+                </div>
+                
+                <div class="menu-divider"></div>
+                
+                <div class="menu-section">
+                  <div class="menu-section-header">Safety Information</div>
+                  <router-link to="/river#criticalPrecautions" class="dropdown-item">
+                    Critical Precautions
+                  </router-link>
+                  <router-link to="/river?section=rescue#rescueResponse" class="dropdown-item">
+                    Rescue Response
+                  </router-link>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- Right side space -->
@@ -109,7 +205,8 @@
             :initialTab="beachToolTab" 
             :initialSearchValue="beachSearchQuery" 
             :initialHomeBeach="homeBeach" 
-            :initialCompareBeach="compareBeach" />
+            :initialCompareBeach="compareBeach"
+            :isPopup="true" />
         </div>
       </div>
       
@@ -194,7 +291,7 @@
   </div>
   
   <!-- Sandy colored content section -->
-  <div class="sandy-content-section">
+  <div id="sandy-content-section" class="sandy-content-section">
     <!-- Left-aligned heading for sandy section -->
     <div class="section-heading">
       <span class="section-label">Beach awareness</span>
@@ -286,7 +383,7 @@
   </div>
   
   <!-- Aqua colored rescue section -->
-  <div class="rescue-content-section">
+  <div id="rescue-content-section" class="rescue-content-section">
     <!-- Left-aligned heading for rescue section -->
     <div class="section-heading">
       <span class="section-label">Water safety</span>
@@ -424,12 +521,66 @@
       </div>
     </div>
   </div>
+  
+  <!-- Pool Safety Quiz popup -->
+  <div v-if="showPoolQuizPopup" class="rip-simulation-overlay" @click.self="closePoolQuiz">
+    <div class="rip-simulation-container quiz-container">
+      <div class="rip-simulation-header">
+        <h3>Pool Safety Quiz</h3>
+        <button class="close-button" @click="closePoolQuiz" aria-label="Close">
+          <span class="close-icon"></span>
+        </button>
+      </div>
+      <div class="rip-simulation-content">
+        <PoolSafetyQuiz />
+      </div>
+    </div>
+  </div>
+  
+  <!-- River Safety Quiz popup -->
+  <div v-if="showRiverQuizPopup" class="rip-simulation-overlay" @click.self="closeRiverQuiz">
+    <div class="rip-simulation-container quiz-container">
+      <div class="rip-simulation-header">
+        <h3>River Safety Quiz</h3>
+        <button class="close-button" @click="closeRiverQuiz" aria-label="Close">
+          <span class="close-icon"></span>
+        </button>
+      </div>
+      <div class="rip-simulation-content">
+        <RiverSafetyQuiz />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Rip Identifier Results popup -->
+  <div v-if="showRipIdentifierPopup" class="rip-simulation-overlay" @click.self="closeRipIdentifier">
+    <div class="rip-simulation-container">
+      <div class="rip-simulation-header">
+        <h3>Rip Current Identification</h3>
+        <button class="close-button" @click="closeRipIdentifier" aria-label="Close">
+          <span class="close-icon"></span>
+        </button>
+      </div>
+      <div class="rip-simulation-content">
+        <BeachComparisonTool 
+          ref="ripIdentifierPopup" 
+          :initialTab="'ripIdentifier'" 
+          :initialSearchValue="beachSearchQuery" 
+          :initialHomeBeach="homeBeach" 
+          :initialCompareBeach="compareBeach"
+          :ripImage="uploadedImage"
+          :isPopup="true" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import VideoPopup from './VideoPopup.vue';
 import RipEscapeSimulation from '../RipEscapeSimulation.vue';
 import RipCurrentQuiz from '../components/RipCurrentQuiz.vue';
+import PoolSafetyQuiz from '../PoolSafetyQuiz.vue';
+import RiverSafetyQuiz from './RiverSafetyQuiz.vue';
 import BeachComparisonTool from './BeachComparisonTool.vue';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -443,25 +594,26 @@ export default {
     VideoPopup,
     RipEscapeSimulation,
     RipCurrentQuiz,
+    PoolSafetyQuiz,
+    RiverSafetyQuiz,
     BeachComparisonTool
   },
   data() {
     return {
       isDirectTransition: false,
       isScrolled: false,
+      isNavbarHidden: false,
+      lastScrollPosition: 0,
       // Properties for compact tool management
       compactToolOpen: false,
       selectedCompactOption: 0,
       searchOptions: ['Rip Identifier', 'Search Beach', 'Compare Beaches'],
       searchOptionsEmojis: ['🌊', '🔍', '⚖️'],
-      tabs: [
-        { name: 'Beach', path: '/beach' },
-        { name: 'Pool', path: '/pool' },
-        { name: 'River', path: '/river' }
-      ],
       // Data properties for beach tool
       uploadedImage: null,
       beachSearchQuery: '',
+      homeBeach: '', // Added missing property
+      compareBeach: '', // Added missing property
       // Flag to temporarily disable navbar dynamic behavior
       navbarDynamicEnabled: false, // Set to false to disable dynamic navbar
       // ScrollTrigger references
@@ -474,6 +626,12 @@ export default {
       showRipSimulation: false,
       // Rip current quiz popup
       showRipCurrentQuizPopup: false,
+      // Pool quiz popup
+      showPoolQuizPopup: false,
+      // River quiz popup
+      showRiverQuizPopup: false,
+      // Rip identifier popup
+      showRipIdentifierPopup: false,
       // Beach tool initial tab - setting default to ripIdentifier
       beachToolTab: 'ripIdentifier'
     }
@@ -495,15 +653,28 @@ export default {
       delete window.__beachDirectTransition;
     }
     
-    // Add smooth scrolling behavior to document if needed
-    if (!('scrollBehavior' in document.documentElement.style)) {
-      this.addSmoothScrollPolyfill();
-    }
+    // Watch for route changes to handle hash navigation
+    this.$watch(
+      () => this.$route.hash,
+      (newHash) => {
+        if (newHash) {
+          this.scrollToElement(newHash);
+        }
+      },
+      { immediate: true } // Run immediately for the initial route
+    );
   },
   mounted() {
     // Remove query parameter without reloading
     if (this.$route.query.direct) {
-      this.$router.replace({ path: '/beach' });
+      // Preserve hash if present
+      const hash = this.$route.hash;
+      this.$router.replace({ path: '/beach' + hash });
+    }
+    
+    // Check if there's a hash in the URL and scroll to that element
+    if (this.$route.hash) {
+      this.scrollToElement(this.$route.hash);
     }
     
     // Add scroll event listener for navbar transformation
@@ -579,6 +750,14 @@ export default {
       }
     },
     
+    // Add a method to close the rip identifier popup
+    closeRipIdentifier() {
+      this.showRipIdentifierPopup = false;
+      
+      // Re-enable page scrolling
+      document.body.style.overflow = '';
+    },
+    
     // Add a method to close the simulation popup
     closeRipSimulation() {
       this.showRipSimulation = false;
@@ -602,6 +781,41 @@ export default {
       // Re-enable page scrolling
       document.body.style.overflow = '';
     },
+    
+    // Close the pool quiz popup
+    closePoolQuiz() {
+      this.showPoolQuizPopup = false;
+      
+      // Re-enable page scrolling
+      document.body.style.overflow = '';
+    },
+    
+    // Close the river quiz popup
+    closeRiverQuiz() {
+      this.showRiverQuizPopup = false;
+      
+      // Re-enable page scrolling
+      document.body.style.overflow = '';
+    },
+    
+        // Method to show the river safety quiz
+    showRiverSafetyQuiz() {
+      // Show river quiz popup directly on beach page
+      this.showRiverQuizPopup = true;
+      
+      // Prevent page scrolling when popup is open
+      document.body.style.overflow = 'hidden';
+    },
+    
+    // Method to open the pool safety quiz
+    openQuizPopup() {
+      // Show pool quiz popup directly on beach page
+      this.showPoolQuizPopup = true;
+      
+      // Prevent page scrolling when popup is open
+      document.body.style.overflow = 'hidden';
+    },
+    
     triggerVideoAnimation(event, videoSrc, videoTitle) {
       // Get the parent image container
       const imageContainer = event.target.closest('.image-mask');
@@ -766,18 +980,36 @@ export default {
       }
     },
     handleScroll() {
-      // Still track scroll position but only apply visual changes if dynamic navbar is enabled
-      const scrollPosition = window.scrollY;
+      // Get current scroll position
+      const currentScrollPosition = window.scrollY;
       const scrollThreshold = 150;
+      
+      // Determine scroll direction
+      if (currentScrollPosition < 0) {
+        return;
+      }
       
       // Always update isScrolled for other components that might need it
       const wasScrolled = this.isScrolled;
-      this.isScrolled = scrollPosition > scrollThreshold;
+      this.isScrolled = currentScrollPosition > scrollThreshold;
+      
+      // Determine if the navbar should be shown or hidden based on scroll direction
+      // Show navbar when scrolling up, hide when scrolling down (beyond threshold)
+      if (currentScrollPosition > this.lastScrollPosition && !this.isNavbarHidden && currentScrollPosition > 200) {
+        // Scrolling down and navbar is visible - hide it
+        this.isNavbarHidden = true;
+      } else if (currentScrollPosition < this.lastScrollPosition && this.isNavbarHidden) {
+        // Scrolling up and navbar is hidden - show it
+        this.isNavbarHidden = false;
+      }
       
       // Only reset compact tool state if dynamic navbar is enabled
       if (this.navbarDynamicEnabled && wasScrolled && !this.isScrolled) {
         this.resetCompactToolState();
       }
+      
+      // Update last scroll position
+      this.lastScrollPosition = currentScrollPosition;
     },
     applyRoundedCorners() {
       // Ensure the rounded corners are applied consistently across all sections
@@ -806,16 +1038,34 @@ export default {
         }
       });
     },
-    addSmoothScrollPolyfill() {
-      // Very simple smooth scroll polyfill for browsers that don't support scroll-behavior
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          e.preventDefault();
-          document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
-          });
-        });
+    scrollToElement(hash) {
+      // Remove the '#' character from the hash
+      const targetId = hash.substring(1);
+      // Wait for next tick to ensure DOM is updated
+      this.$nextTick(() => {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          // Use a short delay to ensure everything is rendered
+          setTimeout(() => {
+            // Scroll to the element with smooth behavior
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+            console.log(`Scrolled to element with ID: ${targetId}`);
+          }, 100);
+        } else {
+          console.error(`Element with ID ${targetId} not found`);
+        }
       });
+    },
+    
+    navigateToSection(sectionId) {
+      // First update the URL hash (for bookmarking purposes)
+      this.$router.push({ path: '/beach', hash: '#' + sectionId });
+      
+      // Then scroll to the element
+      this.scrollToElement('#' + sectionId);
     },
     resetCompactToolState() {
       // Close any open compact tool
@@ -850,40 +1100,79 @@ export default {
       }
     },
     triggerFileUpload() {
-      // Trigger file input click
+      // Trigger file input click from the compact toolbar
       this.$refs.fileInput.click();
+      
+      // Use the popup approach rather than inline results for consistency
+      // We'll set the popup flag (the actual upload and analysis happens in handleImageUpload)
+      this.showRipIdentifierPopup = true;
+      
+      // Prevent page scrolling when popup is open
+      document.body.style.overflow = 'hidden';
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
       if (file) {
         this.uploadedImage = URL.createObjectURL(file);
         
-        // Set the tab to ripIdentifier and pass data to the integrated tool
+        // Immediately show the rip identifier popup
+        this.showRipIdentifierPopup = true;
+        
+        // Prevent page scrolling when popup is open
+        document.body.style.overflow = 'hidden';
+        
+        // Set the tab to ripIdentifier
         this.beachToolTab = 'ripIdentifier';
         
-        // Use nextTick to ensure the component is rendered before calling its methods
+        // Use nextTick to ensure the popup component is rendered before processing
         this.$nextTick(() => {
-          if (this.$refs.beachTool) {
-            // Pass the image to the BeachComparisonTool for analysis
-            this.$refs.beachTool.ripImage = this.uploadedImage;
+          if (this.$refs.ripIdentifierPopup) {
+            console.log('Passing image to ripIdentifierPopup in popup mode');
+            // Pass the image to the popup BeachComparisonTool instance
+            this.$refs.ripIdentifierPopup.ripImage = this.uploadedImage;
+            
+            // Slight delay to ensure image is properly loaded in the component
+            setTimeout(() => {
+              // Trigger the analysis
+              console.log('Triggering analyzeRipImage in popup mode');
+              this.$refs.ripIdentifierPopup.analyzeRipImage();
+            }, 300);
+          } else {
+            console.error('ripIdentifierPopup ref not found');
           }
-        });
-        
-        // Adjust container height when image is added
-        this.$nextTick(() => {
-          this.adjustFirstPageHeight();
         });
       }
     },
     analyzeImage() {
       console.log('Analyzing image for rips');
-      // Pass control to the BeachComparisonTool's analyze function
-      if (this.$refs.beachTool && this.uploadedImage) {
-        this.beachToolTab = 'ripIdentifier';
-        this.$nextTick(() => {
-          this.$refs.beachTool.analyzeRipImage();
-        });
+      
+      if (!this.uploadedImage) {
+        console.error('No image to analyze');
+        return;
       }
+      
+      // Show the rip identifier popup
+      this.showRipIdentifierPopup = true;
+      
+      // Prevent page scrolling when popup is open
+      document.body.style.overflow = 'hidden';
+      
+      // Pass control to the popup BeachComparisonTool's analyze function
+      this.$nextTick(() => {
+        if (this.$refs.ripIdentifierPopup) {
+          console.log('Passing image to ripIdentifierPopup in popup mode from analyzeImage');
+          // Pass the image to the popup component
+          this.$refs.ripIdentifierPopup.ripImage = this.uploadedImage;
+          
+          // Add a small delay to ensure image is loaded
+          setTimeout(() => {
+            console.log('Triggering analyzeRipImage in popup mode from analyzeImage');
+            this.$refs.ripIdentifierPopup.analyzeRipImage();
+          }, 300);
+        } else {
+          console.error('ripIdentifierPopup ref not found in analyzeImage');
+        }
+      });
     },
     searchBeach() {
       console.log('Searching for beach:', this.beachSearchQuery);
@@ -1454,6 +1743,7 @@ export default {
   background-size: 130% auto;
   background-position: 0% center;
   background-attachment: fixed;
+  max-width: 100vw; /* Ensure it doesn't overflow horizontally when zoomed */
 }
 
 /* Hero section - full viewport height with extra space at bottom for overlap */
@@ -1470,6 +1760,9 @@ export default {
   z-index: 5;
   transition: none;
   flex-grow: 1; /* Allow this to grow to fill available space */
+  width: 100%; /* Ensure full width at all zoom levels */
+  max-width: 100%; /* Prevent content overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Hero section overlay */
@@ -1512,6 +1805,12 @@ export default {
   transform: none;
   overflow: hidden;
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+  width: 100%; /* Ensure full width */
+  max-width: 100vw; /* Prevent overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
+  
+  /* Better structure for the content section */
+  flex-wrap: wrap;
 }
 
 /* Sandy colored section with curved edges */
@@ -1532,6 +1831,9 @@ export default {
   transform: none;
   overflow: hidden;
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+  width: 100%; /* Ensure full width */
+  max-width: 100vw; /* Prevent overflow */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Smooth transition for white section with no dark background */
@@ -1628,49 +1930,61 @@ export default {
 
 /* Left-aligned heading styles - clean approach */
 .section-heading {
-  width: 45%;
+  width: 40%;
   text-align: left;
   padding-left: 4%;
+  padding-right: 3%; /* Increased right padding */
   margin-top: 3%;
   opacity: 1; /* No fade in */
   position: relative;
+  box-sizing: border-box; /* Include padding in width calculation */
+  max-width: 100%; /* Prevent overflow */
+  overflow: visible; /* Allow content to be visible */
 }
 
 .section-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* Increased from 0.75rem */
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: rgba(1, 79, 134, 0.6);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-weight: 500;
 }
 
 .section-title {
   color: #014f86; /* Deep blue color */
-  font-size: 3.2rem;
+  font-size: calc(1.8rem + 0.9vw); /* Increased from 1.6rem + 0.8vw */
   font-weight: 800;
   line-height: 1.2;
   text-align: left;
   position: relative;
-  display: inline-block;
+  display: block;
   letter-spacing: -0.02em;
   font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+  max-width: 100%; /* Ensure text doesn't overflow container */
+  word-wrap: break-word; /* Allow long words to break */
+  overflow-wrap: break-word; /* Modern version of word-wrap */
+  hyphens: auto; /* Allow hyphenation */
+  white-space: normal; /* Ensure text wraps naturally */
 }
 
 /* Tagline styling inspired by the clean, modern design in the reference image */
 .section-tagline {
-  font-size: 1.7rem;
+  font-size: calc(1.1rem + 0.45vw); /* Increased from 0.95rem + 0.4vw */
   line-height: 1.5;
   color: #333;
   font-weight: 500;
-  margin-top: 10px;
-  margin-bottom: 30px;
-  max-width: 95%;
+  margin-top: 8px;
+  margin-bottom: 25px;
+  max-width: 100%;
   opacity: 0.85;
   position: relative;
   font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  word-wrap: break-word; /* Allow long words to break */
+  overflow-wrap: break-word; /* Modern version of word-wrap */
+  white-space: normal; /* Ensure text wraps naturally */
 }
 
 /* Clean minimal underline */
@@ -1700,6 +2014,7 @@ export default {
   font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: all 0.3s ease; /* Smooth transition */
   backdrop-filter: none;
+  max-width: 100vw; /* Prevent overflow */
 }
 
 /* Clean navbar when scrolled with subtle shadow */
@@ -1817,6 +2132,7 @@ export default {
   animation: fadeIn 0.5s ease-out forwards;
   margin-left: 0; /* Removed left margin to move more to the left */
   text-align: left;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .dynamic-headline {
@@ -1829,6 +2145,9 @@ export default {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   margin-bottom: 0.8rem;
   text-align: left;
+  width: 100%; /* Ensure full width */
+  max-width: 100%; /* Prevent overflow */
+  word-wrap: break-word; /* Allow long words to break */
 }
 
 .text-line {
@@ -1836,8 +2155,10 @@ export default {
   transform: translateY(15px);
   animation: fadeInUp 0.6s ease-out forwards;
   margin-bottom: 0.3rem;
-  white-space: nowrap;
+  white-space: normal; /* Allow text to wrap on small screens/high zoom */
   text-align: left;
+  width: 100%; /* Ensure full width */
+  max-width: 100%; /* Prevent overflow */
 }
 
 .text-line:nth-child(1) {
@@ -3154,14 +3475,27 @@ export default {
 
 /* Beach images comparison container styling */
 .beach-images-comparison {
-  position: absolute;
-  top: 100px;
-  right: 2%;
-  width: 52%; /* Set to 52% for optimal visibility */
+  position: relative;
+  margin: 20px auto;
+  width: 90%; /* Increased for better responsiveness */
+  max-width: 800px; /* Set a max-width for large screens */
   border-radius: 18px;
   overflow: visible; /* Changed from hidden to allow hotspot info to display */
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
   z-index: 10;
+  box-sizing: border-box; /* Include padding in width calculation */
+  max-height: 90vh; /* Prevent excessive height at high zoom */
+}
+
+@media (min-width: 992px) {
+  .beach-images-comparison {
+    position: absolute;
+    top: 100px;
+    right: 2%;
+    width: 50%; /* Reduced from 52% to avoid collision */
+    margin: 0;
+    max-width: 55%; /* Limit width to avoid collision */
+  }
 }
 
 .comparison-container {
@@ -3173,14 +3507,19 @@ export default {
 .image-container {
   position: relative;
   width: 100%;
-  overflow: hidden; /* Change from visible to hidden to ensure clean edges */
+  overflow: hidden; /* Hidden to ensure clean edges */
   border-radius: 18px 18px 0 0;
   margin-bottom: 0;
+  max-height: 80vh; /* Prevent extreme stretching at high zoom levels */
+  min-height: 300px; /* Ensure minimum height for visibility */
 }
 
 .comparison-image {
   width: 100%;
-  height: 490px; /* Increased height to match wider width */
+  height: auto; /* Changed from fixed height to auto */
+  aspect-ratio: 16/9; /* Added aspect ratio to maintain consistent proportions */
+  min-height: 280px; /* Minimum height for small screens */
+  max-height: 490px; /* Maximum height to prevent extreme stretching */
   object-fit: cover;
   display: block;
   border-top-left-radius: 18px;
@@ -3197,19 +3536,20 @@ export default {
   z-index: 2;
   border-right: 4px solid white; /* Thicker divider line */
   border-top-right-radius: 0; /* Ensure right top edge is squared */
+  max-width: 100%; /* Prevent slider from going beyond container width */
+  will-change: width; /* Optimize performance for animations */
 }
 
 .comparison-before img {
-  width: auto; /* Change from 100% to auto */
-  max-width: none; /* Allow image to be wider than container */
-  height: 100%; /* Keep full height */
+  width: 100%; /* Changed to 100% for better scaling */
+  height: 100%;
   position: absolute;
-  right: 0; /* Align to right edge for a square cut */
-  min-width: 100%; /* Ensure minimum width covers container */
+  top: 0;
+  right: 0;
   object-fit: cover; /* Maintain aspect ratio while covering */
   transform: none; /* Ensure no transform is applied */
   border-top-right-radius: 0; /* Ensure right top edge is squared */
-  clip-path: inset(0 0 0 0); /* Create a square cutout */
+  object-position: right center; /* Ensure image aligns properly */
 }
 
 .slider-handle {
@@ -3242,8 +3582,8 @@ export default {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 45px; /* Slightly larger for better visibility */
-  height: 45px;
+  width: clamp(30px, 5vw, 45px); /* Responsive size */
+  height: clamp(30px, 5vw, 45px); /* Responsive size */
   border-radius: 50%;
   background: white;
   transform: translate(-50%, -50%);
@@ -3289,7 +3629,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: clamp(10px, 2vw, 16px) clamp(15px, 3vw, 20px);
   background: #014f86;
   color: white;
   font-weight: 500;
@@ -3297,12 +3637,16 @@ export default {
   margin-top: 0;
   position: relative;
   gap: 10px;
+  flex-wrap: wrap; /* Allow wrapping on small screens or high zoom */
+  min-height: 60px; /* Ensure enough height when content wraps */
 }
 
 .comparison-label {
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 2.5vw, 1.5rem); /* Responsive font size */
   letter-spacing: 0.02em;
   font-weight: 600;
+  word-wrap: break-word; /* Allow long words to break */
+  max-width: 100%; /* Ensure text fits in container */
 }
 
 /* Responsive adjustments for beach images */
@@ -3321,13 +3665,23 @@ export default {
 @media (max-width: 992px) {
   .section-heading {
     width: 100%;
+    max-width: 600px;
+    margin-bottom: 40px;
   }
   .beach-images-comparison {
     position: relative;
     top: 0;
     right: 0;
     width: 95%;
+    max-width: 800px;
     margin: 40px auto 20px;
+    clear: both; /* Ensure it doesn't float next to text */
+  }
+  
+  /* Force vertical layout for the section content */
+  .elegant-content-section {
+    flex-direction: column;
+    align-items: center;
   }
 }
 
@@ -3450,13 +3804,14 @@ export default {
 
 .hotspot {
   position: absolute;
-  width: 40px;
-  height: 40px;
+  width: clamp(30px, 5%, 40px); /* Responsive width based on container size */
+  height: clamp(30px, 5%, 40px); /* Responsive height based on container size */
   cursor: pointer;
   z-index: 25; /* Increased z-index to ensure visibility */
   transition: opacity 0.3s ease, visibility 0.3s ease; /* Added transition for smooth fade effect */
   opacity: 1;
   visibility: visible;
+  transform: translate(-50%, -50%); /* Center the hotspot on its position */
 }
 
 .hotspot-dot {
@@ -3499,7 +3854,7 @@ export default {
 
 .hotspot-info {
   position: absolute;
-  width: 250px;
+  width: clamp(180px, 30vw, 250px); /* Responsive width based on viewport */
   background: rgba(255, 255, 255, 0.95);
   border-radius: 8px;
   padding: 15px 18px;
@@ -3512,27 +3867,29 @@ export default {
 }
 
 .hotspot-info.right {
-  left: 40px;
+  left: clamp(20px, 5vw, 40px);
   top: -60px;
 }
 
 .hotspot-info.left {
-  right: 40px;
+  right: clamp(20px, 5vw, 40px);
   top: -60px;
 }
 
 .hotspot-info h4 {
   margin: 0 0 8px;
   color: #014f86;
-  font-size: 1.4rem;
+  font-size: clamp(1rem, 2.5vw, 1.4rem); /* Responsive font size */
   font-weight: 700;
+  word-wrap: break-word;
 }
 
 .hotspot-info p {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: clamp(0.85rem, 2vw, 1.15rem); /* Responsive font size */
   line-height: 1.3;
   color: #333;
+  word-wrap: break-word;
 }
 
 .hotspot:hover .hotspot-dot {
@@ -3601,6 +3958,7 @@ export default {
   margin: 20px 0;
   padding: 0;
   max-width: 100vw; /* Allow full viewport width */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Modified safety item for new layout with image, content and text in bottom left */
@@ -3621,6 +3979,8 @@ export default {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.6);
+  box-sizing: border-box; /* Include padding in width calculation */
+  flex-wrap: wrap; /* Allow content to wrap on small screens/high zoom */
 }
 
 /* Image container for scroll animation */
@@ -4411,12 +4771,14 @@ export default {
 
 .rescue-card.centered-card {
   margin: 0;
-  right: -15%; /* Push much further beyond the right edge */
+  right: 5%;
   z-index: 10;
-  width: 60%; /* Keep width at 60% */
+  width: 40%;
   transform: none;
   max-height: none;
-  height: 520px;
+  height: 550px; /* Changed from auto to fixed height and increased */
+  aspect-ratio: auto; /* Removed fixed aspect ratio */
+  max-height: none; /* Removed max-height constraint */
   transition: none;
   animation: none;
   border-radius: 18px;
@@ -4434,21 +4796,24 @@ export default {
 
 @media (max-width: 992px) {
   .rescue-card.centered-card {
-    width: 60%;
-    right: -15%;
-    height: 450px;
+    width: 40%;
+    right: 5%;
+    height: 500px; /* Changed from auto to fixed taller height */
+    aspect-ratio: auto; /* Removed fixed aspect ratio */
   }
 }
 
 @media (max-width: 768px) {
   .rescue-card.centered-card {
-    width: 100%;
+    width: 75%;
     position: relative;
     top: 30px;
-    right: -5%; /* Slight offset on mobile */
+    right: 0;
     margin-left: auto;
     margin-right: 0;
-    height: 450px;
+    height: 450px; /* Changed from auto to fixed taller height */
+    aspect-ratio: auto; /* Removed fixed aspect ratio */
+    max-width: 600px;
     transform: none !important;
   }
   
@@ -4463,8 +4828,9 @@ export default {
 
 @media (max-width: 480px) {
   .rescue-card.centered-card {
-    width: 95%;
-    height: 350px;
+    width: 75%;
+    height: 400px; /* Changed from auto to fixed height */
+    aspect-ratio: auto; /* Removed fixed aspect ratio */
     margin: 0 auto;
   }
 }
@@ -5156,8 +5522,8 @@ export default {
 }
 
 .rip-simulation-container {
-  width: auto;
-  max-width: fit-content;
+  width: 98%;
+  max-width: 100%;
   background-color: rgba(17, 17, 17, 0.95);
   border-radius: 16px;
   overflow: hidden;
@@ -5485,17 +5851,21 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   padding-top: 0;
-  width: 51%;
+  width: 55%; /* Increased from 51% to give more horizontal space */
+  max-width: 650px; /* Added max-width to ensure adequate space */
 }
 
 .emergency-title {
-  font-size: 3.5rem;
+  font-size: calc(1.8rem + 0.8vw); /* Slightly reduced */
   font-weight: 800;
   color: #D32F2F;
-  margin-bottom: 30px;
+  margin-bottom: 25px; /* Reduced from 30px */
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.1;
   text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  white-space: nowrap; /* Changed from normal to nowrap */
+  width: 100%;
+  max-width: 100%;
 }
 
 .emergency-step {
@@ -5505,13 +5875,15 @@ export default {
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(211, 47, 47, 0.2);
   position: relative;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap; /* Changed from wrap to nowrap to prevent wrapping */
   width: 100%;
+  gap: 10px;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 .step-number {
-  width: 48px;
-  height: 48px;
+  width: 42px; /* Reduced from 48px */
+  height: 42px; /* Reduced from 48px */
   background-color: #D32F2F;
   color: white;
   border-radius: 50%;
@@ -5519,23 +5891,24 @@ export default {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.6rem;
-  margin-right: 20px;
+  font-size: 1.4rem; /* Reduced from 1.6rem */
+  margin-right: 15px; /* Reduced from 20px */
   flex-shrink: 0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .step-headline {
-  font-size: 2.2rem;
+  font-size: 1.7rem; /* Reduced from 2.2rem to fit better on one line */
   font-weight: 800;
   color: #D32F2F;
   margin-right: 12px;
   letter-spacing: -0.02em;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .step-brief {
-  font-size: 1.3rem;
+  font-size: 1.1rem; /* Reduced from 1.3rem to fit better on one line */
   color: #000;
   font-weight: 600;
   white-space: nowrap;
@@ -5747,45 +6120,51 @@ export default {
 /* Escape Steps Styling - similar to emergency steps but positioned left */
 .escape-steps {
   flex: 1;
-  margin-left: -12%; /* Shift further left beyond the section padding */
+  margin-left: 1%; /* Reduced from 4% to 1% to move further left */
   margin-right: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   padding-top: 0;
-  width: 38%; /* Increased width to fit single-line text */
-  position: absolute; /* Position absolutely to align with image */
-  left: 0; /* Align to left edge */
-  top: 0; /* Align to top of container */
+  padding-left: 0;
+  width: 55%;
+  max-width: 650px;
+  position: absolute;
+  left: 0;
+  top: 0;
   z-index: 20;
-  /* Center alignment for the button below steps */
-  align-items: center;
+  align-items: flex-start;
 }
 
 .escape-title {
-  font-size: 3.2rem;
+  font-size: calc(1.8rem + 0.8vw); /* Exactly match emergency-title */
   font-weight: 800;
   color: #D32F2F;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
+  margin-left: 0;
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.1;
   text-shadow: 0 2px 5px rgba(0,0,0,0.1);
   white-space: nowrap;
+  width: 100%; /* Changed from 90% to 100% to match emergency-title */
+  max-width: 100%;
+  text-transform: uppercase; /* Ensure it's uppercase like emergency-title */
 }
 
 .escape-step {
   display: flex;
   align-items: center;
   margin-bottom: 28px;
+  margin-left: 0; /* Removed margin-left to align with container */
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(211, 47, 47, 0.2);
   position: relative;
   flex-wrap: nowrap;
-  width: 100%;
-  white-space: nowrap; /* Ensure single-line text */
+  width: 90%;
+  white-space: nowrap;
   overflow: visible;
-  /* Make exactly like emergency-step */
   transition: transform 0.3s ease;
+  gap: 10px;
 }
 
 /* Animation delays removed - now handled by data-delay attributes */
@@ -5890,37 +6269,40 @@ export default {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.6rem;
-  margin-right: 20px;
+  font-size: 1.4rem; /* Reduced to match emergency steps */
+  margin-right: 15px; /* Reduced to match emergency steps */
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 42px; /* Reduced to match emergency steps */
+  height: 42px; /* Reduced to match emergency steps */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* Match emergency headline styling */
 .escape-step .step-headline {
-  font-size: 1.5rem;
+  font-size: 1.7rem; /* Same as emergency steps */
   font-weight: 800;
   color: #D32F2F;
   margin-right: 12px;
   letter-spacing: -0.02em;
   white-space: nowrap;
+  flex-shrink: 0;
+  text-transform: uppercase; /* Ensure text is uppercase like emergency steps */
 }
 
 /* Match emergency brief styling */
 .escape-step .step-brief {
-  font-size: 1.5rem;
+  font-size: 1.1rem; /* Same as emergency steps */
   color: #000;
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 1;
+  max-width: 100%;
 }
 
 /* Rip Simulation Test Button */
 .rip-simulation-button {
-  margin-top: 30px;
-  margin-left: 120px;
+  margin-top: 15px; /* Reduced from 30px to be closer to step 3 */
+  margin-left: 100px; /* Align with the step number + content start position */
   background: linear-gradient(135deg, #D32F2F, #F44336);
   color: white;
   border: 2px solid #ffffff;
@@ -6016,16 +6398,23 @@ export default {
 
 /* === Custom Overrides: Step Text Enhancements === */
 .step-headline,
-.step-brief {
+.step-brief,
+.escape-step .step-headline,
+.escape-step .step-brief {
   text-transform: uppercase;
 }
 
 .step-headline {
-  font-size: 1.5rem; /* Increased font size */
+  font-size: 1.7rem; /* Fixed size to match the escape-step headline */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .step-brief {
-  font-size: 1.5rem; /* Increased font size */
+  font-size: 1.1rem; /* Fixed size to match the escape-step brief */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 /* Emergency Steps Animation Enhancements - Glow effects removed */
@@ -6081,7 +6470,7 @@ export default {
   color: white;
   border-radius: 30px;
   padding: 6px 16px;
-  font-size: 0.85rem;
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem); /* Responsive font size */
   font-weight: 700;
   letter-spacing: 0.1em;
   white-space: nowrap;
@@ -6092,7 +6481,10 @@ export default {
   animation: textGlow 2.5s infinite alternate;
   z-index: 10;
   margin: 0 auto;
-  margin-left: 215px;
+  /* Center the text instead of using fixed margin */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 @keyframes textGlow {
@@ -6128,6 +6520,9 @@ export default {
   margin-bottom: 2rem;
   z-index: 5;
   position: relative;
+  box-sizing: border-box; /* Include padding in width calculation */
+  max-width: 100%; /* Prevent overflow */
+  flex-wrap: wrap; /* Allow tools to wrap on small screens/high zoom */
 }
 
 .integrated-beach-tool {
@@ -6135,6 +6530,7 @@ export default {
   max-width: 900px;
   max-height: 600px;
   overflow-y: auto;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 @media (max-width: 992px) {
@@ -6187,5 +6583,553 @@ export default {
     padding-top: 120px;
     padding-bottom: 140px;
   }
+}
+
+/* Dropdown styling */
+.navbar-tab-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  transform: translateY(-15px);
+  background-color: rgba(0, 0, 0, 0.98);
+  min-width: 320px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1001;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.navbar-tab-dropdown:hover .dropdown-menu {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.menu-section {
+  margin-bottom: 10px;
+  animation: fadeIn 0.5s ease forwards;
+  animation-delay: 0.1s;
+}
+
+.menu-section:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-section-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #44ccff;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 5px 0;
+  margin-bottom: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.menu-section-header:after {
+  content: '';
+  flex-grow: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(68, 204, 255, 0.3), rgba(68, 204, 255, 0));
+  margin-left: 10px;
+}
+
+.menu-section-header:before {
+  content: '●';
+  font-size: 8px;
+  margin-right: 6px;
+  color: #44ccff;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  padding: 14px 16px;
+  font-size: 1.1rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  position: relative;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 6px;
+  backdrop-filter: blur(5px);
+}
+
+.dropdown-item:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #44ccff, #0077cc);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-item:hover:before {
+  opacity: 1;
+  height: 100%;
+}
+
+.dropdown-item:active {
+  transform: translateY(-2px) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+.highlight-item {
+  background: linear-gradient(135deg, rgba(0, 123, 194, 0.35), rgba(0, 77, 128, 0.45));
+  border-left: none;
+  font-weight: 700;
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(68, 204, 255, 0.45);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35), inset 0 0 25px rgba(0, 123, 194, 0.25);
+  overflow: visible;
+  letter-spacing: 0.01em;
+  padding-right: 32px;
+  margin-bottom: 8px;
+}
+
+.highlight-item:after {
+  content: '★';
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #44ccff;
+  font-size: 1.1rem;
+  text-shadow: 0 0 10px rgba(68, 204, 255, 0.8);
+  z-index: 2;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; transform: translateY(-50%) scale(1); }
+  50% { opacity: 1; transform: translateY(-50%) scale(1.1); }
+  100% { opacity: 0.7; transform: translateY(-50%) scale(1); }
+}
+
+.highlight-item:before {
+  opacity: 1;
+  background: linear-gradient(to bottom, #44ccff, #0077ee);
+  width: 6px;
+}
+
+.highlight-item:hover {
+  background: linear-gradient(135deg, rgba(0, 123, 194, 0.4), rgba(0, 77, 128, 0.5));
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 123, 194, 0.3);
+  border-color: rgba(68, 204, 255, 0.6);
+  transform: translateY(-5px);
+}
+
+.highlight-icon {
+  font-size: 1.2rem;
+  margin-right: 12px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #44ccff, #0077cc);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(68, 204, 255, 0.6);
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.dropdown-arrow {
+  font-size: 0.65em;
+  margin-left: 4px;
+  opacity: 0.8;
+  transition: transform 0.3s ease;
+}
+
+.navbar-tab-dropdown:hover .navbar-tab .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.menu-divider {
+  height: 1px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+  margin: 8px 0 12px;
+}
+
+/* Hide the navbar when scrolling down */
+.navbar-wrapper.hidden {
+  transform: translateY(-100%);
+}
+
+.navbar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: all 0.3s ease; /* Smooth transition */
+  backdrop-filter: none;
+  transform: translateY(0);
+}
+
+/* Logo styling */
+.logo-link {
+  font-size: 1.6rem;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.logo-water {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.logo-wise {
+  font-weight: 700;
+  color: #44ccff;
+  text-shadow: 0 0 10px rgba(68, 204, 255, 0.5);
+}
+
+.logo-family {
+  font-weight: 300;
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+.navbar-wrapper.scrolled .logo-water {
+  color: #333;
+}
+
+.navbar-wrapper.scrolled .logo-wise {
+  color: #014f86;
+  text-shadow: none;
+}
+
+.navbar-wrapper.scrolled .logo-family {
+  color: #333;
+  opacity: 0.9;
+}
+
+/* Additional fixes for high zoom levels and different display densities */
+@media (min-resolution: 2dppx), (min-zoom: 125%), (max-zoom: 80%) {
+  /* Fix for beach comparison section at different zoom levels */
+  .beach-images-comparison {
+    position: relative;
+    top: 20px;
+    right: auto;
+    width: 90%;
+    margin: 30px auto;
+    max-height: 70vh;
+  }
+  
+  .comparison-image {
+    height: auto;
+    max-height: 60vh;
+    aspect-ratio: 16/9;
+  }
+  
+  /* Improve hotspot positioning and visibility at high zoom */
+  .hotspot {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .hotspot-info {
+    width: 200px;
+  }
+  
+  .hotspot-info h4 {
+    font-size: 1rem;
+  }
+  
+  .hotspot-info p {
+    font-size: 0.85rem;
+  }
+  
+  /* Fix slider button size */
+  .slider-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  /* Fix comparison labels */
+  .comparison-labels {
+    padding: 12px 15px;
+  }
+  
+  .comparison-label {
+    font-size: 1.1rem;
+  }
+  
+  .slider-text {
+    font-size: 0.7rem;
+  }
+  
+  /* Fix for section title truncation */
+  .section-title {
+    font-size: calc(1.6rem + 0.6vw);
+    white-space: normal;
+    display: block;
+    width: 100%;
+  }
+  
+  /* Fix for escape steps section */
+  .escape-steps {
+    width: 100%;
+    margin-left: 0;
+    padding: 20px;
+    position: relative;
+    left: auto;
+    top: auto;
+  }
+  
+  /* Fix text wrapping in steps */
+  .escape-step .step-headline,
+  .emergency-step .step-headline,
+  .escape-step .step-brief,
+  .emergency-step .step-brief {
+    white-space: normal;
+  }
+  
+  /* Improve hotspot positioning */
+  .hotspot {
+    transform: translate(-50%, -50%);
+  }
+  
+  .hotspot-info {
+    max-width: 200px;
+  }
+  
+  /* Ensure slider stays within bounds */
+  .comparison-before {
+    max-width: 100%;
+  }
+  
+  .slider-handle {
+    max-left: 96%;
+    min-left: 4%;
+  }
+}
+
+/* Special fixes for high zoom levels and zoom-out scenarios */
+@media (max-width: 1200px), (max-zoom: 75%) {
+  /* Ensure rip escape instructions are readable */
+  .escape-title {
+    font-size: calc(1.4rem + 0.5vw);
+    margin-bottom: 15px;
+  }
+  
+  /* Improve "Understanding Australian beach conditions" section at high zoom or zoom-out */
+  .elegant-content-section .section-heading {
+    width: 90%;
+  }
+  
+  .section-title {
+    font-size: calc(1.3rem + 0.35vw);
+  }
+  
+  .section-tagline {
+    font-size: calc(0.95rem + 0.3vw);
+  }
+  
+  /* Ensure consistency between page 2 and page 4 on zoom-out */
+  .elegant-content-section, .rescue-content-section {
+    min-height: 75vh;
+  }
+}
+
+/* Adjustments for small screens and high zoom */
+@media (max-width: 768px) {
+  /* Further improve beach comparison at high zoom */
+  .beach-images-comparison {
+    width: 95%;
+    margin: 40px auto;
+    position: relative;
+    top: auto;
+    right: auto;
+    max-width: 700px;
+  }
+  
+  .hotspot {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .hotspot-info {
+    width: 180px;
+    max-width: 80vw;
+  }
+  
+  .hotspot-info h4 {
+    font-size: 0.9rem;
+  }
+  
+  .hotspot-info p {
+    font-size: 0.8rem;
+  }
+  
+  .comparison-labels {
+    flex-direction: column;
+    padding: 10px;
+    min-height: 80px;
+  }
+  
+  .slider-text {
+    position: static;
+    transform: none;
+    margin-bottom: 5px;
+    order: -1;
+    font-size: 0.65rem;
+    padding: 4px 10px;
+  }
+  
+  .comparison-label {
+    font-size: 0.9rem;
+    margin: 2px 0;
+  }
+}
+
+/* Additional small screen adjustments */
+@media (max-width: 480px) {
+  .escape-step, .emergency-step {
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+  }
+  
+  .step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    margin-right: 10px;
+  }
+  
+  /* Make comparison text visible at high zoom */
+  .comparison-labels {
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    min-height: 80px;
+  }
+  
+  .slider-text {
+    margin-left: 0;
+    order: -1;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  
+  .comparison-label {
+    font-size: 1.2rem;
+  }
+}
+
+/* Ensure slider component functions correctly */
+@media (pointer: fine) {
+  .slider-handle {
+    height: 100%;
+  }
+  
+  .slider-button {
+    cursor: ew-resize;
+  }
+  
+  .comparison-container {
+    cursor: pointer;
+  }
+}
+
+@media (pointer: coarse) {
+  .slider-button {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .slider-handle {
+    width: 8px;
+  }
+}
+
+/* Force layout changes at high zoom regardless of screen size */
+@media (min-resolution: 1.5dppx) {
+  .text-line {
+    white-space: normal;
+  }
+  
+  .emergency-title, .escape-title {
+    white-space: normal;
+  }
+}
+
+/* Specific styles for Rip Identifier popup */
+/* Default rip identifier container size for main page */
+.rip-identifier-container {
+  max-width: 100% !important; /* Full width */
+  width: 100% !important; /* Full width */
+  background-color: rgba(10, 15, 25, 0.97) !important; /* Slightly different background */
+  box-shadow: 
+    0 30px 60px rgba(0, 0, 0, 0.6), 
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 30px rgba(0, 100, 180, 0.4) !important; /* Blueish glow for water theme */
+}
+
+/* Wider rip identifier container only for navbar popup */
+.navbar-tab-dropdown .dropdown-menu ~ .rip-simulation-overlay .rip-identifier-container {
+  max-width: 100% !important; /* Full width for navbar popup */
+  width: 100% !important; /* Full width for navbar popup */
+}
+
+.rip-identifier-container .rip-simulation-content {
+  padding: 0; /* Remove padding to maximize space for the content */
+  background-color: transparent; /* Let the container background show through */
+}
+
+.rip-identifier-container .rip-simulation-header {
+  background: linear-gradient(135deg, #014871, #2a84b9); /* Blueish header for water theme */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Ensure content is scrollable as needed */
+.rip-identifier-container .rip-simulation-content {
+  overflow-y: auto;
 }
 </style>

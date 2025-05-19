@@ -12,65 +12,86 @@
         <h3 class="option-title">IDENTIFY RIP CURRENTS</h3>
       </div>
       
-      <div class="rip-upload-container">
-        <div class="upload-area" @click="triggerRipFileUpload" :class="{ 'has-image': ripImage }">
-          <input type="file" ref="ripFileInput" class="hidden-file-input" accept="image/*" @change="handleRipImageUpload" />
-          <div v-if="!ripImage" class="upload-placeholder">
-            <div class="upload-icon">📷</div>
-            <p>Click to upload a beach photo</p>
-            <span class="upload-hint">or drag and drop image here</span>
-          </div>
-          <img v-if="ripImage" :src="ripImage" alt="Beach image" class="uploaded-image" />
-        </div>
-        
-        <div class="rip-actions" v-if="ripImage">
-          <button class="analyze-rip-button" @click="analyzeRipImage" :disabled="analyzeRipLoading">
-            <span v-if="!analyzeRipLoading">Analyze for Rips</span>
-            <div v-else class="button-loader"></div>
-          </button>
-          <button class="remove-image-button" @click="removeRipImage">
-            <span>Remove Image</span>
-          </button>
-        </div>
-        
-        <div v-if="analyzeRipLoading" class="analyzing-message">
-          <div class="loading-spinner"></div>
-          <p>Analyzing beach image for rip currents...</p>
-        </div>
-        
-        <div v-if="ripAnalysisResult" class="rip-analysis-result">
-          <h4 class="result-title">Analysis Results</h4>
-          
-          <div class="result-image-container">
-            <img :src="ripAnalysisResult.markedImage || ripImage" class="result-image" alt="Analysis result" />
-            <div class="result-overlay" :class="ripAnalysisResult.dangerLevel">
-              <span class="danger-badge">{{ ripAnalysisResult.dangerText }}</span>
+              <div class="rip-upload-container">
+          <div v-if="isCameraActive" class="camera-container">
+            <video ref="cameraFeed" autoplay playsinline class="camera-feed"></video>
+            <div class="camera-controls">
+              <button class="capture-button" @click="captureImage">Capture</button>
+              <button class="close-camera-button" @click="closeCamera">Close Camera</button>
             </div>
           </div>
           
-          <div class="result-details">
-            <div class="danger-indicator" :class="ripAnalysisResult.dangerLevel">
-              <span class="danger-level">{{ ripAnalysisResult.dangerText }}</span>
-              <div class="danger-bar-container">
-                <div class="danger-bar" :style="{ width: ripAnalysisResult.dangerPercentage + '%' }"></div>
+          <div v-else class="upload-area" @click="triggerRipFileUpload" :class="{ 'has-image': ripImage }">
+            <input type="file" ref="ripFileInput" class="hidden-file-input" accept="image/*" @change="handleRipImageUpload" />
+            <div v-if="!ripImage" class="upload-placeholder">
+              <div class="upload-icon">📷</div>
+              <p>Click to upload a beach photo</p>
+              <span class="upload-hint">or drag and drop image here</span>
+            </div>
+            <img v-if="ripImage" :src="ripImage" alt="Beach image" class="uploaded-image" />
+          </div>
+          
+          <div class="rip-actions" v-if="!isCameraActive">
+            <div v-if="!ripImage" class="camera-button-container">
+              <button class="open-camera-button" @click="openCamera">
+                <span>Use Camera</span>
+              </button>
+            </div>
+            
+            <div v-if="ripImage" class="analysis-buttons">
+              <button class="analyze-rip-button" @click="analyzeRipImage" :disabled="analyzeRipLoading">
+                <span v-if="!analyzeRipLoading">Analyze for Rips</span>
+                <div v-else class="button-loader"></div>
+              </button>
+              <button class="remove-image-button" @click="removeRipImage">
+                <span>Remove Image</span>
+              </button>
+            </div>
+          </div>
+          
+          <div v-if="analyzeRipLoading" class="analyzing-message">
+            <div class="loading-spinner"></div>
+            <p>Analyzing beach image for rip currents...</p>
+          </div>
+          
+          <!-- Only show inline results when NOT in popup mode (popup mode uses a dedicated popup for results) -->
+          <div v-if="ripAnalysisResult && !isPopup" class="rip-analysis-result results-container">
+            <h4 class="result-title">Analysis Results</h4>
+            
+            <div class="result-image-container">
+              <img :src="ripAnalysisResult.markedImage || processedPreview || ripImage" class="result-image" alt="Analysis result" />
+            </div>
+            
+            <div class="result-details">
+              <div class="simple-result" :class="{
+                'rip-detected': ripAnalysisResult.dangerLevel === 'high',
+                'potential-rip': ripAnalysisResult.dangerLevel === 'medium',
+                'rip-not-detected': ripAnalysisResult.dangerLevel === 'low'
+              }">
+                <h3>{{ ripAnalysisResult.dangerText }}</h3>
+              </div>
+              
+              <div class="result-description">
+                <p>{{ ripAnalysisResult.description }}</p>
+              </div>
+              
+              <div class="safety-tips">
+                <h5>Safety Tips:</h5>
+                <ul>
+                  <li v-for="(tip, index) in ripAnalysisResult.safetyTips" :key="index">{{ tip }}</li>
+                </ul>
               </div>
             </div>
-            
-            <div class="result-description">
-              <p>{{ ripAnalysisResult.description }}</p>
-            </div>
-            
-            <div class="safety-tips">
-              <h5>Safety Tips:</h5>
-              <ul>
-                <li v-for="(tip, index) in ripAnalysisResult.safetyTips" :key="index">{{ tip }}</li>
-              </ul>
+          </div>
+          
+          <!-- Success message when in popup mode to indicate results are available -->
+          <div v-if="ripAnalysisResult && isPopup" class="rip-success-message">
+            <div class="success-indicator">
+              <span class="success-icon">✓</span>
+              <span class="success-text">Rip analysis completed successfully</span>
             </div>
           </div>
         </div>
-        
-
-      </div>
     </div>
     
           <div v-if="activeTab === 'search'" class="search-tab">
@@ -444,6 +465,45 @@
       </div>
     </div>
     
+  <!-- Rip Identifier Results popup - shows analysis results in a modal overlay -->
+  <div v-if="ripAnalysisResult && isPopup" class="beach-report-popup-overlay rip-results-overlay">
+    <div class="beach-report-popup rip-results-popup">
+      <div class="popup-header">
+        <h3 class="report-title">Rip Current Analysis Results</h3>
+        <button class="close-popup-btn" @click="ripAnalysisResult = null">×</button>
+      </div>
+      
+      <div class="report-content">
+        <div class="rip-analysis-large">
+          <div class="result-image-container">
+            <img :src="ripAnalysisResult.markedImage || processedPreview || ripImage" class="result-image" alt="Analysis result" />
+          </div>
+          
+          <div class="result-details">
+            <div class="simple-result" :class="{
+              'rip-detected': ripAnalysisResult.dangerLevel === 'high',
+              'potential-rip': ripAnalysisResult.dangerLevel === 'medium',
+              'rip-not-detected': ripAnalysisResult.dangerLevel === 'low'
+            }">
+              <h3>{{ ripAnalysisResult.dangerText }}</h3>
+            </div>
+            
+            <div class="result-description">
+              <p>{{ ripAnalysisResult.description }}</p>
+            </div>
+            
+            <div class="safety-tips">
+              <h5>Safety Tips:</h5>
+              <ul>
+                <li v-for="(tip, index) in ripAnalysisResult.safetyTips" :key="index">{{ tip }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <!-- Beach comparison report popup - shows the full comparison in a modal overlay -->
   <div v-if="showCompareReport && compareChartData" class="beach-report-popup-overlay">
     <div class="beach-report-popup">
@@ -605,6 +665,7 @@
 
 <script>
 // Import images
+import axios from 'axios';
 import dangerousCurrentImage from '../assets/dangerous_current.JPG'
 import moderateCurrentImage from '../assets/moderate_current.jpg'
 import lowCurrentImage from '../assets/low_current.jpg'
@@ -636,6 +697,14 @@ export default {
     initialCompareBeach: {
       type: String,
       default: ''
+    },
+    ripImage: {
+      type: String,
+      default: null
+    },
+    isPopup: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -689,6 +758,15 @@ export default {
       ripImage: null,
       analyzeRipLoading: false,
       ripAnalysisResult: null,
+      // New rip detection properties
+      imagePreview: null,
+      processedPreview: null,
+      isCameraActive: false,
+      capturedImage: null,
+      imageFile: null,
+      stream: null,
+      showResults: false,
+      noRipMessage: '',
       weatherCodeMap: {
         0: 'Clear sky', 
         1: 'Mainly clear', 
@@ -731,6 +809,25 @@ export default {
         this.suggestionPopupStyle.display = 'none';
       }
     });
+    
+    // Add watcher for ripImage prop to process it when it changes
+    this.$watch('ripImage', (newVal) => {
+      if (newVal && this.isPopup && this.activeTab === 'ripIdentifier') {
+        console.log('Rip image prop changed in popup mode, processing image');
+        // If we receive a new ripImage in popup mode, update the UI with it
+        this.removeRipImage(); // Clear any existing images
+        
+        // Set the ripImage from the prop
+        this.ripImage = newVal;
+        
+        // After a short delay to ensure the UI updates, analyze the image
+        setTimeout(() => {
+          if (this.ripImage) {
+            this.analyzeRipImage();
+          }
+        }, 300);
+      }
+    });
 
     // Handle window resize to reposition popup
     window.addEventListener('resize', this.handleWindowResize);
@@ -740,6 +837,15 @@ export default {
 
     // Initialize with props if provided
     this.initializeFromProps();
+    
+    // If in popup mode and we have a ripImage, process it automatically
+    if (this.isPopup && this.ripImage && this.activeTab === 'ripIdentifier') {
+      console.log('In popup mode with ripImage, auto-processing');
+      // Delay slightly to ensure component is fully mounted
+      setTimeout(() => {
+        this.analyzeRipImage();
+      }, 500);
+    }
   },
   
   beforeDestroy() {
@@ -787,82 +893,321 @@ export default {
     },
     
     // Rip Identifier Methods
+    // New methods for rip current detection
+    handleRipImageUpload(e) {
+      if (e.target.files && e.target.files[0]) {
+        this.imageFile = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result;
+          this.ripImage = e.target.result;
+          this.capturedImage = null;
+          this.processedPreview = null;
+          this.showResults = false;
+          this.noRipMessage = '';
+          this.ripAnalysisResult = null;
+        };
+        reader.readAsDataURL(this.imageFile);
+      }
+    },
+    
+    async openCamera() {
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }
+        });
+        this.$refs.cameraFeed.srcObject = this.stream;
+        this.isCameraActive = true;
+      } catch (err) {
+        alert('Camera error: ' + err.message);
+      }
+    },
+    
+    closeCamera() {
+      if (this.stream) {
+        this.stream.getTracks().forEach(track => track.stop());
+        this.stream = null;
+        this.isCameraActive = false;
+      }
+    },
+    
+    captureImage() {
+      if (this.stream) {
+        const canvas = document.createElement('canvas');
+        const video = this.$refs.cameraFeed;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        this.imagePreview = canvas.toDataURL('image/jpeg', 0.9);
+        this.ripImage = this.imagePreview;
+        this.capturedImage = this.imagePreview;
+        this.imageFile = null;
+        this.showResults = false;
+        this.noRipMessage = '';
+        this.processedPreview = null;
+        this.ripAnalysisResult = null;
+        this.closeCamera();
+      }
+    },
+    
     triggerRipFileUpload() {
       this.$refs.ripFileInput.click();
     },
     
-    handleRipImageUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.ripImage = e.target.result;
-          this.ripAnalysisResult = null; // Clear previous results
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    
     removeRipImage() {
       this.ripImage = null;
+      this.imagePreview = null;
+      this.processedPreview = null;
+      this.capturedImage = null;
+      this.imageFile = null;
       this.ripAnalysisResult = null;
+      this.showResults = false;
+      this.noRipMessage = '';
       this.$refs.ripFileInput.value = ''; // Reset file input
     },
     
-    analyzeRipImage() {
-      // Mock analysis - in a real implementation, this would call an API
+    // Real rip current detection implementation with API call
+    async analyzeRipImage() {
       this.analyzeRipLoading = true;
+      this.noRipMessage = '';
       
-      // Simulate API call with timeout
-      setTimeout(() => {
+      try {
+        let response;
+        
+        // First check if we have a ripImage prop passed from parent (used in popup mode)
+        if (this.ripImage && !this.imageFile && !this.capturedImage) {
+          console.log('Using ripImage provided by parent component in popup mode');
+          
+          // Convert the data URL to a Blob for processing
+          const fetchResponse = await fetch(this.ripImage);
+          const blob = await fetchResponse.blob();
+          this.imageFile = new File([blob], "rip_image.jpg", { type: "image/jpeg" });
+          
+          // Set the ripImage as the current ripImage
+          this.ripImage = this.ripImage;
+          
+          // Now process with the API using the created file
+          const formData = new FormData();
+          formData.append('image', this.imageFile);
+          response = await axios.post('https://fit5120ta19.onrender.com/process-image', formData);
+        } 
+        // Process normally if we have local file or captured image
+        else if (this.imageFile) {
+          const formData = new FormData();
+          formData.append('image', this.imageFile);
+          response = await axios.post('https://fit5120ta19.onrender.com/process-image', formData);
+        } else if (this.capturedImage) {
+          response = await axios.post('https://fit5120ta19.onrender.com/process-camera-image', {
+            image: this.capturedImage
+          });
+        } else {
+          throw new Error('No image to process');
+        }
+
+        // Process the analysis results
+        await this.loadAndDisplayDetection(response.data);
+        
+        // If in popup mode, ensure the results section is visible and scrolled into view
+        if (this.isPopup) {
+          console.log('In popup mode, ensuring results are visible');
+          this.showResults = true;
+          
+          // Ensure UI updates before scrolling
+          await this.$nextTick();
+          
+          // Focus on results container with a short delay to ensure it's rendered
+          setTimeout(() => {
+            const resultElement = document.querySelector('.rip-analysis-result');
+            if (resultElement) {
+              console.log('Scrolling to rip analysis results');
+              resultElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start'
+              });
+            } else {
+              console.warn('Result element not found for scrolling');
+            }
+          }, 300);
+        }
+      } catch (error) {
+        console.error('Processing error:', error);
+        alert('Processing error: ' + error.message);
+        this.analyzeRipLoading = false;
+      }
+    },
+    
+    loadAndDisplayDetection(result) {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+
+      img.onload = () => {
+        const predictions = result.rawResponse?.predictions || result.predictions || [];
+
+        // Scale and draw to preview canvas
+        const MAX_WIDTH = 600;
+        const scale = Math.min(1, MAX_WIDTH / img.width);
+
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width = img.width * scale;
+        previewCanvas.height = img.height * scale;
+
+        const ctx = previewCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
+
+        if (predictions.length > 0) {
+          // Get the prediction with highest confidence
+          const best = predictions.sort((a, b) => b.confidence - a.confidence)[0];
+          const confidence = best.confidence;
+          
+          // Check if confidence meets our threshold
+          if (confidence >= 0.295) {  
+            const scaleX = previewCanvas.width / img.width;
+            const scaleY = previewCanvas.height / img.height;
+
+            const x = (best.x - best.width / 2) * scaleX;
+            const y = (best.y - best.height / 2) * scaleY;
+            const width = best.width * scaleX;
+            const height = best.height * scaleY;
+
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.9)';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, width, height);
+
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+            ctx.fillRect(x, y - 25, 140, 25);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(`RIP DETECTED`, x + 5, y - 5);
+
+            this.noRipMessage = '';
+            
+            // Set ripAnalysisResult to match UI expectations
+            this.ripAnalysisResult = {
+              dangerLevel: 'high',
+              dangerText: 'RIP DETECTED',
+              dangerPercentage: 90,
+              description: `Strong indicators of rip currents present! The system has detected a rip current with ${(confidence*100).toFixed(0)}% confidence.`,
+              safetyTips: [
+                'Do not enter the water in these conditions',
+                'Alert lifeguards if you spot someone in trouble',
+                'If caught in a rip, float and signal for help'
+              ],
+              markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+            };
+          } 
+          // Add disclaimer for confidence values between 24.1% and 29.4%
+          else if (confidence >= 0.241 && confidence <= 0.294) {
+            const scaleX = previewCanvas.width / img.width;
+            const scaleY = previewCanvas.height / img.height;
+
+            // Draw yellow warning box with text
+            ctx.fillStyle = 'rgba(243, 156, 18, 0.8)'; // Yellow color
+            ctx.fillRect(10, 10, 210, 30);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('POTENTIAL RIP CURRENT', 20, 30);
+
+            // Mark the potential rip with yellow box
+            const x = (best.x - best.width / 2) * scaleX;
+            const y = (best.y - best.height / 2) * scaleY;
+            const width = best.width * scaleX;
+            const height = best.height * scaleY;
+            
+            ctx.strokeStyle = 'rgba(243, 156, 18, 0.9)'; // Yellow outline
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, width, height);
+
+            this.noRipMessage = '';
+            
+            // Set ripAnalysisResult to match UI expectations with disclaimer
+            this.ripAnalysisResult = {
+              dangerLevel: 'medium',
+              dangerText: 'POTENTIAL RIP CURRENT',
+              dangerPercentage: 50,
+              description: `Caution: The system detected potential rip current signs with ${(confidence*100).toFixed(1)}% confidence. This is below our definite detection threshold but still requires caution.`,
+              safetyTips: [
+                'Swim only between red and yellow flags',
+                'Check with lifeguards before entering the water',
+                'Be extra cautious and stay in shallow areas'
+              ],
+              markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+            };
+          }
+          else {
+            // Confidence below threshold
+            this.noRipMessage = '';
+            
+            // Draw "RIP NOT DETECTED" text in green
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.8)';
+            ctx.fillRect(10, 10, 180, 30);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('RIP NOT DETECTED', 20, 30);
+            
+            // Set ripAnalysisResult for UI with low risk
+            this.ripAnalysisResult = {
+              dangerLevel: 'low',
+              dangerText: 'RIP NOT DETECTED',
+              dangerPercentage: 25,
+              description: 'No significant rip current patterns detected with sufficient confidence.',
+              safetyTips: [
+                'Always swim between the red and yellow flags',
+                'Stay in shallow water and keep watch on children',
+                'Conditions can change quickly - check regularly'
+              ],
+              markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+            };
+          }
+        } else {
+          this.noRipMessage = '';
+          
+          // Draw "RIP NOT DETECTED" text in green
+          ctx.fillStyle = 'rgba(46, 204, 113, 0.8)';
+          ctx.fillRect(10, 10, 180, 30);
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText('RIP NOT DETECTED', 20, 30);
+          
+          // Set ripAnalysisResult for UI with low risk
+          this.ripAnalysisResult = {
+            dangerLevel: 'low',
+            dangerText: 'RIP NOT DETECTED',
+            dangerPercentage: 25,
+            description: 'No clear signs of rip currents detected in this image.',
+            safetyTips: [
+              'Always swim between the red and yellow flags',
+              'Stay in shallow water and keep watch on children',
+              'Conditions can change quickly - check regularly'
+            ],
+            markedImage: previewCanvas.toDataURL('image/jpeg', 0.8)
+          };
+        }
+
+        this.processedPreview = previewCanvas.toDataURL('image/jpeg', 0.8);
+        this.showResults = true;
         this.analyzeRipLoading = false;
         
-        // Generate mock analysis result
-        const randomValue = Math.random();
-        let dangerLevel, dangerText, dangerPercentage, description, safetyTips;
-        
-        if (randomValue < 0.33) {
-          dangerLevel = 'low';
-          dangerText = 'Low Risk';
-          dangerPercentage = 25;
-          description = 'No clear signs of rip currents in this image. The water appears to have consistent wave patterns with no visible dark channels or disruptions.';
-          safetyTips = [
-            'Always swim between the red and yellow flags',
-            'Stay in shallow water and keep watch on children',
-            'Conditions can change quickly - check regularly'
-          ];
-        } else if (randomValue < 0.66) {
-          dangerLevel = 'medium';
-          dangerText = 'Medium Risk';
-          dangerPercentage = 60;
-          description = 'Possible rip current indicators visible. Note the darker patches of water and gaps in the breaking waves which may indicate rip currents.';
-          safetyTips = [
-            'Avoid swimming near darker water channels',
-            'Stay in waist-deep water maximum',
-            'Keep children within arm\'s reach at all times'
-          ];
-        } else {
-          dangerLevel = 'high';
-          dangerText = 'High Risk';
-          dangerPercentage = 90;
-          description = 'Strong indicators of rip currents present! Multiple dark channels visible between breaking waves, with water flowing outward from the shore.';
-          safetyTips = [
-            'Do not enter the water in these conditions',
-            'Alert lifeguards if you spot someone in trouble',
-            'If caught in a rip, float and signal for help'
-          ];
+        // In popup mode, ensure the popup scrolls to show the results 
+        if (this.isPopup) {
+          console.log('Results ready in popup mode, ensuring visibility');
+          this.$nextTick(() => {
+            // Find the results container
+            const resultElement = document.querySelector('.rip-analysis-result');
+            if (resultElement) {
+              console.log('Scrolling to results container');
+              resultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
         }
-        
-        this.ripAnalysisResult = {
-          dangerLevel,
-          dangerText,
-          dangerPercentage,
-          description,
-          safetyTips,
-          // In a real implementation, this would be a processed image
-          markedImage: this.ripImage
-        };
-      }, 2000);
+      };
+
+      img.onerror = () => {
+        alert('Image failed to load');
+        this.analyzeRipLoading = false;
+      };
+
+      img.src = `https://fit5120ta19.onrender.com${result.original}`;
     },
     
     convertMsToKmh(speedMs) {
@@ -6518,19 +6863,31 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   max-height: 300px;
 }
 
-.result-overlay {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0.5rem 1rem;
-  border-bottom-left-radius: 8px;
+.simple-result {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
 }
 
-.danger-badge {
-  color: white;
+.simple-result h3 {
+  margin: 0;
+  font-size: 1.8rem;
   font-weight: 700;
-  font-size: 1rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rip-detected {
+  background: rgba(231, 76, 60, 0.8);
+}
+
+.rip-not-detected {
+  background: rgba(46, 204, 113, 0.8);
+}
+
+.potential-rip {
+  background: rgba(243, 156, 18, 0.8);
 }
 
 .result-overlay.high {
@@ -6547,53 +6904,6 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 
 .result-details {
   margin-top: 1rem;
-}
-
-.danger-indicator {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-}
-
-.danger-level {
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.danger-indicator.high .danger-level {
-  color: #e74c3c;
-}
-
-.danger-indicator.medium .danger-level {
-  color: #f39c12;
-}
-
-.danger-indicator.low .danger-level {
-  color: #2ecc71;
-}
-
-.danger-bar-container {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.danger-bar {
-  height: 100%;
-  transition: width 0.8s ease;
-}
-
-.danger-indicator.high .danger-bar {
-  background: #e74c3c;
-}
-
-.danger-indicator.medium .danger-bar {
-  background: #f39c12;
-}
-
-.danger-indicator.low .danger-bar {
-  background: #2ecc71;
 }
 
 .result-description {
@@ -6917,6 +7227,18 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   text-align: center;
 }
 
+/* Success message for rip analysis completion */
+.rip-success-message {
+  margin: 2rem auto 1rem;
+  text-align: center;
+  max-width: 500px;
+  background: rgba(46, 204, 113, 0.15);
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
 .success-indicator {
   display: inline-flex;
   align-items: center;
@@ -7218,6 +7540,156 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   }
 }
 
+/* Camera and rip detection styles */
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  z-index: 5;
+}
+
+.capture-button {
+  background: rgba(46, 204, 113, 0.8);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.capture-button:hover {
+  background: rgba(46, 204, 113, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.close-camera-button {
+  background: rgba(231, 76, 60, 0.8);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.close-camera-button:hover {
+  background: rgba(231, 76, 60, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.camera-button-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.open-camera-button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+}
+
+.open-camera-button:hover {
+  background: linear-gradient(135deg, #2980b9, #2574a9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+}
+
+.analysis-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.no-rip-message {
+  background: rgba(243, 156, 18, 0.15);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #f39c12;
+  text-align: center;
+  font-weight: 500;
+  color: #f39c12;
+}
+
+.results-container {
+  scroll-margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .camera-controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .capture-button, .close-camera-button {
+    width: 80%;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+  
+  .analysis-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .analyze-rip-button, .remove-image-button {
+    width: 100%;
+  }
+}
+
 .compare-info-static {
   position: absolute;
   bottom: 0;
@@ -7241,6 +7713,108 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
+/* Rip Identifier Results Popup Styles */
+.rip-results-overlay {
+  z-index: 10001; /* Ensure it appears above other popups */
+}
+
+.rip-results-popup {
+  max-width: 1000px; /* Narrower than beach comparison popup */
+}
+
+.rip-analysis-large {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.rip-analysis-large .result-image-container {
+  width: 100%;
+  text-align: center;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.rip-analysis-large .result-image {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+}
+
+.rip-analysis-large .result-details {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rip-analysis-large .simple-result {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.rip-analysis-large .rip-detected {
+  background: rgba(231, 76, 60, 0.8);
+}
+
+.rip-analysis-large .potential-rip {
+  background: rgba(243, 156, 18, 0.8);
+}
+
+.rip-analysis-large .rip-not-detected {
+  background: rgba(46, 204, 113, 0.8);
+}
+
+.rip-analysis-large .simple-result h3 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rip-analysis-large .result-description {
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+.rip-analysis-large .safety-tips {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.rip-analysis-large .safety-tips h5 {
+  color: #f39c12;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.rip-analysis-large .safety-tips ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.rip-analysis-large .safety-tips li {
+  margin-bottom: 0.75rem;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.rip-analysis-large .safety-tips li:last-child {
+  margin-bottom: 0;
+}
+
 /* Media query adjustments for mobile */
 @media (max-width: 768px) {
   .compare-info-container {
@@ -7257,6 +7831,30 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   
   .compare-info-highlight {
     font-size: 1.05rem;
+  }
+  
+  .rip-analysis-large .result-image {
+    max-height: 300px;
+  }
+  
+  .rip-analysis-large .simple-result h3 {
+    font-size: 1.6rem;
+  }
+  
+  .rip-analysis-large .result-description {
+    font-size: 1rem;
+  }
+  
+  .rip-analysis-large .safety-tips {
+    padding: 1rem;
+  }
+  
+  .rip-analysis-large .safety-tips h5 {
+    font-size: 1.1rem;
+  }
+  
+  .rip-analysis-large .safety-tips li {
+    font-size: 0.9rem;
   }
 }
 </style> 
