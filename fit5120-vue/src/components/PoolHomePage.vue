@@ -525,7 +525,7 @@
 
   <!-- River Safety Quiz Popup -->
   <div v-if="showRiverSafetyQuizPopup" class="rip-simulation-overlay" @click.self="closeRiverSafetyQuiz">
-    <div class="rip-simulation-container">
+    <div class="rip-simulation-container quiz-container">
       <div class="rip-simulation-header">
         <h3>River Safety for Teens</h3>
         <button class="close-button" @click="closeRiverSafetyQuiz" aria-label="Close">
@@ -5575,6 +5575,12 @@ border: 1px solid rgba(255, 255, 255, 0.08);
 max-height: 95vh;
 display: flex;
 flex-direction: column;
+}
+
+/* Wider container for Rip Current Safety Quiz */
+.quiz-container {
+  max-width: 100vw !important;
+  width: 2000px !important;
 }
 
 .rip-simulation-header {
