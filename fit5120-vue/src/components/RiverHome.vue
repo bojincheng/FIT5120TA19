@@ -129,7 +129,7 @@
           </svg>
           <div class="teen-stat-content">
             <span class="stat-percentage">70%</span>
-            <span class="stat-description">of drowning deaths in teenagers aged 15-24 years occur in natural water</span>
+            <span class="stat-description">of drowning deaths in teenagers occur in natural water</span>
           </div>
         </div>
       </div>
