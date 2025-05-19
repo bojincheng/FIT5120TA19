@@ -38,6 +38,19 @@
     <!-- Navigation Bar -->
     <NavigationBar />
     
+    <!-- Tools Button -->
+    <div class="tools-button" @click.stop="toggleToolsPopup">
+      <span>TOOLS</span>
+    </div>
+    
+    <!-- Tools Popup -->
+    <div v-if="showToolsPopup" class="tools-popup-overlay" @click.self="closeToolsPopup">
+      <div class="tools-popup-container" @click.stop>
+        <button class="close-tools-popup" @click.stop="closeToolsPopup">×</button>
+        <BeachComparisonTool :isPopup="true" />
+      </div>
+    </div>
+    
     <!-- Content -->
     <div class="content-section" ref="contentSection">
       <div class="text-content">
@@ -80,16 +93,19 @@
 
 <script>
 import NavigationBar from './components/NavigationBar.vue';
+import BeachComparisonTool from './components/BeachComparisonTool.vue';
 
 export default {
   name: 'NewLanding',
   components: {
-    NavigationBar
+    NavigationBar,
+    BeachComparisonTool
   },
   data() {
     return {
       isScrolling: false,
-      scrollStarted: false
+      scrollStarted: false,
+      showToolsPopup: false
     }
   },
   mounted() {
@@ -112,6 +128,33 @@ export default {
     window.removeEventListener('touchmove', this.handleTouchMove);
   },
   methods: {
+    toggleToolsPopup() {
+      this.showToolsPopup = !this.showToolsPopup;
+      
+      // If opened, prevent scrolling on body
+      if (this.showToolsPopup) {
+        document.body.style.overflow = 'hidden';
+        // Temporarily disable scroll transition while popup is open
+        this.isScrolling = true;
+      } else {
+        document.body.style.overflow = '';
+        // Re-enable scroll transition after popup is closed
+        setTimeout(() => {
+          this.isScrolling = false;
+        }, 100);
+      }
+    },
+    
+    closeToolsPopup() {
+      this.showToolsPopup = false;
+      document.body.style.overflow = '';
+      
+      // Re-enable scroll transition after popup is closed with a slight delay
+      setTimeout(() => {
+        this.isScrolling = false;
+      }, 100);
+    },
+    
     preloadVideos() {
       // Ensure top and bottom videos start at the same point as main video
       this.$refs.topVideo.currentTime = 0;
@@ -743,6 +786,105 @@ body {
   }
 }
 
+/* Tools Button */
+.tools-button {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(243, 156, 18, 0.9);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  animation: fadeIn 0.8s ease forwards;
+  animation-delay: 3s;
+  opacity: 0;
+}
+
+.tools-button span {
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.tools-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(243, 156, 18, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Tools Popup */
+.tools-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.tools-popup-container {
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 25, 40, 0.95), rgba(30, 40, 60, 0.95));
+  border-radius: 16px;
+  width: 95%;
+  max-width: 1200px;
+  height: auto;
+  min-height: 200px;
+  max-height: 95vh;
+  overflow: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(243, 156, 18, 0.4);
+  animation: scaleIn 0.3s ease-out;
+  padding: 15px;
+  margin: 10px;
+}
+
+.close-tools-popup {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.close-tools-popup:hover {
+  background: rgba(231, 76, 60, 0.8);
+  transform: rotate(90deg);
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
 /* Responsive Styles */
 @media (max-width: 992px) {
   .first-line {
@@ -770,6 +912,13 @@ body {
   
   .danger-tooltip p {
     font-size: 0.9rem;
+  }
+  
+  .tools-button {
+    width: 70px;
+    height: 70px;
+    bottom: 30px;
+    right: 30px;
   }
 }
 
@@ -839,6 +988,24 @@ body {
     border-right: 2px solid rgba(255, 255, 255, 0.7);
     border-bottom: 2px solid rgba(255, 255, 255, 0.7);
   }
+  
+  .tools-button {
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .tools-button span {
+    font-size: 0.7rem;
+  }
+  
+  .tools-popup-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-height: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -882,6 +1049,17 @@ body {
   .danger-tooltip p {
     font-size: 0.8rem;
     line-height: 1.3;
+  }
+  
+  .tools-button {
+    width: 50px;
+    height: 50px;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .tools-button span {
+    font-size: 0.6rem;
   }
 }
 </style>
