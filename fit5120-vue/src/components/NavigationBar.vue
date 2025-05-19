@@ -43,9 +43,9 @@ export default {
   data() {
     return {
       tabs: [
-        { name: 'Beach', path: '/beach' },
-        { name: 'Pool', path: '/pool' },
-        { name: 'River', path: '/river' }
+        { name: 'BEACH', path: '/beach' },
+        { name: 'POOL', path: '/pool' },
+        { name: 'RIVER', path: '/river' }
       ]
     }
   }
@@ -158,24 +158,52 @@ export default {
 @media (max-width: 768px) {
   .navbar-content {
     padding: 0.8rem 1.5rem;
+    flex-wrap: wrap;
   }
   
   .navbar-logo {
     flex: none;
+    margin-right: 1rem;
   }
   
   .logo-link {
     font-size: 1.4rem;
+    white-space: nowrap;
   }
   
   .navbar-tabs {
     flex: 3;
     justify-content: flex-end;
-    gap: 1.2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
   }
   
   .navbar-right {
     display: none;
+  }
+
+  .navbar-tab {
+    white-space: nowrap;
+    font-size: 1rem;
+    padding: 0.4rem 0.1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar-content {
+    padding: 0.8rem 1rem;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .navbar-logo {
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  
+  .navbar-tabs {
+    justify-content: center;
+    width: 100%;
   }
 }
 
@@ -189,12 +217,18 @@ export default {
   }
   
   .navbar-tabs {
-    gap: 1rem;
+    gap: 0.6rem;
+    justify-content: center;
+    width: 100%;
   }
   
   .tab-text {
     display: block;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
+  }
+  
+  .navbar-tab {
+    padding: 0.3rem 0.1rem;
   }
 }
 </style> 
