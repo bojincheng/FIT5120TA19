@@ -895,21 +895,39 @@ export default {
     // Rip Identifier Methods
     // New methods for rip current detection
     handleRipImageUpload(e) {
-      if (e.target.files && e.target.files[0]) {
-        this.imageFile = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.imagePreview = e.target.result;
-          this.ripImage = e.target.result;
-          this.capturedImage = null;
-          this.processedPreview = null;
-          this.showResults = false;
-          this.noRipMessage = '';
-          this.ripAnalysisResult = null;
-        };
-        reader.readAsDataURL(this.imageFile);
-      }
-    },
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+
+    // Check empty file
+    if (file.size === 0) {
+      alert('Uploaded file is empty.');
+      this.removeRipImage();
+      return;
+    }
+
+    // Check allowed file types manually by extension or MIME
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Please upload a JPG or PNG image.');
+      this.removeRipImage();
+      return;
+    }
+
+    // File looks good, proceed as normal
+    this.imageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.imagePreview = e.target.result;
+      this.ripImage = e.target.result;
+      this.capturedImage = null;
+      this.processedPreview = null;
+      this.showResults = false;
+      this.noRipMessage = '';
+      this.ripAnalysisResult = null;
+    };
+    reader.readAsDataURL(file);
+  }
+},
     
     async openCamera() {
       try {
@@ -956,15 +974,36 @@ export default {
     },
     
     removeRipImage() {
+      // Reset all image-related states
       this.ripImage = null;
       this.imagePreview = null;
       this.processedPreview = null;
       this.capturedImage = null;
       this.imageFile = null;
+      
+      // Clear analysis results
       this.ripAnalysisResult = null;
       this.showResults = false;
       this.noRipMessage = '';
-      this.$refs.ripFileInput.value = ''; // Reset file input
+      this.analyzeRipLoading = false;
+      
+      // Reset file input to ensure we can select the same file again
+      if (this.$refs.ripFileInput) {
+        this.$refs.ripFileInput.value = '';
+      }
+
+      // Ensure camera is closed if it was open
+      if (this.isCameraActive) {
+        this.closeCamera();
+      }
+      
+      // Force a next tick to ensure DOM updates
+      this.$nextTick(() => {
+        // If in popup mode, emit an event to notify parent component
+        if (this.isPopup) {
+          this.$emit('image-removed');
+        }
+      });
     },
     
     // Real rip current detection implementation with API call
