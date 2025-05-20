@@ -1585,6 +1585,23 @@ export default {
     closeRipIdentifier() {
       this.showRipIdentifierPopup = false;
       
+      // Reset uploadedImage when closing the popup
+      this.uploadedImage = null;
+      
+      // Reset the BeachComparisonTool component state if it exists
+      if (this.$refs.ripIdentifierPopup) {
+        // Ensure rip identifier state is reset
+        this.$refs.ripIdentifierPopup.ripImage = null;
+        this.$refs.ripIdentifierPopup.imagePreview = null;
+        this.$refs.ripIdentifierPopup.processedPreview = null;
+        this.$refs.ripIdentifierPopup.capturedImage = null;
+        this.$refs.ripIdentifierPopup.imageFile = null;
+        this.$refs.ripIdentifierPopup.ripAnalysisResult = null;
+        this.$refs.ripIdentifierPopup.showResults = false;
+        this.$refs.ripIdentifierPopup.noRipMessage = '';
+        this.$refs.ripIdentifierPopup.analyzeRipLoading = false;
+      }
+      
       // Re-enable page scrolling
       document.body.style.overflow = '';
     },
