@@ -290,12 +290,7 @@
         </div>
       </div>
       
-      <!-- Large scroll down indicator -->
-      <div class="large-scroll-indicator">
-        <svg class="large-chevron-down" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 8L12 16L20 8" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <!-- Removed scroll down indicator -->
     </div>
   </div>
   
@@ -1588,18 +1583,11 @@ export default {
       // Reset uploadedImage when closing the popup
       this.uploadedImage = null;
       
-      // Reset the BeachComparisonTool component state if it exists
+      // Reset the BeachComparisonTool component state by calling its method
+      // This is more reliable than directly manipulating properties
       if (this.$refs.ripIdentifierPopup) {
-        // Ensure rip identifier state is reset
-        this.$refs.ripIdentifierPopup.ripImage = null;
-        this.$refs.ripIdentifierPopup.imagePreview = null;
-        this.$refs.ripIdentifierPopup.processedPreview = null;
-        this.$refs.ripIdentifierPopup.capturedImage = null;
-        this.$refs.ripIdentifierPopup.imageFile = null;
-        this.$refs.ripIdentifierPopup.ripAnalysisResult = null;
-        this.$refs.ripIdentifierPopup.showResults = false;
-        this.$refs.ripIdentifierPopup.noRipMessage = '';
-        this.$refs.ripIdentifierPopup.analyzeRipLoading = false;
+        // Use the component's own removeRipImage method instead of directly modifying properties
+        this.$refs.ripIdentifierPopup.removeRipImage();
       }
       
       // Re-enable page scrolling
@@ -3047,26 +3035,13 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 }
 
-/* Large Scroll Down indicator at middle bottom */
+/* Large Scroll Down indicator at middle bottom - hidden */
 .large-scroll-indicator {
-  position: absolute;
-  bottom: 100px; /* Adjusted from 80px to move it up by 20px */
-  left: 45%; /* Moved left to align with content */
-  transform: translateX(-50%);
-  width: 70px;
-  height: 70px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-  animation: pulse-bounce 2s infinite ease-in-out;
-  cursor: pointer;
+  display: none;
 }
 
 .large-chevron-down {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
+  display: none;
 }
 
 @keyframes pulse-bounce {

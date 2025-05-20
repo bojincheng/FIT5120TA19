@@ -33,13 +33,14 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
-            handler: 'CacheFirst',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'images-cache',
               expiration: {
                 maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
-              }
+                maxAgeSeconds: 60 * 60 * 24 * 1 // Reduced to 1 day
+              },
+              networkTimeoutSeconds: 10 // Timeout if network is slow
             }
           }
         ]
