@@ -227,13 +227,6 @@
                       class="search-input"
                       @input="fetchLocationSuggestions"
                     />
-                    <!-- <button 
-                      v-if="userLocation" 
-                      @click="clearLocation" 
-                      class="clear-button"
-                    >
-                      ✕
-                    </button> -->
                   </div>
                 </div>
                 
@@ -6608,6 +6601,8 @@ height: auto; /* Allow it to grow based on content */
 
 /* Section top with toggle buttons */
 .section-top {
+display: flex;
+flex-direction: column;
 padding: 1.4rem 1.4rem 0.8rem;
 background: rgba(0, 71, 106, 0.6);
 border-bottom: 1px solid rgba(0, 186, 255, 0.5);
@@ -6617,10 +6612,11 @@ position: relative;
 /* Toggle buttons for selecting between options */
 .option-toggle {
 display: flex;
-justify-content: center;
+justify-content: flex-start;
 gap: 1rem;
 margin-top: 1rem;
 margin-bottom: 0.5rem;
+width: 100%;
 }
 
 .toggle-btn {
@@ -6636,9 +6632,10 @@ transition: all 0.3s ease;
 display: flex;
 align-items: center;
 gap: 0.5rem;
-flex: 1;
+flex: 0 0 auto;
 justify-content: center;
 max-width: 180px;
+width: auto;
 }
 
 .toggle-btn:hover {
@@ -6677,6 +6674,9 @@ border-left: none;
 border-bottom: 1px solid rgba(0, 186, 255, 0.5);
 transition: all 0.3s ease;
 position: relative;
+display: flex;
+flex-wrap: wrap;
+align-items: center;
 }
 
 .location-finder::before {
@@ -6696,8 +6696,10 @@ position: relative;
 }
 
 .search-container {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0;
   max-width: 100%;
+  flex: 1;
+  min-width: 250px;
 }
 
 .section-subtitle {
@@ -7265,15 +7267,25 @@ overflow: hidden;
 }
 
 .option-toggle {
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 0.8rem;
 }
 
 .toggle-btn {
-  width: 100%;
-  max-width: 240px;
+  width: auto;
+  max-width: none;
   padding: 0.6rem 1rem;
+}
+
+.location-finder {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.search-container {
+  width: 100%;
+  margin-bottom: 1rem;
 }
 
 .location-finder {

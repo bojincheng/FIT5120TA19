@@ -956,15 +956,36 @@ export default {
     },
     
     removeRipImage() {
+      // Reset all image-related states
       this.ripImage = null;
       this.imagePreview = null;
       this.processedPreview = null;
       this.capturedImage = null;
       this.imageFile = null;
+      
+      // Clear analysis results
       this.ripAnalysisResult = null;
       this.showResults = false;
       this.noRipMessage = '';
-      this.$refs.ripFileInput.value = ''; // Reset file input
+      this.analyzeRipLoading = false;
+      
+      // Reset file input to ensure we can select the same file again
+      if (this.$refs.ripFileInput) {
+        this.$refs.ripFileInput.value = '';
+      }
+
+      // Ensure camera is closed if it was open
+      if (this.isCameraActive) {
+        this.closeCamera();
+      }
+      
+      // Force a next tick to ensure DOM updates
+      this.$nextTick(() => {
+        // If in popup mode, emit an event to notify parent component
+        if (this.isPopup) {
+          this.$emit('image-removed');
+        }
+      });
     },
     
     // Real rip current detection implementation with API call
