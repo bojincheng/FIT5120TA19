@@ -1588,18 +1588,11 @@ export default {
       // Reset uploadedImage when closing the popup
       this.uploadedImage = null;
       
-      // Reset the BeachComparisonTool component state if it exists
+      // Reset the BeachComparisonTool component state by calling its method
+      // This is more reliable than directly manipulating properties
       if (this.$refs.ripIdentifierPopup) {
-        // Ensure rip identifier state is reset
-        this.$refs.ripIdentifierPopup.ripImage = null;
-        this.$refs.ripIdentifierPopup.imagePreview = null;
-        this.$refs.ripIdentifierPopup.processedPreview = null;
-        this.$refs.ripIdentifierPopup.capturedImage = null;
-        this.$refs.ripIdentifierPopup.imageFile = null;
-        this.$refs.ripIdentifierPopup.ripAnalysisResult = null;
-        this.$refs.ripIdentifierPopup.showResults = false;
-        this.$refs.ripIdentifierPopup.noRipMessage = '';
-        this.$refs.ripIdentifierPopup.analyzeRipLoading = false;
+        // Use the component's own removeRipImage method instead of directly modifying properties
+        this.$refs.ripIdentifierPopup.removeRipImage();
       }
       
       // Re-enable page scrolling
