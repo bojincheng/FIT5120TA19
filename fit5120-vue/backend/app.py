@@ -272,7 +272,7 @@ def is_valid_image(file_stream):
     file_stream.seek(0)
     file_type = imghdr.what(None, file_stream.read())
     file_stream.seek(0)
-    return file_type in ALLOWED_IMGHDR_TYPES
+    return file_type in ALLOWED_EXTENSIONS
 # Process image upload
 @app.route('/process-image', methods=['POST'])
 def process_image():
