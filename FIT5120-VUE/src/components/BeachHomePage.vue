@@ -56,6 +56,7 @@
                 to="/pool" 
                 class="navbar-tab" 
                 active-class="active"
+                @click.native="handleNavigation('/pool')"
               >
                 <span class="tab-text">POOL</span>
                 <span class="dropdown-arrow">▼</span>
@@ -90,6 +91,7 @@
                 to="/river" 
                 class="navbar-tab" 
                 active-class="active"
+                @click.native="handleNavigation('/river')"
               >
                 <span class="tab-text">RIVER</span>
                 <span class="dropdown-arrow">▼</span>
@@ -200,7 +202,7 @@
       
       <!-- Beach Comparison Tool below hero text and full width -->
       <div class="hero-tool-row">
-        <div class="integrated-beach-tool">
+        <div class="integrated-beach-tool" @click="handleIntegratedRipIdentifierClick">
           <BeachComparisonTool ref="beachTool" 
             :initialTab="beachToolTab" 
             :initialSearchValue="beachSearchQuery" 
@@ -443,7 +445,7 @@
           </div>
           
           <button @click="showRipCurrentQuiz" class="rip-simulation-button">
-            Try simulation
+            Try quiz
             <span class="button-icon">🎯</span>
           </button>
         </div>
@@ -476,6 +478,8 @@
       </div>
     </div>
   </div>
+  
+
   
   <!-- Video popup component -->
   <VideoPopup 
@@ -602,6 +606,7 @@ export default {
       selectedCompactOption: 0,
       searchOptions: ['Rip Identifier', 'Search Beach', 'Compare Beaches'],
       searchOptionsEmojis: ['🌊', '🔍', '⚖️'],
+  
       // Data properties for beach tool
       uploadedImage: null,
       beachSearchQuery: '',
@@ -732,6 +737,20 @@ export default {
     ScrollTrigger.getAll().forEach(st => st.kill());
   },
   methods: {
+    handleNavigation(path) {
+      // Navigate to the new route
+      this.$router.push(path);
+      
+      // Wait for next tick to ensure route change is processed
+      this.$nextTick(() => {
+        // Scroll to top with smooth behavior
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    },
+    
     handleCardClick(type) {
       console.log(`Clicked on ${type} card`);
       if (type === 'rips') {
@@ -740,6 +759,13 @@ export default {
         
         // Prevent page scrolling when popup is open
         document.body.style.overflow = 'hidden';
+      }
+    },
+    
+    // Add a new method to handle clicks on the integrated Rip Identifier tool
+    handleIntegratedRipIdentifierClick() {
+      if (this.beachToolTab === 'ripIdentifier') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     },
     
@@ -1093,6 +1119,8 @@ export default {
       }
     },
     triggerFileUpload() {
+      // Ensure user sees hero section before tool opens
+      this.scrollToHero();
       // Trigger file input click from the compact toolbar
       this.$refs.fileInput.click();
       
@@ -1137,6 +1165,8 @@ export default {
       }
     },
     analyzeImage() {
+      // Scroll up before analyzing
+      this.scrollToHero();
       console.log('Analyzing image for rips');
       
       if (!this.uploadedImage) {
@@ -1168,6 +1198,8 @@ export default {
       });
     },
     searchBeach() {
+      // Scroll up so results show under hero section
+      this.scrollToHero();
       console.log('Searching for beach:', this.beachSearchQuery);
       // Set the tab to search and pass data to the integrated tool
       this.beachToolTab = 'search';
@@ -1182,6 +1214,8 @@ export default {
       });
     },
     compareBeaches() {
+      // Scroll up before comparing
+      this.scrollToHero();
       console.log('Comparing beaches:', this.homeBeach, 'and', this.compareBeach);
       // Set the tab to compare and pass data to the integrated tool
       this.beachToolTab = 'compare';
@@ -1716,6 +1750,15 @@ export default {
         
         console.log(`Initialized scroll animation for rescue item ${index + 1}`);
       });
+    },
+    // Smoothly scroll the page back to the hero section (or top)
+    scrollToHero() {
+      const hero = document.querySelector('.hero-content');
+      if (hero) {
+        hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   }
 }
@@ -4145,6 +4188,11 @@ export default {
   color: #e76f51; /* Warning/danger color */
   line-height: 1;
   min-width: 160px; /* Further increased width */
+  background: rgba(231, 111, 81, 0.15);
+  border-radius: 16px;
+  padding: 0.2em 0.4em;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(231, 111, 81, 0.2);
 }
 
 .safety-stat-text {
@@ -4408,7 +4456,7 @@ export default {
 /* Rescue section styles */
 .rescue-content-section {
   position: relative;
-  min-height: 70vh;
+  min-height: 60vh; /* Reduced from 70vh to 60vh */
   background-color: #FFE5E1; /* Slightly more saturated light red */
   z-index: 12; /* One higher than the sandy section */
   transition: none;
@@ -4418,7 +4466,7 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 100px 0 80px; /* No horizontal padding */
+  padding: 100px 0 0; /* Removed bottom padding */
   border-radius: 0;
   transform: none;
   overflow: hidden; /* Changed to hidden for internal content but we'll allow rescue-showcase to overflow */
@@ -4618,7 +4666,7 @@ export default {
 /* Responsive adjustments for rescue section */
 @media (max-width: 768px) {
   .rescue-content-section {
-    padding: 90px 0 80px;
+    padding: 90px 0 0;
   }
   
   .rescue-content-section .section-heading {
@@ -4667,7 +4715,7 @@ export default {
 
 @media (max-width: 480px) {
   .rescue-content-section {
-    padding: 70px 0 60px;
+    padding: 70px 0 0;
   }
   
   .rescue-content-section .section-heading {
@@ -4751,7 +4799,7 @@ export default {
 
 .rescue-card.centered-card {
   margin: 0;
-  right: 5%;
+  right: 2%; /* Moved right from 5% to 2% (more to the right of the screen) */
   z-index: 10;
   width: 40%;
   transform: none;
@@ -4770,14 +4818,14 @@ export default {
 @media (max-width: 1200px) {
   .rescue-card.centered-card {
     width: 60%;
-    right: -15%;
+    right: -18%; /* Moved further right from -15% */
   }
 }
 
 @media (max-width: 992px) {
   .rescue-card.centered-card {
     width: 40%;
-    right: 5%;
+    right: 2%; /* Moved right from 5% to 2% */
     height: 500px; /* Changed from auto to fixed taller height */
     aspect-ratio: auto; /* Removed fixed aspect ratio */
   }
@@ -5069,12 +5117,12 @@ export default {
   position: relative;
   width: 100%;
   max-width: 1400px;
-  margin: 80px auto 100px;
-  padding: 20px;
+  margin: 80px auto 0;
+  padding: 20px 20px 10px; /* Reduced bottom padding from 40px to 10px */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 800px;
+  min-height: 750px; /* Reduced min-height from 800px to 750px */
   overflow: visible;
   box-sizing: border-box;
 }
@@ -5809,7 +5857,7 @@ export default {
   display: flex;
   width: 100%;
   margin-top: 40px; /* Add top margin to create space below the title */
-  margin-bottom: 70px;
+  margin-bottom: 40px; /* Reduced from 70px to 40px */
   position: relative;
 }
 
@@ -6282,7 +6330,7 @@ export default {
 /* Rip Simulation Test Button */
 .rip-simulation-button {
   margin-top: 15px; /* Reduced from 30px to be closer to step 3 */
-  margin-left: 100px; /* Align with the step number + content start position */
+  margin-left: 80px; /* Increased from 60px to move button more to the right */
   background: linear-gradient(135deg, #D32F2F, #F44336);
   color: white;
   border: 2px solid #ffffff;
@@ -6329,6 +6377,11 @@ export default {
   .escape-title {
     font-size: 2.6rem;
   }
+  
+  /* Adjust button position for this breakpoint */
+  .rip-simulation-button {
+    margin-left: 70px;
+  }
 }
 
 @media (max-width: 992px) {
@@ -6338,6 +6391,11 @@ export default {
   
   .escape-title {
     font-size: 2.2rem;
+  }
+  
+  /* Adjust button position for this breakpoint */
+  .rip-simulation-button {
+    margin-left: 60px;
   }
 }
 
@@ -6363,6 +6421,13 @@ export default {
   .escape-step {
     margin-bottom: 20px;
     padding-bottom: 15px;
+  }
+  
+  /* Center the button on mobile */
+  .rip-simulation-button {
+    margin-left: auto;
+    margin-right: auto;
+    align-self: center;
   }
 }
 
@@ -7079,6 +7144,8 @@ export default {
     white-space: normal;
   }
 }
+
+
 
 /* Specific styles for Rip Identifier popup */
 /* Default rip identifier container size for main page */

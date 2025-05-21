@@ -1,5 +1,21 @@
 <template>
   <div class="beach-home-container" :class="{ 'immediate-display': isDirectTransition }">
+    <!-- Tools Button with External Hover Hint -->
+    <div class="tools-button-container">
+      <div class="hover-hint-external">HOVER ME</div>
+      <div class="tools-button" @mouseenter="openToolsPopup" @mouseleave="startCloseTimer">
+        <span>TOOLS</span>
+      </div>
+    </div>
+    
+    <!-- Tools Popup -->
+    <div v-if="showToolsPopup" class="tools-popup-overlay" @mouseenter="cancelCloseTimer" @mouseleave="startCloseTimer">
+      <div class="tools-popup-container">
+        <button class="close-tools-popup" @click.stop="closeToolsPopup">×</button>
+        <BeachComparisonTool :isPopup="true" />
+      </div>
+    </div>
+    
     <!-- Custom Navigation Bar -->
     <div class="navbar-wrapper" :class="{ 'hidden': isNavbarHidden }">
       <nav class="navbar">
@@ -19,6 +35,7 @@
                 to="/beach" 
                 class="navbar-tab" 
                 active-class="active"
+                @click="handleNavigation('/beach')"
               >
                 <span class="tab-text">BEACH</span>
                 <span class="dropdown-arrow">▼</span>
@@ -494,7 +511,10 @@ export default {
       showQuiz: false,
       showPoolQuiz: false,
       showTeenStat: false,
-      showRipQuiz: false
+      showRipQuiz: false,
+      // Tools popup properties
+      showToolsPopup: false,
+      closeTimer: null
     }
   },
   computed: {
@@ -604,6 +624,32 @@ export default {
 
   },
   methods: {
+    // Tools popup methods
+    startCloseTimer() {
+      // Set a small delay before closing to make interaction smoother
+      this.closeTimer = setTimeout(() => {
+        this.closeToolsPopup();
+      }, 300);
+    },
+    
+    cancelCloseTimer() {
+      // Cancel the close timer when user hovers back into the popup
+      if (this.closeTimer) {
+        clearTimeout(this.closeTimer);
+        this.closeTimer = null;
+      }
+    },
+    
+    openToolsPopup() {
+      this.showToolsPopup = true;
+      document.body.style.overflow = 'hidden';
+    },
+    
+    closeToolsPopup() {
+      this.showToolsPopup = false;
+      document.body.style.overflow = '';
+    },
+    
     navigateToSection(sectionId) {
       this.scrollToElement(sectionId);
     },
@@ -1145,19 +1191,40 @@ export default {
                       const duration = 1.5;
                     const counter = { value: startValue };
                     
+                    // Apply initial background style to the parent span that contains both number and %
+                    gsap.set(counterElement.parentNode, {
+                      backgroundColor: 'rgba(231, 111, 81, 0.15)',
+                      borderRadius: '16px',
+                      padding: '0.2em 0.4em',
+                      display: 'inline-block',
+                      boxShadow: '0 4px 12px rgba(231, 111, 81, 0.2)'
+                    });
+                    
                     gsap.to(counter, {
                       value: endValue,
                       duration: duration,
-                        ease: 'power2.out',
+                      ease: 'power2.out',
                       onUpdate: function() {
                         counterElement.innerText = Math.round(counter.value);
                       },
                       onComplete: function() {
                         counterElement.innerText = endValue;
-                        gsap.fromTo(counterElement.parentNode, 
-                            { backgroundColor: 'rgba(231, 111, 81, 0.2)' }, // Original highlight
-                          { backgroundColor: 'rgba(255, 255, 255, 0.8)', duration: 0.5, ease: 'power1.out' }
-                        );
+                        // First transition to a slightly stronger highlight
+                        gsap.timeline()
+                          .to(counterElement.parentNode, {
+                            backgroundColor: 'rgba(231, 111, 81, 0.25)',
+                            boxShadow: '0 4px 15px rgba(231, 111, 81, 0.3)',
+                            duration: 0.3,
+                            ease: 'power1.out'
+                          })
+                          // Then fade out the highlight completely
+                          .to(counterElement.parentNode, {
+                            backgroundColor: 'rgba(231, 111, 81, 0)',
+                            boxShadow: '0 4px 12px rgba(231, 111, 81, 0)',
+                            duration: 0.5,
+                            delay: 0.2,
+                            ease: 'power1.out'
+                          });
                       }
                     });
                   }
@@ -1327,6 +1394,24 @@ export default {
       setTimeout(() => {
         attemptScroll();
       }, 500); // Add a delay to ensure the page is fully loaded
+    },
+    
+    handleNavigation(path) {
+      // Only proceed if we're navigating to a different path
+      if (this.$route.path !== path) {
+        this.$router.push(path).then(() => {
+          // After navigation, scroll to top with smooth behavior
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        }).catch(err => {
+          // Ignore navigation duplicated errors
+          if (err.name !== 'NavigationDuplicated' && !err.message.includes('Avoided redundant navigation')) {
+            console.error(err);
+          }
+        });
+      }
     },
   }
 }
@@ -7596,4 +7681,206 @@ justify-content: center;
    color: #333;
    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
  }
+
+/* Tools Button */
+.tools-button-container {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.8s ease forwards;
+  animation-delay: 3s;
+  opacity: 0;
+}
+
+.tools-button {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(243, 156, 18, 0.9);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  animation: glow 2s infinite alternate;
+  animation-delay: 0.5s;
+}
+
+.tools-button span {
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.hover-hint-external {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: bounce 1.5s infinite alternate, pulse-opacity 1.5s infinite alternate;
+  border: 1px solid rgba(243, 156, 18, 0.9);
+}
+
+.hover-hint-external:after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.8);
+}
+
+.tools-button:hover {
+  transform: scale(1.1);
+  background-color: rgba(243, 156, 18, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pulse-opacity {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 8px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Tools Popup */
+.tools-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.tools-popup-container {
+  position: relative;
+  background: linear-gradient(135deg, rgba(15, 25, 40, 0.95), rgba(30, 40, 60, 0.95));
+  border-radius: 16px;
+  width: 95%;
+  max-width: 1200px;
+  height: auto;
+  min-height: 200px;
+  max-height: 95vh;
+  overflow: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(243, 156, 18, 0.4);
+  animation: scaleIn 0.3s ease-out;
+  padding: 15px;
+  margin: 10px;
+}
+
+.close-tools-popup {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.close-tools-popup:hover {
+  background: rgba(231, 76, 60, 0.8);
+  transform: rotate(90deg);
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive Styles for Tools Button */
+@media (max-width: 992px) {
+  .tools-button-container {
+    bottom: 30px;
+    right: 30px;
+  }
+  
+  .tools-button {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .hover-hint-external {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tools-button-container {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .tools-button {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .tools-button span {
+    font-size: 0.7rem;
+  }
+  
+  .hover-hint-external {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+  }
+  
+  .tools-popup-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-height: 100%;
+  }
+}
 </style>

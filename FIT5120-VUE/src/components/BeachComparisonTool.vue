@@ -11,6 +11,9 @@
       <div class="option-header">
         <h3 class="option-title">IDENTIFY RIP CURRENTS</h3>
       </div>
+      <div class="warning-message" style="background: rgba(243, 156, 18, 0.2); color: #f39c12; padding: 0.75rem; border-radius: 8px; margin: 0.5rem auto 1rem; text-align: center; font-weight: 600; border: 1px solid rgba(243, 156, 18, 0.4); max-width: 90%;">
+        This is a guide only. Always follow lifeguard instructions first!
+      </div>
       
               <div class="rip-upload-container">
           <div v-if="isCameraActive" class="camera-container">
@@ -174,13 +177,13 @@
             </div>
         
             <div class="compare-input-wrapper">
-              <div class="beach-label">New Beach</div>
+              <div class="beach-label">Australian Beach</div>
               <div class="compare-input-container">
                 <div class="input-icon">🏝️</div>
                 <input
                   v-model="compareAddress2"
                   @input="debouncedSearchCompare2"
-                  placeholder="Enter new beach (e.g. Bondi Beach)"
+                  placeholder="Enter Australian beach (e.g. Bondi)"
                   class="search-input"
                 />
                 <ul
@@ -451,9 +454,8 @@
                     </div>
                     <div class="current-details-card">
                       <div class="current-comparison">
-                        <p>This current is <span class="highlight">{{ Math.round(marine.ocean_current_velocity/0.3) > 1 ? Math.round(marine.ocean_current_velocity/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
-                        <p v-if="marine.ocean_current_velocity > 0.5">Can quickly pull swimmers offshore in seconds</p>
-                        <p v-else>Take precautions to avoid being pulled offshore</p>
+                        <p v-if="marine.ocean_current_velocity <= 0.3">This current is mild and unlikely to pull swimmers offshore</p>
+                        <p v-else v-html="getCurrentPullDescription(marine.ocean_current_velocity)"></p>
                       </div>
                     </div>
                   </div>
@@ -543,7 +545,7 @@
                     alt="Calm beach conditions" 
                     class="beach-condition-image"
                   />
-                  <div class="beach-type-ribbon">{{ i === 0 ? 'Home Beach' : 'New Beach' }}</div>
+                  <div class="beach-type-ribbon">{{ i === 0 ? 'Home Beach' : 'Australian Beach' }}</div>
                     </div>
                 
                 <h4 class="beach-title">{{ dataset.label }} Safety Assessment</h4>
@@ -627,8 +629,8 @@
                       </div>
                       <div v-if="(dataset.data[4] || 0) > 0" class="compare-info-overlay">
                                                   <div class="compare-info-hover-details">
-                            <p>This current is <span class="compare-info-highlight">{{ Math.round((dataset.data[4] || 0)/0.3) > 1 ? Math.round((dataset.data[4] || 0)/0.3) + '× faster than' : 'about the same speed as' }}</span> a 10-year-old child can swim</p>
-                            <p>Pulls you <span class="compare-info-highlight">{{ Math.round((dataset.data[4] || 0)*10) }}m offshore</span> in 10 seconds</p>
+                            <p v-if="(dataset.data[4] || 0) <= 0.3">This current is mild and unlikely to pull swimmers offshore</p>
+                            <p v-else v-html="getCurrentPullDescription(dataset.data[4] || 0)"></p>
                           </div>
                       </div>
                       <div v-else class="compare-info-static">
@@ -938,6 +940,8 @@ export default {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' } }
         });
+        this.$refs.cameraFeed.srcObject = this.stream;
+        this.isCameraActive = true;
 
         const videoElement = this.$refs.cameraFeed;
         if (!videoElement) throw new Error("Camera feed reference not found");
@@ -1918,7 +1922,7 @@ export default {
           }
           
           // Show a helpful error message to the user
-          const beachType = index === 1 ? "home" : "comparison";
+          const beachType = index === 1 ? "home" : "Australian";
           this.error = `No ${beachType} beaches found. Try using beach name followed by location (e.g., 'Bondi Beach NSW')`;
         } else {
           // Clear error message if we found results
@@ -2709,7 +2713,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
       // Add detailed logging to understand the calculation
       console.log('===== BEACH SAFETY CALCULATION =====');
       console.log(`Home Beach (${homeName}): Safety Score = ${homeSafetyScore.toFixed(2)}`);
-      console.log(`New Beach (${newName}): Safety Score = ${newSafetyScore.toFixed(2)}`);
+      console.log(`Home Beach (${homeName}): Safety Score = ${homeSafetyScore.toFixed(2)}`);
       console.log(`Safety Difference: ${diff.toFixed(2)}`);
       console.log(`Readiness Answer: ${diff > 2 ? 'Not Likely' : 
                   (diff > 1 ? 'Somewhat Prepared' : 
@@ -3262,6 +3266,25 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
         return `Still supervise constantly and be aware of changing conditions`;
       }
     },
+    // Return a dramatic pull description based on current speed (m/s)
+    getCurrentPullDescription(speed) {
+    const dist = Math.round(speed * 10); // distance in metres over 10 s
+    let comparison = '';
+
+    if (dist >= 50) {
+      comparison = '<span style="color: orange;">the length of an Olympic swimming pool</span>';
+    } else if (dist >= 25) {
+      comparison = '<span style="color: orange;">half an Olympic pool</span>';
+    } else if (dist >= 15) {
+      comparison = '<span style="color: orange;">the length of a school bus</span>';
+    } else if (dist >= 7) {
+      comparison = '<span style="color: orange;">the length of a tennis court</span>';
+    } else {
+      comparison = '<span style="color: orange;">the length of a small car</span>';
+    }
+
+    return `This current can pull a 10-year-old child about <span style="color: orange;">${dist} m</span> offshore in 10 seconds – roughly ${comparison}.`;
+  },
     // Add retrySearch method to handle retry functionality in the search tab
     retrySearch() {
       if (this.address) {
@@ -4264,7 +4287,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   display: flex;
   flex-direction: column;
   height: 70px;
-  max-width: 48%;
+  max-width: 49%;
   width: 100%;
 }
 
@@ -4292,6 +4315,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   height: 100%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 999; /* Increased z-index to ensure proper stacking but lower than suggestions */
+  min-width: 300px; /* Ensure minimum width to accommodate longer text */
 }
 
 .compare-button-container {
@@ -4366,12 +4390,12 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 .compare-tab .search-input {
   width: 100%;
   height: 100%;
-  padding: 0 1rem 0 3.5rem;
+  padding: 0 0.5rem 0 3.5rem;
   border-radius: 0.5rem;
   border: none;
   background: transparent;
   color: white;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   transition: all 0.3s ease;
   outline: none;
   text-overflow: ellipsis;
