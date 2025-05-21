@@ -930,12 +930,19 @@ export default {
 },
     
     async openCamera() {
+      this.isCameraActive = true; // makes <video> appear in DOM
+
+      await this.$nextTick(); // waits for DOM to update and ref to be available
+
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' } }
         });
-        this.$refs.cameraFeed.srcObject = this.stream;
-        this.isCameraActive = true;
+
+        const videoElement = this.$refs.cameraFeed;
+        if (!videoElement) throw new Error("Camera feed reference not found");
+
+        videoElement.srcObject = this.stream;
       } catch (err) {
         alert('Camera error: ' + err.message);
       }
