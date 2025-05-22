@@ -38,14 +38,17 @@
     <!-- Navigation Bar -->
     <NavigationBar />
     
-    <!-- Tools Button -->
-    <div class="tools-button" @click.stop="toggleToolsPopup">
-      <span>TOOLS</span>
+    <!-- Tools Button with External Hover Hint -->
+    <div class="tools-button-container">
+      <div class="hover-hint-external">HOVER ME</div>
+      <div class="tools-button" @mouseenter="openToolsPopup" @mouseleave="startCloseTimer">
+        <span>TOOLS</span>
+      </div>
     </div>
     
     <!-- Tools Popup -->
-    <div v-if="showToolsPopup" class="tools-popup-overlay" @click.self="closeToolsPopup">
-      <div class="tools-popup-container" @click.stop>
+    <div v-if="showToolsPopup" class="tools-popup-overlay" @mouseenter="cancelCloseTimer" @mouseleave="startCloseTimer">
+      <div class="tools-popup-container">
         <button class="close-tools-popup" @click.stop="closeToolsPopup">×</button>
         <BeachComparisonTool :isPopup="true" />
       </div>
@@ -105,7 +108,8 @@ export default {
     return {
       isScrolling: false,
       scrollStarted: false,
-      showToolsPopup: false
+      showToolsPopup: false,
+      closeTimer: null
     }
   },
   mounted() {
@@ -128,21 +132,26 @@ export default {
     window.removeEventListener('touchmove', this.handleTouchMove);
   },
   methods: {
-    toggleToolsPopup() {
-      this.showToolsPopup = !this.showToolsPopup;
-      
-      // If opened, prevent scrolling on body
-      if (this.showToolsPopup) {
-        document.body.style.overflow = 'hidden';
-        // Temporarily disable scroll transition while popup is open
-        this.isScrolling = true;
-      } else {
-        document.body.style.overflow = '';
-        // Re-enable scroll transition after popup is closed
-        setTimeout(() => {
-          this.isScrolling = false;
-        }, 100);
+    startCloseTimer() {
+      // Set a small delay before closing to make interaction smoother
+      this.closeTimer = setTimeout(() => {
+        this.closeToolsPopup();
+      }, 300);
+    },
+    
+    cancelCloseTimer() {
+      // Cancel the close timer when user hovers back into the popup
+      if (this.closeTimer) {
+        clearTimeout(this.closeTimer);
+        this.closeTimer = null;
       }
+    },
+    
+    openToolsPopup() {
+      this.showToolsPopup = true;
+      document.body.style.overflow = 'hidden';
+      // Temporarily disable scroll transition while popup is open
+      this.isScrolling = true;
     },
     
     closeToolsPopup() {
@@ -787,10 +796,20 @@ body {
 }
 
 /* Tools Button */
-.tools-button {
+.tools-button-container {
   position: fixed;
   bottom: 40px;
   right: 40px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.8s ease forwards;
+  animation-delay: 3s;
+  opacity: 0;
+}
+
+.tools-button {
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -800,13 +819,11 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   border: 2px solid rgba(255, 255, 255, 0.7);
-  animation: fadeIn 0.8s ease forwards;
-  animation-delay: 3s;
-  opacity: 0;
+  animation: glow 2s infinite alternate;
+  animation-delay: 0.5s;
 }
 
 .tools-button span {
@@ -816,10 +833,57 @@ body {
   text-transform: uppercase;
 }
 
+.hover-hint-external {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: bounce 1.5s infinite alternate, pulse-opacity 1.5s infinite alternate;
+  border: 1px solid rgba(243, 156, 18, 0.9);
+}
+
+.hover-hint-external:after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.8);
+}
+
 .tools-button:hover {
   transform: scale(1.1);
   background-color: rgba(243, 156, 18, 1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pulse-opacity {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 8px rgba(255, 255, 255, 0.4);
+  }
 }
 
 /* Tools Popup */
@@ -914,11 +978,20 @@ body {
     font-size: 0.9rem;
   }
   
+  .tools-button-container {
+    bottom: 30px;
+    right: 30px;
+  }
+  
   .tools-button {
     width: 70px;
     height: 70px;
-    bottom: 30px;
-    right: 30px;
+  }
+  
+  .hover-hint-external {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    margin-bottom: 8px;
   }
 }
 
@@ -989,15 +1062,24 @@ body {
     border-bottom: 2px solid rgba(255, 255, 255, 0.7);
   }
   
-  .tools-button {
-    width: 60px;
-    height: 60px;
+  .tools-button-container {
     bottom: 20px;
     right: 20px;
   }
   
+  .tools-button {
+    width: 60px;
+    height: 60px;
+  }
+  
   .tools-button span {
     font-size: 0.7rem;
+  }
+  
+  .hover-hint-external {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    margin-bottom: 6px;
   }
   
   .tools-popup-container {
@@ -1051,15 +1133,24 @@ body {
     line-height: 1.3;
   }
   
-  .tools-button {
-    width: 50px;
-    height: 50px;
+  .tools-button-container {
     bottom: 15px;
     right: 15px;
   }
   
+  .tools-button {
+    width: 50px;
+    height: 50px;
+  }
+  
   .tools-button span {
     font-size: 0.6rem;
+  }
+  
+  .hover-hint-external {
+    font-size: 0.6rem;
+    padding: 3px 6px;
+    margin-bottom: 4px;
   }
 }
 </style>
