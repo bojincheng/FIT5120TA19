@@ -1024,31 +1024,28 @@ export default {
       
       try {
         let response;
-        
+        const confidence = 0.01;
         // First check if we have a ripImage prop passed from parent (used in popup mode)
         if (this.ripImage && !this.imageFile && !this.capturedImage) {
           console.log('Using ripImage provided by parent component in popup mode');
-          
           // Convert the data URL to a Blob for processing
           const fetchResponse = await fetch(this.ripImage);
           const blob = await fetchResponse.blob();
           this.imageFile = new File([blob], "rip_image.jpg", { type: "image/jpeg" });
-          
           // Set the ripImage as the current ripImage
           this.ripImage = this.ripImage;
-          
           // Now process with the API using the created file
           const formData = new FormData();
           formData.append('image', this.imageFile);
-          response = await axios.post('https://fit5120ta19.onrender.com/process-image', formData);
+          response = await axios.post('https://fit5120ta19.onrender.com/process-image?confidence=' + confidence, formData);
         } 
         // Process normally if we have local file or captured image
         else if (this.imageFile) {
           const formData = new FormData();
           formData.append('image', this.imageFile);
-          response = await axios.post('https://fit5120ta19.onrender.com/process-image', formData);
+          response = await axios.post('https://fit5120ta19.onrender.com/process-image?confidence=' + confidence, formData);
         } else if (this.capturedImage) {
-          response = await axios.post('https://fit5120ta19.onrender.com/process-camera-image', {
+          response = await axios.post('https://fit5120ta19.onrender.com/process-camera-image?confidence=' + confidence, {
             image: this.capturedImage
           });
         } else {
@@ -1658,8 +1655,8 @@ export default {
       
       try {
         // API endpoints
-        const weatherUrl = `https://fit5120ta19.onrender.com/weather?latitude=${lat}&longitude=${lon}`;
-        const marineUrl = `https://fit5120ta19.onrender.com/marine?latitude=${lat}&longitude=${lon}`;
+        const weatherUrl = `http://127.0.0.1:5000/weather?latitude=${lat}&longitude=${lon}`;
+        const marineUrl = `http://127.0.0.1:5000/marine?latitude=${lat}&longitude=${lon}`;
         
         console.log('Requesting weather data from:', weatherUrl);
         console.log('Requesting marine data from:', marineUrl);
