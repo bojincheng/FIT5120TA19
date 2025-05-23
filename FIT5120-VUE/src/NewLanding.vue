@@ -17,7 +17,7 @@
       </div>
       
       <!-- Large Waves -->
-      <div class="danger-point" style="top: 35%; left: 75%;" ref="wavesPoint">
+      <div class="danger-point" style="top: 23%; left: 78%;" ref="wavesPoint">
         <div class="danger-marker"></div>
         <div class="danger-tooltip">
           <h3>Powerful Waves</h3>
@@ -381,6 +381,7 @@ export default {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Montserrat:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
 /* Base Styles */
 * {
@@ -467,7 +468,7 @@ body {
 }
 
 .message-line {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.4;
   letter-spacing: -0.02em;
   text-shadow: 0 2px 15px rgba(0, 0, 0, 0.7);
@@ -476,16 +477,21 @@ body {
 }
 
 .first-line {
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   max-width: 80%;
   margin: 0 auto;
   position: relative;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .second-line {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   position: relative;
-  font-weight: 600;
+  font-weight: 800;
+  line-height: 1.3;
+  max-width: 80%;
+  margin: 0 auto;
 }
 
 .highlight {
@@ -952,12 +958,13 @@ body {
 /* Responsive Styles */
 @media (max-width: 992px) {
   .first-line {
-    font-size: 2.4rem;
+    font-size: 1.9rem;
     max-width: 90%;
   }
   
   .second-line {
-    font-size: 2rem;
+    font-size: 1.7rem;
+    max-width: 90%;
   }
   
   .scroll-circle {
@@ -997,12 +1004,13 @@ body {
 
 @media (max-width: 768px) {
   .first-line {
-    font-size: 2rem;
+    font-size: 1.7rem;
     max-width: 95%;
   }
   
   .second-line {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+    max-width: 95%;
   }
   
   .message-container {
