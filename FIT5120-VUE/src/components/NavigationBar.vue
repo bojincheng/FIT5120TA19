@@ -4,7 +4,9 @@
       <div class="navbar-content">
         <!-- Logo on left -->
         <div class="navbar-logo">
-          <router-link to="/" class="logo-link">WaterWiseFamily</router-link>
+          <router-link to="/" class="logo-link">
+            <span class="logo-water">Water</span><span class="logo-wise">Wise</span><span class="logo-family">Family</span>
+          </router-link>
         </div>
         
         <!-- Navigation tabs in middle -->
@@ -86,12 +88,29 @@ export default {
 
 .logo-link {
   font-size: 1.6rem;
-  font-weight: 300;
-  color: #ffffff;
   text-decoration: none;
   letter-spacing: -0.5px;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.logo-water {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.logo-wise {
+  font-weight: 700;
+  color: #44ccff;
+  text-shadow: 0 0 10px rgba(68, 204, 255, 0.5);
+}
+
+.logo-family {
+  font-weight: 300;
+  color: #ffffff;
+  opacity: 0.9;
 }
 
 .logo-link:hover {
