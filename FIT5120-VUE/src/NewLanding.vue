@@ -723,20 +723,19 @@ body {
   width: 30px;
   height: 30px;
   z-index: 5;
-  pointer-events: all;
-  cursor: pointer;
+  pointer-events: none;
+  cursor: default;
 }
 
 .danger-marker {
   position: relative;
-  width: 28px;
-  height: 28px;
-  background-color: rgba(255, 50, 50, 0.9);
-  border: 3px solid #ffffff;
+  width: 22px;
+  height: 22px;
+  background-color: rgba(255, 50, 50, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 50, 50, 0.6), 0 0 0 rgba(255, 50, 50, 0.6);
-  animation: pulse 2s infinite;
-  transition: transform 0.3s ease;
+  box-shadow: 0 0 8px rgba(255, 50, 50, 0.5);
+  animation: pulseSubtle 3s infinite;
 }
 
 .danger-point:hover .danger-marker,
@@ -789,15 +788,15 @@ body {
   font-weight: 600;
 }
 
-@keyframes pulse {
+@keyframes pulseSubtle {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 50, 50, 0.8);
+    box-shadow: 0 0 5px rgba(255, 50, 50, 0.5);
   }
-  70% {
-    box-shadow: 0 0 0 20px rgba(255, 50, 50, 0);
+  50% {
+    box-shadow: 0 0 10px rgba(255, 50, 50, 0.6);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 50, 50, 0);
+    box-shadow: 0 0 5px rgba(255, 50, 50, 0.5);
   }
 }
 
