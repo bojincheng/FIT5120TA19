@@ -1655,8 +1655,8 @@ export default {
       
       try {
         // API endpoints
-        const weatherUrl = `http://127.0.0.1:5000/weather?latitude=${lat}&longitude=${lon}`;
-        const marineUrl = `http://127.0.0.1:5000/marine?latitude=${lat}&longitude=${lon}`;
+        const weatherUrl = `https://fit5120ta19.onrender.com/weather?latitude=${lat}&longitude=${lon}`;
+        const marineUrl = `https://fit5120ta19.onrender.com/marine?latitude=${lat}&longitude=${lon}`;
         
         console.log('Requesting weather data from:', weatherUrl);
         console.log('Requesting marine data from:', marineUrl);
