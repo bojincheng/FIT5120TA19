@@ -932,23 +932,43 @@ export default {
 },
     
     async openCamera() {
-      this.isCameraActive = true; // makes <video> appear in DOM
-
-      await this.$nextTick(); // waits for DOM to update and ref to be available
-
       try {
+        // First get the camera stream before showing the UI
         this.stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' } }
         });
-        this.$refs.cameraFeed.srcObject = this.stream;
+        
+        // Only show the camera UI after we have the stream
         this.isCameraActive = true;
 
+        // Wait for the DOM to update with the video element
+        await this.$nextTick();
+
+        // Now set the stream to the video element
         const videoElement = this.$refs.cameraFeed;
-        if (!videoElement) throw new Error("Camera feed reference not found");
+        if (!videoElement) {
+          throw new Error("Camera feed reference not found");
+        }
 
         videoElement.srcObject = this.stream;
       } catch (err) {
-        alert('Camera error: ' + err.message);
+        // Reset the camera state on error
+        this.isCameraActive = false;
+        if (this.stream) {
+          this.stream.getTracks().forEach(track => track.stop());
+          this.stream = null;
+        }
+        
+        // Show user-friendly error messages
+        if (err.name === 'NotAllowedError') {
+          alert('Camera access denied. Please allow camera permissions to use this feature.');
+        } else if (err.name === 'NotFoundError') {
+          alert('No camera found on this device.');
+        } else if (err.name === 'NotReadableError') {
+          alert('Camera is already in use by another application.');
+        } else {
+          alert('Camera error: ' + err.message);
+        }
       }
     },
     
@@ -6989,6 +7009,13 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   justify-content: center;
 }
 
+/* Ensure the Analyze and Remove buttons sit side-by-side */
+.analysis-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 .analyze-rip-button, .remove-image-button {
   padding: 0.6rem 1rem; /* Reduced from 0.8rem 1.5rem */
   border-radius: 8px;
@@ -7083,6 +7110,59 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 .close-camera-button:hover {
   background: rgba(231, 76, 60, 1);
   transform: translateY(-2px);
+}
+
+/* Camera styles */
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 1rem;
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.camera-feed {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  z-index: 10;
+}
+
+.capture-button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  font-size: 1rem;
+}
+
+.capture-button:hover {
+  background: white;
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.capture-button:active {
+  transform: scale(0.95);
 }
 
 .button-loader {
