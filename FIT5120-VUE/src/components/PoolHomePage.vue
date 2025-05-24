@@ -2221,7 +2221,68 @@ font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   display: flex;
   justify-content: flex-end;
 }
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    gap: 0.5rem;
+  }
 
+  .navbar-logo {
+    margin-bottom: 0.5rem;
+  }
+
+  .logo-link {
+    font-size: 1.4rem;
+  }
+
+  .navbar-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .navbar-tab {
+    font-size: 1rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    margin-top: 0.4rem;
+    background: #f9f9f9;
+    box-shadow: none;
+    border-radius: 6px;
+  }
+
+  .dropdown-item {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .menu-section-header {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-link {
+    font-size: 1.2rem;
+  }
+
+  .navbar-tab {
+    font-size: 0.9rem;
+  }
+
+  .dropdown-item {
+    font-size: 0.85rem;
+  }
+}
 /* Hero Content Layout */
 .hero-section {
   display: flex;

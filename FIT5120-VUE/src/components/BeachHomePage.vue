@@ -2156,6 +2156,69 @@ export default {
   justify-content: flex-end;
 }
 
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    gap: 0.5rem;
+  }
+
+  .navbar-logo {
+    margin-bottom: 0.5rem;
+  }
+
+  .logo-link {
+    font-size: 1.4rem;
+  }
+
+  .navbar-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .navbar-tab {
+    font-size: 1rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    margin-top: 0.4rem;
+    background: #f9f9f9;
+    box-shadow: none;
+    border-radius: 6px;
+  }
+
+  .dropdown-item {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .menu-section-header {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-link {
+    font-size: 1.2rem;
+  }
+
+  .navbar-tab {
+    font-size: 0.9rem;
+  }
+
+  .dropdown-item {
+    font-size: 0.85rem;
+  }
+}
+
 /* Hero Content Layout */
 .hero-section {
   display: flex;
@@ -7179,4 +7242,64 @@ export default {
 .rip-identifier-container .rip-simulation-content {
   overflow-y: auto;
 }
+
+@media (max-width: 768px) {
+  .nav-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.8rem 1.2rem;
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .nav-tabs {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 0.8rem 1.2rem;
+  }
+
+  .tab {
+    font-size: 1rem;
+    padding: 0.3rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  .dropdown-container {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-bar {
+    padding: 0.6rem 1rem;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-tabs {
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  .tab {
+    font-size: 0.9rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .dropdown-container {
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+  }
+}
+
 </style>
