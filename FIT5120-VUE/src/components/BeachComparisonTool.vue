@@ -2124,7 +2124,7 @@ export default {
           displayName.includes(' avenue') || 
           displayName.includes(' building') ||
           displayName.includes(' drive') ||
-          displayName.includes(' lane') ||
+          displayName.includes(' lane') || 
           displayName.includes(' boulevard') ||
           displayName.includes(' highway')) {
         console.log(`Rejected: Street/road with Beach in name: ${displayName}`);
@@ -7009,6 +7009,58 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   transform: translateY(-2px);
 }
 
+.camera-button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.open-camera-button {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  background: linear-gradient(135deg, #1a6aa5, #25a0c8);
+  color: white;
+  box-shadow: 0 4px 8px rgba(37, 160, 200, 0.3);
+}
+
+.open-camera-button:hover {
+  background: linear-gradient(135deg, #155d91, #2196c1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 160, 200, 0.4);
+}
+
+.open-camera-button:before {
+  content: '📷';
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.close-camera-button {
+  background: rgba(231, 76, 60, 0.8);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+}
+
+.close-camera-button:hover {
+  background: rgba(231, 76, 60, 1);
+  transform: translateY(-2px);
+}
+
 .button-loader {
   width: 20px;
   height: 20px;
@@ -7646,3 +7698,4 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 .compare-info-image-container:hover .compare-info-hover-trigger {
   opacity: 0;
 }
+</style>
