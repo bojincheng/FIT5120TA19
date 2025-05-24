@@ -385,15 +385,15 @@
                       alt="Calm waves" 
                       class="wave-image" 
                     />
-                    <div class="hover-overlay">
-                      <div class="hover-prompt">👆 Hover for details</div>
-                    </div>
-                    <div class="wave-details-card">
-                      <div class="wave-comparison">
-                        <p>These waves are <span class="highlight">{{ Math.round(marine.wave_height/1.2) > 1 ? Math.round(marine.wave_height/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ marine.wave_height >= 1 ? '10' : '6' }}-year-old child</p>
-                        <p>Similar to <span class="highlight">{{ Math.round(marine.wave_height) > 2 ? 'a bus' : (Math.round(marine.wave_height) > 1.5 ? 'a car' : (Math.round(marine.wave_height) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
+                                          <div class="hover-overlay">
+                        <div class="hover-prompt">👆 Hover for details</div>
                       </div>
-                    </div>
+                      <div class="wave-details-card">
+                        <div class="wave-comparison">
+                          <p>These waves are <span class="highlight">{{ Math.round(marine.wave_height/1.2) > 1 ? Math.round(marine.wave_height/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ marine.wave_height >= 1 ? '10' : '6' }}-year-old child</p>
+                          <p>Similar to <span class="highlight">{{ Math.round(marine.wave_height) > 2 ? 'a bus' : (Math.round(marine.wave_height) > 1.5 ? 'a car' : (Math.round(marine.wave_height) > 1.2 ? 'a dining table' : (Math.round(marine.wave_height) > 0.7 ? 'a park bench' : (Math.round(marine.wave_height) > 0.3 ? 'a stool' : 'a coffee table')))) }}</span> in height</p>
+                        </div>
+                      </div>
                   </div>
                 </div>
               </div>
@@ -586,7 +586,7 @@
                       <div class="compare-info-overlay">
                         <div class="compare-info-hover-details">
                           <p>These waves are <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a <span class="compare-info-highlight">{{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</span></p>
-                          <p>Similar to <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
+                          <p>Similar to <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.2 ? 'a dining table' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 0.7 ? 'a park bench' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 0.3 ? 'a stool' : 'a coffee table')))) }}</span> in height</p>
                         </div>
                       </div>
                     </div>
@@ -2421,7 +2421,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
         if (effectiveWaveHeight > 1.5) {
           dangerDetail = `Waves (${effectiveWaveHeight.toFixed(1)}m) about ${Math.round(effectiveWaveHeight/1.2) > 1 ? Math.round(effectiveWaveHeight/1.2) + '× taller than' : 'the same height as'} a 10-year-old child`;
         } else if (effectiveWaveHeight > 1.0) {
-          dangerDetail = `Strong waves (${effectiveWaveHeight.toFixed(1)}m) can knock down adults - similar to a dining table`;
+          dangerDetail = `Strong waves (${effectiveWaveHeight.toFixed(1)}m) can knock down swimmers - similar to a dining table`;
         } else {
           dangerDetail = `Waves (${effectiveWaveHeight.toFixed(1)}m) may knock over children - about knee-height for adults`;
         }
