@@ -1954,13 +1954,16 @@ padding-bottom: 410px; /* Increased padding-bottom (160px + 250px) */
     padding: 0.4rem 0.6rem;
   }
 
+  .dropdown-arrow {
+    display: none !important; 
+  }
+
   .dropdown-menu {
-    position: static;
-    width: 100%;
-    margin-top: 0.4rem;
-    background: #f9f9f9;
-    box-shadow: none;
-    border-radius: 6px;
+    display: none !important; 
+  }
+
+  .navbar-tab-dropdown:hover .dropdown-menu {
+    display: none !important;
   }
 
   .dropdown-item {
