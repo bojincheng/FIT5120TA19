@@ -1,6 +1,6 @@
 ```markdown
 # Water Wise Family 
-An interactive web platform promoting water safety awareness for Australian families, especially those from immigrant backgrounds. Built as part of the FIT5120 project, this system empowers users to assess beach, pool, and river risks in real-time through AI detection, live data, and educational simulations.
+An interactive web platform promoting water safety awareness for Australian families, especially those from immigrant backgrounds. Built as part of the FIT5120 project, this system empowers users to assess beach, pool, and river risks in real time through AI detection, live data, and educational simulations.
 
 ---
 
@@ -69,13 +69,13 @@ python app.py
 | Frontend  | Netlify          |
 | Backend   | Render           |
 | DB        | Google Cloud SQL |
-
+| AI Model  | Roboflow         |
 ---
 
 ## 🛠 Troubleshooting
 
 *  *Vue module error?* Add `netlify.toml` to root
-*  *PostgreSQL connection issue?* Check user role & credentials
+*  *PostgreSQL connection issue?* Check user role & Credentials
 *  *Page not found?* Ensure build settings + retry deploy on Netlify
 
 ---
@@ -83,7 +83,7 @@ python app.py
 ## Security Notes
 
 * Roboflow API key stored in `.env` (never exposed to frontend)
-* Image uploads sanitized and limited to 50MB
+* Image uploads are sanitized and limited to 50MB
 * CORS enabled for frontend-backend communication
 
 ---
