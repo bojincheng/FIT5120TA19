@@ -1140,11 +1140,23 @@ export default {
             ctx.lineWidth = 4;
             ctx.strokeRect(x, y, width, height);
 
+            const bannerHeight = 25;
+            const textOffsetYBasis = 20; // Text baseline is 20px from banner top
+            const topCanvasMargin = 2;   // Minimum margin from canvas top
+
+            // Calculate initial desired banner top Y
+            let bannerActualTopY = y - bannerHeight;
+
+            // Adjust if it's too high (goes off canvas or too close to edge)
+            if (bannerActualTopY < topCanvasMargin) {
+                bannerActualTopY = topCanvasMargin;
+            }
+
             ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-            ctx.fillRect(x, y - 25, 140, 25);
+            ctx.fillRect(x, bannerActualTopY, 140, bannerHeight); // Draw banner rectangle
             ctx.fillStyle = 'white';
             ctx.font = 'bold 16px Arial';
-            ctx.fillText(`RIP DETECTED`, x + 5, y - 5);
+            ctx.fillText(`RIP DETECTED`, x + 5, bannerActualTopY + textOffsetYBasis); // Draw banner text
 
             this.noRipMessage = '';
             
@@ -1778,6 +1790,12 @@ export default {
           searchQuery += ' beach';
         }
         
+        // Special debug logging for Bondi
+        if (searchQuery.toLowerCase().includes('bondi')) {
+          console.log('=== BONDI BEACH SEARCH DEBUG ===');
+          console.log('Search query:', searchQuery);
+        }
+        
         const base = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=15&countrycodes=au`;
         const res = await fetch(base, { headers: { 'User-Agent': 'BeachApp/1.0' } });
         
@@ -1790,6 +1808,18 @@ export default {
         // Log raw results for debugging
         console.log(`Found ${results.length} raw results for "${searchQuery}"`);
         
+        // Special logging for Bondi results
+        if (searchQuery.toLowerCase().includes('bondi')) {
+          console.log('Raw Bondi results:', results);
+          results.forEach((item, index) => {
+            console.log(`Result ${index}:`, {
+              display_name: item.display_name,
+              type: item.type,
+              class: item.class,
+              category: item.category
+            });
+          });
+        }
         // Filter using our new isActualBeach method
         this.suggestions = results.filter(item => this.isActualBeach(item));
         
@@ -2036,6 +2066,24 @@ export default {
       // Convert display name to lowercase for case-insensitive matching
       const displayName = item.display_name.toLowerCase();
       
+      // Special handling for known beaches that might be classified differently
+      const knownBeaches = ['bondi beach', 'manly beach', 'coogee beach', 'byron bay', 
+                           'surfers paradise', 'whitehaven beach', 'bells beach',
+                           'goa beach', 'puri beach', 'marina beach', 'juhu beach',
+                           'kovalam beach', 'varkala beach', 'candolim beach',
+                           'copacabana beach', 'ipanema beach', 'waikiki beach',
+                           'miami beach', 'venice beach', 'santa monica beach',
+                           'phuket beach', 'patong beach', 'railay beach',
+                           'bali beach', 'kuta beach', 'seminyak beach'];
+      
+      // Check if this is a known beach
+      for (const knownBeach of knownBeaches) {
+        if (displayName.includes(knownBeach)) {
+          console.log(`Accepted known beach: ${displayName}`);
+          return true;
+        }
+      }
+      
       // REJECT conditions - return false immediately for these cases
       
       // 1. Reject if it starts with "Beach," as this is likely a town/place named "Beach"
@@ -2044,33 +2092,71 @@ export default {
         return false;
       }
       
-      // 2. Reject administrative entities like counties or states with "Beach" in the name
-      if (item.type === 'administrative' || 
-          item.type === 'city' || 
-          item.type === 'town' || 
-          item.type === 'county' || 
-          item.type === 'suburb') {
-        console.log(`Rejected: Administrative area with Beach in name: ${displayName}`);
+      // 2. Reject if it's "Beach" followed by a generic place type
+      if (displayName.match(/beach\s+(city|town|village|district|county|municipality|borough)/i)) {
+        console.log(`Rejected: Beach City/Town/etc: ${displayName}`);
         return false;
       }
       
-      // 3. Reject streets, roads, etc.
+      // 3. Reject administrative entities that don't have strong beach indicators
+      if ((item.type === 'administrative' || 
+          item.type === 'city' || 
+          item.type === 'town' || 
+          item.type === 'village' ||
+          item.type === 'county' || 
+          item.type === 'suburb' ||
+          item.type === 'hamlet' ||
+          item.type === 'locality' ||
+          item.type === 'neighbourhood') &&
+          !displayName.match(/\w+\s+beach/) &&
+          !displayName.includes('playa') &&
+          !displayName.includes('praia') &&
+          !displayName.includes('plage') &&
+          !displayName.includes('strand') &&
+          !displayName.includes('spiaggia')) {
+        console.log(`Rejected: Administrative area without beach pattern: ${displayName}`);
+        return false;
+      }
+      
+      // 4. Reject streets, roads, buildings, etc.
       if (displayName.includes(' street') || 
           displayName.includes(' road') || 
           displayName.includes(' avenue') || 
-          displayName.includes(' building')) {
+          displayName.includes(' building') ||
+          displayName.includes(' drive') ||
+          displayName.includes(' lane') ||
+          displayName.includes(' boulevard') ||
+          displayName.includes(' highway')) {
         console.log(`Rejected: Street/road with Beach in name: ${displayName}`);
+        return false;
+      }
+      
+      // 5. Reject if it's clearly a business or facility
+      if (displayName.includes('hotel') ||
+          displayName.includes('resort') ||
+          displayName.includes('restaurant') ||
+          displayName.includes('club') ||
+          displayName.includes('golf') ||
+          displayName.includes('park') && !displayName.includes('beach park') ||
+          displayName.includes('mall') ||
+          displayName.includes('shop')) {
+        console.log(`Rejected: Business/facility with Beach in name: ${displayName}`);
         return false;
       }
       
       // ACCEPT conditions - these strongly indicate a real beach
       
       // Check beach patterns that indicate it's an actual beach
-      const hasBeachInName = displayName.includes('beach');
+      const hasBeachInName = displayName.includes('beach') || 
+                            displayName.includes('playa') || 
+                            displayName.includes('praia') || 
+                            displayName.includes('plage') ||
+                            displayName.includes('strand') ||
+                            displayName.includes('spiaggia');
       
-      // If it's a proper beach, these patterns are common:
-      // "Something Beach" - "Bondi Beach", "Manly Beach", etc.
-      if (displayName.match(/\w+\s+beach/) && !displayName.match(/^beach\s+\w+/)) {
+      // Strong beach patterns - "Something Beach" format
+      if (displayName.match(/\w+\s+(beach|playa|praia|plage|strand|spiaggia)/) && 
+          !displayName.match(/^(beach|playa|praia|plage|strand|spiaggia)\s+\w+/)) {
         console.log(`Accepted: Has pattern like "Name Beach": ${displayName}`);
         return true;
       }
@@ -2085,12 +2171,47 @@ export default {
         displayName.includes('cove') ||
         displayName.includes('point') ||
         displayName.includes('sand') ||
-        displayName.includes('water');
+        displayName.includes('waterfront') ||
+        displayName.includes('seafront') ||
+        displayName.includes('oceanfront') ||
+        displayName.includes('beachfront');
       
       // Accept if it has beach in name and coastal context
       if (hasBeachInName && hasCoastalTerms) {
         console.log(`Accepted: Has beach in name + coastal terms: ${displayName}`);
         return true;
+      }
+      
+      // Accept if OSM tags indicate it's a beach/coastline
+      if (item.class === 'natural' && 
+          (item.type === 'coastline' || 
+           item.type === 'water' || 
+           item.type === 'bay')) {
+        if (hasBeachInName) {
+          console.log(`Accepted: Natural feature with beach in name: ${displayName}`);
+          return true;
+        }
+      }
+      
+      // Accept if it's explicitly tagged as a tourism or leisure beach
+      if ((item.class === 'tourism' || item.class === 'leisure') && hasBeachInName) {
+        console.log(`Accepted: Tourism/leisure beach: ${displayName}`);
+        return true;
+      }
+      
+      // For worldwide searches, be extra strict - require stronger indicators
+      // Check if the result has coordinates near a coastline (rough check)
+      if (hasBeachInName && item.lat && item.lon) {
+        // Accept suburbs/localities with "Beach" only if they have other beach indicators
+        if (item.type === 'suburb' || item.type === 'locality') {
+          // Check if the name is structured like a real beach name
+          if (displayName.match(/^[\w\s]+\s+beach/) && 
+              !displayName.includes('beach road') &&
+              !displayName.includes('beach street')) {
+            console.log(`Accepted: Suburb/locality with proper beach name structure: ${displayName}`);
+            return true;
+          }
+        }
       }
       
       // Reject by default for safety
@@ -6946,7 +7067,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
   width: 100%;
   object-fit: contain;
   display: block;
-  max-height: 300px;
+  max-height: 800px; /* Increased max-height to accommodate larger images */
 }
 
 .simple-result {
@@ -7525,423 +7646,3 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 .compare-info-image-container:hover .compare-info-hover-trigger {
   opacity: 0;
 }
-
-.compare-info-hover-details {
-  width: 100%;
-  text-align: center;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.75rem;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 1rem;
-  border-radius: 8px;
-}
-
-.compare-info-details {
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.compare-info-details p {
-  margin: 0.5rem 0;
-  font-size: 1rem;
-  line-height: 1.4;
-}
-
-.compare-info-highlight {
-  color: #f39c12;
-  font-weight: 700;
-  font-size: 1.2rem;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.suggestion-spacing {
-  width: 100%;
-  transition: all 0.4s ease-in-out;
-  margin-top: 5px;
-  overflow: hidden;
-  position: relative;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  padding: 8px 0;
-}
-
-.suggestion-indicator {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  font-style: italic;
-  padding: 5px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-  margin: 5px auto;
-  max-width: 80%;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.compare-wrapper {
-  transition: all 0.3s ease-in-out;
-  padding-bottom: 10px;
-  min-height: 170px; /* Base height */
-}
-
-.compare-wrapper.expanded {
-  margin-bottom: 20px;
-  height: auto;
-  min-height: 230px; /* Expanded height when suggestions are showing */
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.compare-input-wrapper {
-  transition: all 0.5s ease-in-out;
-  position: relative;
-  flex: 1;
-  max-width: 48%;
-  width: 100%;
-}
-
-/* This class is no longer used */
-
-@media (max-width: 768px) {
-  .suggestion-spacing {
-    max-height: 230px !important;
-  }
-  
-  .compare-input-wrapper.has-suggestions {
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .suggestion-spacing {
-    max-height: 250px !important;
-  }
-}
-
-/* Camera and rip detection styles */
-.camera-container {
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  overflow: hidden;
-  border: 2px dashed rgba(255, 255, 255, 0.4);
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.camera-feed {
-  width: 100%;
-  height: 100%;
-  min-height: 300px;
-  object-fit: cover;
-  display: block;
-}
-
-.camera-controls {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
-  z-index: 5;
-}
-
-.capture-button {
-  background: rgba(46, 204, 113, 0.8);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.capture-button:hover {
-  background: rgba(46, 204, 113, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-.close-camera-button {
-  background: rgba(231, 76, 60, 0.8);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.close-camera-button:hover {
-  background: rgba(231, 76, 60, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-.camera-button-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.open-camera-button {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 150px;
-}
-
-.open-camera-button:hover {
-  background: linear-gradient(135deg, #2980b9, #2574a9);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
-}
-
-.analysis-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  width: 100%;
-}
-
-.no-rip-message {
-  background: rgba(243, 156, 18, 0.15);
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  border-left: 4px solid #f39c12;
-  text-align: center;
-  font-weight: 500;
-  color: #f39c12;
-}
-
-.results-container {
-  scroll-margin-top: 2rem;
-}
-
-@media (max-width: 768px) {
-  .camera-controls {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  .capture-button, .close-camera-button {
-    width: 80%;
-    font-size: 0.9rem;
-    padding: 0.6rem 1rem;
-  }
-  
-  .analysis-buttons {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .analyze-rip-button, .remove-image-button {
-    width: 100%;
-  }
-}
-
-.compare-info-static {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  text-align: center;
-}
-
-.compare-info-static p {
-  margin: 0;
-}
-
-.compare-info-hover-details p {
-  margin: 0;
-  font-size: 1.2rem;
-  line-height: 1.5;
-  font-weight: 500;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-/* Rip Identifier Results Popup Styles */
-.rip-results-overlay {
-  z-index: 10001; /* Ensure it appears above other popups */
-}
-
-.rip-results-popup {
-  max-width: 1000px; /* Narrower than beach comparison popup */
-}
-
-.rip-analysis-large {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
-}
-
-.rip-analysis-large .result-image-container {
-  width: 100%;
-  text-align: center;
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.rip-analysis-large .result-image {
-  max-width: 100%;
-  max-height: 500px;
-  object-fit: contain;
-  margin: 0 auto;
-  display: block;
-}
-
-.rip-analysis-large .result-details {
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.rip-analysis-large .simple-result {
-  text-align: center;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-}
-
-.rip-analysis-large .rip-detected {
-  background: rgba(231, 76, 60, 0.8);
-}
-
-.rip-analysis-large .potential-rip {
-  background: rgba(243, 156, 18, 0.8);
-}
-
-.rip-analysis-large .rip-not-detected {
-  background: rgba(46, 204, 113, 0.8);
-}
-
-.rip-analysis-large .simple-result h3 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.rip-analysis-large .result-description {
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
-  line-height: 1.5;
-}
-
-.rip-analysis-large .safety-tips {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 1.5rem;
-  border-radius: 8px;
-}
-
-.rip-analysis-large .safety-tips h5 {
-  color: #f39c12;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.3rem;
-}
-
-.rip-analysis-large .safety-tips ul {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-.rip-analysis-large .safety-tips li {
-  margin-bottom: 0.75rem;
-  color: white;
-  font-size: 1.1rem;
-}
-
-.rip-analysis-large .safety-tips li:last-child {
-  margin-bottom: 0;
-}
-
-/* Media query adjustments for mobile */
-@media (max-width: 768px) {
-  .compare-info-container {
-    margin-bottom: 1.5rem;
-  }
-  
-  .compare-info-image-container {
-    height: 180px;
-  }
-  
-  .compare-info-hover-details p {
-    font-size: 1rem;
-  }
-  
-  .compare-info-highlight {
-    font-size: 1.05rem;
-  }
-  
-  .rip-analysis-large .result-image {
-    max-height: 300px;
-  }
-  
-  .rip-analysis-large .simple-result h3 {
-    font-size: 1.6rem;
-  }
-  
-  .rip-analysis-large .result-description {
-    font-size: 1rem;
-  }
-  
-  .rip-analysis-large .safety-tips {
-    padding: 1rem;
-  }
-  
-  .rip-analysis-large .safety-tips h5 {
-    font-size: 1.1rem;
-  }
-  
-  .rip-analysis-large .safety-tips li {
-    font-size: 0.9rem;
-  }
-}
-</style> 
-
