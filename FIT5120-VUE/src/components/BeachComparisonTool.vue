@@ -585,7 +585,7 @@
                       </div>
                       <div class="compare-info-overlay">
                         <div class="compare-info-hover-details">
-                          <p>These waves are <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a {{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</p>
+                          <p>These waves are <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) > 1 ? Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)/1.2) + '× taller than' : 'about the same height as' }}</span> a <span class="compare-info-highlight">{{ Math.max(dataset.data[2] || 0, dataset.data[3] || 0) >= 1 ? '10' : '6' }}-year-old child</span></p>
                           <p>Similar to <span class="compare-info-highlight">{{ Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 2 ? 'a bus' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1.5 ? 'a car' : (Math.round(Math.max(dataset.data[2] || 0, dataset.data[3] || 0)) > 1 ? 'an adult' : 'a coffee table')) }}</span> in height</p>
                         </div>
                       </div>
@@ -629,7 +629,7 @@
                       </div>
                       <div v-if="(dataset.data[4] || 0) > 0" class="compare-info-overlay">
                                                   <div class="compare-info-hover-details">
-                            <p v-if="(dataset.data[4] || 0) <= 0.3">This current is mild and unlikely to pull swimmers offshore</p>
+                            <p v-if="(dataset.data[4] || 0) <= 0.3">This current is <span class="compare-info-highlight">mild</span> and unlikely to pull swimmers offshore</p>
                             <p v-else v-html="getCurrentPullDescription(dataset.data[4] || 0)"></p>
                           </div>
                       </div>
@@ -1936,8 +1936,23 @@ export default {
         // Log raw results
         console.log(`Found ${results.length} raw results for compare "${searchQuery}"`);
         
-        // Apply filtering with our new method
-        const filteredResults = results.filter(item => this.isActualBeach(item));
+        // Apply filtering with our existing method
+        let filteredResults = results.filter(item => this.isActualBeach(item));
+        
+        // For the home beach (world-wide search) apply EXTRA strict filtering so that
+        // only genuine beaches are returned. We keep results that either:
+        //   1) Have OSM classification/type explicitly marking them as a beach, OR
+        //   2) Contain a well-known beach synonym in their display name (e.g. "Beach",
+        //      "Playa", "Praia", "Plage", "Strand", "Spiaggia").
+        if (index === 1) {
+          const beachSynonyms = ['beach', 'playa', 'praia', 'plage', 'strand', 'spiaggia'];
+          filteredResults = filteredResults.filter(item => {
+            const dn = (item.display_name || '').toLowerCase();
+            const hasSynonym = beachSynonyms.some(s => dn.includes(s));
+            const isTaggedBeach = (item.class === 'natural' && item.type === 'beach');
+            return hasSynonym || isTaggedBeach;
+          });
+        }
         
         console.log(`Filtered to ${filteredResults.length} actual beaches`);
         
@@ -1950,8 +1965,11 @@ export default {
           }
           
           // Show a helpful error message to the user
-          const beachType = index === 1 ? "home" : "Australian";
-          this.error = `No ${beachType} beaches found. Try using beach name followed by location (e.g., 'Bondi Beach NSW')`;
+          if (index === 1) {
+            this.error = "No beaches found worldwide. Try the beach name followed by country/region (e.g., 'Waikiki Beach Hawaii')";
+          } else {
+            this.error = "No Australian beaches found. Try using the beach name followed by state (e.g., 'Bondi Beach NSW')";
+          }
         } else {
           // Clear error message if we found results
           this.error = null;
@@ -2057,15 +2075,32 @@ export default {
     
     // New helper function to detect if a location is an actual beach
     isActualBeach(item) {
-      // If we have specific beach classification data, rely on that
+      // Convert display name to lowercase for case-insensitive matching
+      const displayName = item.display_name.toLowerCase();
+      
+      // ---------- REJECT CONDITIONS FIRST (most specific) ----------
+      // 1. Generic entries that literally start with "beach," or are exactly "beach"
+      if (displayName === 'beach' || displayName.match(/^beach[ ,]/)) {
+        console.log(`Rejected: Generic word 'beach' without specific name: ${displayName}`);
+        return false;
+      }
+
+      // 2. Reject if it's "Beach" followed by a generic place type (city, town, village, district, county, municipality, borough)
+      if (displayName.match(/beach\s+(city|town|village|district|county|municipality|borough)/i)) {
+        console.log(`Rejected: Beach City/Town/etc: ${displayName}`);
+        return false;
+      }
+
+      // (rest of the reject blocks remain unchanged)...
+
+      // -------------------------------------------------------------
+      // If after rejections we have specific beach classification data, accept
       if ((item.class === 'natural' && item.type === 'beach') || 
           (item.category === 'natural' && item.type === 'beach')) {
         return true;
       }
-        
-      // Convert display name to lowercase for case-insensitive matching
-      const displayName = item.display_name.toLowerCase();
-      
+       
+      // ---------- ACCEPTANCE TESTS (after rejections) --------------
       // Special handling for known beaches that might be classified differently
       const knownBeaches = ['bondi beach', 'manly beach', 'coogee beach', 'byron bay', 
                            'surfers paradise', 'whitehaven beach', 'bells beach',
@@ -2085,18 +2120,6 @@ export default {
       }
       
       // REJECT conditions - return false immediately for these cases
-      
-      // 1. Reject if it starts with "Beach," as this is likely a town/place named "Beach"
-      if (displayName.match(/^beach,/)) {
-        console.log(`Rejected: Starts with "Beach,": ${displayName}`);
-        return false;
-      }
-      
-      // 2. Reject if it's "Beach" followed by a generic place type
-      if (displayName.match(/beach\s+(city|town|village|district|county|municipality|borough)/i)) {
-        console.log(`Rejected: Beach City/Town/etc: ${displayName}`);
-        return false;
-      }
       
       // 3. Reject administrative entities that don't have strong beach indicators
       if ((item.type === 'administrative' || 
@@ -2687,14 +2710,14 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
         if (newWaveHeight > homeWaveHeight) {
           // Check if home wave height is near zero
           if (homeWaveHeight < 0.1) {
-            waveComparison = `Waves at ${newName} are much taller than your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
+            waveComparison = `Waves at ${newName} are much taller than your home beach, similar to <span class="compare-info-highlight">${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}</span>.`;
           } else {
             const ratio = Math.round(newWaveHeight/homeWaveHeight);
             let heightCompText = 'about the same height';
             if (ratio > 1) {
               heightCompText = ratio + '× taller';
             }
-            waveComparison = `Waves at ${newName} are ${heightCompText} as your home beach, similar to ${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}.`;
+            waveComparison = `Waves at ${newName} are <span class="compare-info-highlight">${heightCompText}</span> as your home beach, similar to <span class="compare-info-highlight">${newWaveHeight > 1.5 ? 'a bus' : (newWaveHeight > 1 ? 'a car' : (newWaveHeight > 0.8 ? 'a 10-year-old child' : 'a 6-year-old child'))}</span>.`;
           }
         } else {
           waveComparison = `Waves at ${newName} are smaller than your home beach, making swimming easier.`;
@@ -2709,7 +2732,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
         if (newCurrentSpeed > homeCurrentSpeed) {
           // Check if home current speed is near zero
           if (homeCurrentSpeed < 0.1) {
-            currentComparison = `Currents at ${newName} are much stronger than your home beach ${newCurrentSpeed > 0.8 ? '- about ' + Math.round(newCurrentSpeed/0.3) + '× faster than a 10-year-old child can swim' : '- comparable to a casual cyclist'}.`;
+            currentComparison = `Currents at ${newName} are much stronger than your home beach <span class="compare-info-highlight">${newCurrentSpeed > 0.8 ? '- about ' + Math.round(newCurrentSpeed/0.3) + '× faster than a 10-year-old child can swim' : '- comparable to a casual cyclist'}</span>.`;
           } else {
             const ratio = Math.round(newCurrentSpeed/homeCurrentSpeed);
             let speedCompText = 'about the same speed';
@@ -2725,7 +2748,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
                 childSwimText = '- about the same speed as a 10-year-old child can swim';
               }
             }
-            currentComparison = `Currents at ${newName} are ${speedCompText} as your home beach ${childSwimText}.`;
+            currentComparison = `Currents at ${newName} are <span class="compare-info-highlight">${speedCompText}</span> as your home beach <span class="compare-info-highlight">${childSwimText}</span>.`;
           }
         } else {
           currentComparison = `Currents at ${newName} are gentler than your home beach, reducing the risk of being pulled offshore.`;
@@ -2989,7 +3012,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
           differences.push({
             type: 'currents',
             title: `Stronger Rip Currents at ${newName}`,
-            description: `The rip currents at ${newName} (${newCurrentSpeed.toFixed(2)} m/s) are ${currentDiff} m/s stronger than at ${homeName} (${homeCurrentSpeed.toFixed(2)} m/s). If caught in a rip, you'd be pulled about ${Math.round(newCurrentSpeed * 10)} meters offshore in just 10 seconds - ${Math.round((newCurrentSpeed - homeCurrentSpeed) * 10)} meters further than at your home beach.`,
+            description: `The rip currents at ${newName} (${newCurrentSpeed.toFixed(2)} m/s) are <span class="compare-info-highlight">${currentDiff} m/s</span> stronger than at ${homeName} (${homeCurrentSpeed.toFixed(2)} m/s). If caught in a rip, you'd be pulled about <span class="compare-info-highlight">${Math.round(newCurrentSpeed * 10)} meters</span> offshore in just 10 seconds - <span class="compare-info-highlight">${Math.round((newCurrentSpeed - homeCurrentSpeed) * 10)} meters</span> further than at your home beach.`,
             impact: `This means you'll need to be much more vigilant about spotting rips (dark patches of water with fewer breaking waves) and keeping children closer to shore.`,
             severity: newCurrentSpeed > 0.5 ? 'high' : (newCurrentSpeed > 0.3 ? 'moderate' : 'low')
           });
@@ -2997,7 +3020,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
           differences.push({
             type: 'currents',
             title: `Stronger Rip Currents at ${homeName}`,
-            description: `The rip currents at ${homeName} (${homeCurrentSpeed.toFixed(2)} m/s) are ${currentDiff} m/s stronger than at ${newName} (${newCurrentSpeed.toFixed(2)} m/s). Your experience at home has prepared you for stronger rips than what you'll find here.`,
+            description: `The rip currents at ${homeName} (${homeCurrentSpeed.toFixed(2)} m/s) are <span class="compare-info-highlight">${currentDiff} m/s</span> stronger than at ${newName} (${newCurrentSpeed.toFixed(2)} m/s). Your experience at home has prepared you for stronger rips than what you'll find here.`,
             impact: `This is actually an advantage - the gentler currents at ${newName} mean less risk of being pulled offshore unexpectedly.`,
             severity: homeCurrentSpeed > 0.5 ? 'high' : (homeCurrentSpeed > 0.3 ? 'moderate' : 'low')
           });
@@ -3014,15 +3037,15 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
           differences.push({
             type: 'waves',
             title: `Larger Waves at ${newName}`,
-            description: `The waves at ${newName} (${newWaveHeight.toFixed(2)} m) are ${waveDiff} m taller than at ${homeName} (${homeWaveHeight.toFixed(2)} m). Waves this size can knock over an ${newWaveHeight > 1.5 ? 'adult' : 'child'} and create much stronger impact forces.`,
-            impact: `These larger waves will feel about ${Math.round((newWaveHeight/homeWaveHeight - 1) * 100)}% more powerful than what you're used to, making it harder to maintain footing in the water.`,
+            description: `The waves at ${newName} (${newWaveHeight.toFixed(2)} m) are <span class="compare-info-highlight">${waveDiff} m</span> taller than at ${homeName} (${homeWaveHeight.toFixed(2)} m). Waves this size can knock over an <span class="compare-info-highlight">${newWaveHeight > 1.5 ? 'adult' : 'child'}</span> and create much stronger impact forces.`,
+            impact: `These larger waves will feel about <span class="compare-info-highlight">${Math.round((newWaveHeight/homeWaveHeight - 1) * 100)}%</span> more powerful than what you're used to, making it harder to maintain footing in the water.`,
             severity: newWaveHeight > 1.2 ? 'high' : (newWaveHeight > 0.7 ? 'moderate' : 'low')
           });
         } else {
           differences.push({
             type: 'waves',
             title: `Smaller Waves at ${newName}`,
-            description: `The waves at ${newName} (${newWaveHeight.toFixed(2)} m) are ${waveDiff} m smaller than at ${homeName} (${homeWaveHeight.toFixed(2)} m).`,
+            description: `The waves at ${newName} (${newWaveHeight.toFixed(2)} m) are <span class="compare-info-highlight">${waveDiff} m</span> smaller than at ${homeName} (${homeWaveHeight.toFixed(2)} m).`,
             impact: `You'll find the gentler waves here easier to manage than what you're used to at home.`,
             severity: 'low'
           });
@@ -3039,7 +3062,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
           differences.push({
             type: 'wind',
             title: `Windier Conditions at ${newName}`,
-            description: `${newName} is experiencing stronger winds (${newWindSpeed.toFixed(1)} km/h) than you're used to at ${homeName} (${homeWindSpeed.toFixed(1)} km/h).`,
+            description: `${newName} is experiencing stronger winds (<span class="compare-info-highlight">${newWindSpeed.toFixed(1)} km/h</span>) than you're used to at ${homeName} (<span class="compare-info-highlight">${homeWindSpeed.toFixed(1)} km/h</span>).`,
             impact: `Stronger winds create choppier water, making it harder to see swimmers in trouble and hear calls for help. Wind also creates surface currents that can push inflatable toys offshore very quickly.`,
             severity: newWindSpeed > 25 ? 'high' : (newWindSpeed > 15 ? 'moderate' : 'low')
           });
@@ -3047,7 +3070,7 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
           differences.push({
             type: 'wind',
             title: `Calmer Conditions at ${newName}`,
-            description: `${newName} has lighter winds (${newWindSpeed.toFixed(1)} km/h) compared to ${homeName} (${homeWindSpeed.toFixed(1)} km/h).`,
+            description: `${newName} has lighter winds (<span class="compare-info-highlight">${newWindSpeed.toFixed(1)} km/h</span>) compared to ${homeName} (<span class="compare-info-highlight">${homeWindSpeed.toFixed(1)} km/h</span>).`,
             impact: `The calmer wind conditions make for better visibility and easier communication, improving safety compared to your home beach.`,
             severity: 'low'
           });
@@ -3388,21 +3411,22 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
     // Return a dramatic pull description based on current speed (m/s)
     getCurrentPullDescription(speed) {
     const dist = Math.round(speed * 10); // distance in metres over 10 s
-    let comparison = '';
+    let comparison_text = '';
 
     if (dist >= 50) {
-      comparison = '<span style="color: orange;">the length of an Olympic swimming pool</span>';
+      comparison_text = 'the length of an Olympic swimming pool';
     } else if (dist >= 25) {
-      comparison = '<span style="color: orange;">half an Olympic pool</span>';
+      comparison_text = 'half an Olympic pool';
     } else if (dist >= 15) {
-      comparison = '<span style="color: orange;">the length of a school bus</span>';
+      comparison_text = 'the length of a school bus';
     } else if (dist >= 7) {
-      comparison = '<span style="color: orange;">the length of a tennis court</span>';
+      comparison_text = 'the length of a tennis court';
     } else {
-      comparison = '<span style="color: orange;">the length of a small car</span>';
+      comparison_text = 'the length of a small car';
     }
+    const comparison_html = `<span class="compare-info-highlight">${comparison_text}</span>`;
 
-    return `This current can pull a 10-year-old child about <span style="color: orange;">${dist} m</span> offshore in 10 seconds – roughly ${comparison}.`;
+    return `This current can pull a <span class="compare-info-highlight">10-year-old child</span> about <span class="compare-info-highlight">${dist} m</span> offshore in <span class="compare-info-highlight">10 seconds</span> – roughly ${comparison_html}.`;
   },
     // Add retrySearch method to handle retry functionality in the search tab
     retrySearch() {
@@ -7697,5 +7721,23 @@ calculateBeachCategory(currentSpeed, effectiveHeight) {
 
 .compare-info-image-container:hover .compare-info-hover-trigger {
   opacity: 0;
+}
+
+/* Add this new style for highlighting within compare info details */
+.compare-info-highlight {
+  color: #ffae30;
+  font-weight: 800;
+  font-size: 1.3rem; 
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 0 2px;
+}
+
+/* Ensure highlight styling applies to dynamically injected HTML (v-html) */
+:deep(.compare-info-highlight) {
+  color: #ffae30 !important;
+  font-weight: 800 !important;
+  font-size: 1.3rem !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+  padding: 0 2px;
 }
 </style>
