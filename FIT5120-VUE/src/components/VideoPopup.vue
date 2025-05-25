@@ -49,6 +49,9 @@
             </div>
           </div>
         </div>
+        <div class="video-popup-footer">
+          <span class="sls-tag">Surf Life Saving</span>
+        </div>
       </div>
     </div>
   </transition>
@@ -614,5 +617,20 @@ export default {
     width: 14px;
     height: 14px;
   }
+}
+
+/* Footer Styles */
+.video-popup-footer {
+  text-align: right;
+  padding: 10px 20px 16px 0;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.sls-tag {
+  font-size: 8px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 </style> 
