@@ -226,7 +226,7 @@
                       v-model="userLocation" 
                       type="text" 
                       placeholder="Enter your city or postcode..." 
-                      class="search-input"
+                      :class="['search-input', { 'has-suggestions': locationSuggestions.length > 0 }]"
                       @input="fetchLocationSuggestions"
                     />
                   </div>
@@ -238,17 +238,19 @@
                 </div>
                 
                 <!-- Suggestions Dropdown -->
-                <ul v-if="locationSuggestions.length" class="location-suggestions">
-                  <li 
-                    v-for="(suggestion, index) in locationSuggestions" 
-                    :key="index" 
-                    @click="selectLocation(suggestion)" 
-                    class="suggestion-item"
-                  >
-                    <span class="location-icon">📍</span>
-                    {{ suggestion.display_name }}
-                  </li>
-                </ul>
+                <div v-if="locationSuggestions.length" class="suggestions-dropdown">
+                  <ul class="location-suggestions">
+                    <li 
+                      v-for="(suggestion, index) in locationSuggestions" 
+                      :key="index" 
+                      @click="selectLocation(suggestion)" 
+                      class="suggestion-item"
+                    >
+                      <span class="location-icon">📍</span>
+                      {{ suggestion.display_name }}
+                    </li>
+                  </ul>
+                </div>
 
                 <!-- Selected Location Info -->
                 <div v-if="selectedLocation" class="selected-location-info">
@@ -1513,10 +1515,13 @@ export default {
             this.errorMessageTimeoutId = null;
           }
 
-          const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${this.userLocation}+Australia`);
+          // Use countrycodes=au to restrict to Australia and encode the query properly
+          const encodedQuery = encodeURIComponent(this.userLocation);
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=au&q=${encodedQuery}`);
           const data = await response.json();
           
-          const australianLocations = data.filter(location => location.address && location.address.country === 'Australia');
+          // Since we already limited results to AU, we can use the data array directly.
+          const australianLocations = data;
           
           if (australianLocations.length === 0) {
             // Set a timeout to show the error message
@@ -1570,31 +1575,122 @@ export default {
       }
       this.errorMessage = ''; // Clear error message
 
-      // Extract state information from the location
-      const stateName = location.address.state || location.address.state_district || '';
+      // Debug log to see what fields are available
+      console.log('Location address object:', location.address);
+
+      // Extract state information from the location - check multiple possible fields
+      const stateName = (location.address.state || location.address.state_district || location.address.region || location.address.county || location.address.city || '').trim();
+      const stateCode = (location.address.state_code || location.address['ISO3166-2-lvl4'] || '').trim().toLowerCase();
+      
+      // Also check the display_name for state information
+      const displayName = location.display_name || '';
+      
+      console.log('State detection debug:', {
+        stateName,
+        stateCode,
+        displayName,
+        fullAddress: location.address
+      });
       
       // Map full state names to state codes
       const stateMap = {
-        'Victoria': 'vic',
-        'New South Wales': 'nsw',
-        'Queensland': 'qld',
-        'South Australia': 'sa',
-        'Western Australia': 'wa',
-        'Northern Territory': 'nt',
-        'Tasmania': 'tas',
-        'Australian Capital Territory': 'act'
+        'victoria': 'vic',
+        'new south wales': 'nsw',
+        'queensland': 'qld',
+        'south australia': 'sa',
+        'western australia': 'wa',
+        'northern territory': 'nt',
+        'tasmania': 'tas',
+        'australian capital territory': 'act',
+        'norfolk island': 'nsw', // Map Norfolk Island to NSW regulations
+        // Additional mappings for common variations
+        'canberra': 'act',
+        'act': 'act',
+        'nt': 'nt',
+        'vic': 'vic',
+        'nsw': 'nsw',
+        'qld': 'qld',
+        'sa': 'sa',
+        'wa': 'wa',
+        'tas': 'tas',
+        // Alternative names that might be returned by the API
+        'capital territory': 'act',
+        'territory': 'nt' // This might catch "Northern Territory" variations
       };
 
-      // Set the detected state
-      const stateCode = stateMap[stateName];
-      this.autoDetectedState = stateCode || '';
+      // Determine the state code
+      let determinedStateCode = '';
+      
+      // First try to map the full state name
+      if (stateName) {
+        determinedStateCode = stateMap[stateName.toLowerCase()];
+        console.log('Trying stateName mapping:', stateName.toLowerCase(), '->', determinedStateCode);
+      }
+      
+      // If not found, check if we have a state_code from the API
+      if (!determinedStateCode && stateCode) {
+        // Check if the state code is valid
+        const validCodes = Object.values(stateMap);
+        if (validCodes.includes(stateCode)) {
+          determinedStateCode = stateCode;
+          console.log('Using stateCode directly:', stateCode);
+        }
+      }
+      
+      // If still not found, check if stateName itself is a code
+      if (!determinedStateCode && stateName) {
+        const stateNameLower = stateName.toLowerCase();
+        const validCodes = Object.values(stateMap);
+        if (validCodes.includes(stateNameLower)) {
+          determinedStateCode = stateNameLower;
+          console.log('StateName is a valid code:', stateNameLower);
+        }
+      }
+      
+      // If still not found, try to extract from display_name
+      if (!determinedStateCode && displayName) {
+        // Look for state patterns in the display name
+        const displayLower = displayName.toLowerCase();
+        for (const [key, value] of Object.entries(stateMap)) {
+          if (displayLower.includes(key)) {
+            determinedStateCode = value;
+            console.log('Found state in display_name:', key, '->', value);
+            break;
+          }
+        }
+      }
+      
+      // Special handling for Canberra - if city is Canberra, it's definitely ACT
+      if (!determinedStateCode && location.address.city && location.address.city.toLowerCase().includes('canberra')) {
+        determinedStateCode = 'act';
+        console.log('Detected Canberra as city, setting to ACT');
+      }
+      
+      // Special handling for Darwin - if city is Darwin, it's definitely NT
+      if (!determinedStateCode && location.address.city && location.address.city.toLowerCase().includes('darwin')) {
+        determinedStateCode = 'nt';
+        console.log('Detected Darwin as city, setting to NT');
+      }
+      
+      this.autoDetectedState = determinedStateCode || '';
+      
+      console.log('Final state detection result:', {
+        determinedStateCode,
+        autoDetectedState: this.autoDetectedState
+      });
       
       // Auto-select the state if detected and show popup
-      if (stateCode) {
-        this.selectedState = stateCode;
+      if (this.autoDetectedState) {
+        this.selectedState = this.autoDetectedState;
         this.showRegulationPopup = true; // Show popup
+        console.log('Successfully detected and set state:', this.autoDetectedState);
       } else {
         this.selectedState = ''; // Clear selected state if not detected
+        // Show error message if we extracted state info but couldn't map it
+        if (stateName || stateCode) {
+          console.log('Could not map state. stateName:', stateName, 'stateCode:', stateCode, 'displayName:', displayName);
+          console.log('Available state mappings:', Object.keys(stateMap));
+        }
       }
     },
     selectState(stateCode) {
@@ -7029,7 +7125,8 @@ transition: all 0.3s ease;
 position: relative;
 display: flex;
 flex-wrap: wrap;
-align-items: center;
+align-items: flex-start;
+flex-direction: column;
 }
 
 .location-finder::before {
@@ -7051,7 +7148,7 @@ align-items: center;
 .search-container {
   margin-bottom: 0;
   max-width: 100%;
-  flex: 1;
+  width: 100%;
   min-width: 250px;
 }
 
@@ -7083,7 +7180,13 @@ position: relative;
   align-items: center;
   margin: 1.5rem auto 0;
   max-width: 800px;
-  width: 95%;
+  width: 100%;
+}
+
+.suggestions-dropdown {
+  position: relative;
+  width: 100%;
+  z-index: 15;
 }
 
 .search-icon {
@@ -7114,6 +7217,17 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0, 225, 255, 0.1)
   border-color: rgba(0, 225, 255, 0.9);
   box-shadow: 0 0 20px rgba(0, 225, 255, 0.4), inset 0 0 15px rgba(0, 225, 255, 0.2);
   background: rgba(0, 20, 40, 0.6);
+  border-radius: 8px 8px 0 0;
+}
+
+/* When suggestions are showing, modify the input border radius */
+.search-input.has-suggestions {
+  border-radius: 8px 8px 0 0;
+  border-bottom-color: rgba(0, 225, 255, 0.9);
+}
+
+.search-input.has-suggestions:focus {
+  border-radius: 8px 8px 0 0;
 }
 
 .search-input::placeholder {
@@ -7178,20 +7292,21 @@ z-index: 2;
 .location-suggestions {
   max-height: 280px;
   overflow-y: auto;
-  background: rgba(0, 41, 61, 0.8);
-  border-radius: 0;
+  background: rgba(0, 41, 61, 0.95);
+  border-radius: 0 0 8px 8px;
   margin-top: 0;
-  border: none;
-  border-top: 1px solid rgba(0, 225, 255, 0.4);
+  border: 1px solid rgba(0, 225, 255, 0.4);
+  border-top: none;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  z-index: 10;
-  position: absolute;
+  z-index: 20;
   list-style-type: none;
   padding: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 225, 255, 0.6) rgba(0, 0, 0, 0.2);
   width: 100%;
-  left: 0;
+  position: relative;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .suggestion-item {
